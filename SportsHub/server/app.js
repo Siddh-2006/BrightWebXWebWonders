@@ -9,6 +9,7 @@ const flash=require("connect-flash");
 const ownersRouter=require("./routes/ownersRouter");
 const usersRouter=require("./routes/usersRouter");
 // const indexRouter=require("./routes/index");
+const clubsRouter=require("./routes/clubsRouter");
 
 require("dotenv").config();
 
