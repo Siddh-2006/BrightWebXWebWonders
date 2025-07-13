@@ -4,12 +4,13 @@ const {
   registerClub,
   approveClub,
   getAllClubs,
+  getPendingClubs,
   clubSendRequest,
   userSendRequest,
   approveJoinRequest
 } = require('../controllers/clubController');
 
-const { protect, adminOnly } = require('../middleware/clubMiddleware');
+const { protect, adminOnly } = require('../middlewares/clubMiddleware');
 
 const multer = require('multer');
 const router = express.Router();
@@ -17,6 +18,7 @@ const router = express.Router();
 
 router.post('/register', protect, upload.single('logo'), registerClub);
 router.patch('/:clubId/approve', protect, adminOnly, approveClub);
+router.get('/pending-clubs', protect, adminOnly, getPendingClubs);
 router.get('/', protect, getAllClubs);
 
 router.post('/request/club-to-user', protect, clubSendRequest);

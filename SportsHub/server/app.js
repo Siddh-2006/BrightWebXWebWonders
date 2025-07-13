@@ -6,12 +6,14 @@ const db=require("./config/mongoose-connection");
 const expressSession=require("express-session");
 const flash=require("connect-flash");
 
-const ownersRouter=require("./routes/ownersRouter");
+
+// const adminsRouter=require("./routes/adminsRouter");
 const usersRouter=require("./routes/usersRouter");
 // const indexRouter=require("./routes/index");
 const clubsRouter=require("./routes/clubsRouter");
 
 require("dotenv").config();
+
 
 app.set('view engine','ejs');
 app.use(express.json());
@@ -28,7 +30,8 @@ app.use(flash());
 app.use(express.static(path.join(__dirname,'public')));
 
 // app.use("/",indexRouter);
-// app.use("/owners",ownersRouter);
+
 app.use("/users",usersRouter);
+app.use("/clubs",clubsRouter);
 
 app.listen(3000);

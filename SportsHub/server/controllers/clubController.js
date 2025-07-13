@@ -40,6 +40,15 @@ const approveClub = async (req, res) => {
   res.json({ msg: 'Club approved' });
 };
 
+const getPendingClubs = async (req, res) => {
+  try {
+    const clubs = await Club.find({ approved: false });
+    res.json(clubs);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 const getAllClubs = async (req, res) => {
   const clubs = await Club.find({ approved: true }).populate('players', 'fullName');
   res.json(clubs);
@@ -82,6 +91,7 @@ module.exports = {
   registerClub,
   approveClub,
   getAllClubs,
+  getPendingClubs,
   clubSendRequest,
   userSendRequest,
   approveJoinRequest

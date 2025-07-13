@@ -1,0 +1,15 @@
+{
+  "email": "admin@sportshub.com",
+  "password": "$2b$10$WjvKgncLz5wTGaLItcWajuEuWJK3h56DHQ/oY37hdDJ0LIU1fprPm",
+  "fullname": "Freny Chauhan",
+  "isAdmin": true,
+  "institutionType": "Admin",
+  "profilePhoto": null,
+  "points": 0,
+  "matchesPlayed": 0,
+  "rank": "Rookie",
+  "achievements": [],
+  "activityChart": []
+}
+
+
