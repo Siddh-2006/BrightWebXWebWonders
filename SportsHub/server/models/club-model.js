@@ -21,7 +21,7 @@ const clubSchema = new mongoose.Schema({
         ref: 'User'
     },
     players: [
-        { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+        { type: mongoose.Schema.Types.ObjectId, ref: 'user' }
     ],
     vlogs: [
         { type: String }
