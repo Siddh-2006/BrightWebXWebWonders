@@ -1,23 +1,22 @@
 const mongoose = require('mongoose');
 const Question = require('../models/Question');
 const UserQuizHistory = require('../models/UserQuizHistory');
-const { getAvailableApiKey, updateKeyUsage, GEMINI_API_KEYS, GEMINI_PRO_DAILY_TOKEN_LIMIT } = require('../utils/geminiApiManager');
-const fetch = require('node-fetch').default; // Ensure node-fetch is installed and available
+const {
+    getAvailableApiKey,
+    updateKeyUsage,
+    disableKeyTemporarily,
+    estimateTokens,
+    MAX_RPM_CALLS_PER_KEY
+} = require('../utils/geminiApiManager');
+const fetch = require('node-fetch').default;
 
-/**
- * Utility function to introduce a delay.
- * @param {number} ms - The delay in milliseconds.
- */
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-/**
- * Generates the prompt string for the Gemini API based on sport, difficulty, and count.
- * Includes instructions for generating explanations.
- * @param {string} sport The selected sport (e.g., "Cricket", "Football").
- * @param {string} difficulty_level The difficulty level ("easy", "medium", "hard").
- * @param {number} count The number of questions to generate.
- * @returns {string} The formatted prompt string.
- */
+// --- Keep generateQuizPrompt function here ---
+// It's a helper function primarily for generateAndStoreDailyQuestions,
+// but it's good practice to keep it defined before its first use
+// and export it if other modules might need it for clarity,
+// although in your current setup, only quizController uses it directly.
 function generateQuizPrompt(sport, difficulty_level, count) {
     let specific_instructions = "";
 
@@ -57,91 +56,138 @@ Example JSON structure for one question:
 `;
 }
 
+
 // --- Scheduled Daily Question Generation ---
 const SPORTS_TO_GENERATE_FOR = ["Cricket", "Football", "Basketball", "Tennis", "Formula 1", "Boxing"];
-// Increased question breakdown to generate many more questions daily
 const QUESTION_BREAKDOWN = { easy: 20, medium: 20, hard: 20 }; // Now generating 60 questions per sport daily
+const TOTAL_EXPECTED_QUESTIONS = SPORTS_TO_GENERATE_FOR.length * (QUESTION_BREAKDOWN.easy + QUESTION_BREAKDOWN.medium + QUESTION_BREAKDOWN.hard);
 
-// Recommended delay between API calls to avoid hitting per-minute rate limits
-const API_CALL_DELAY_MS = 2000; // 2 seconds delay between each question generation API call
+const MIN_OVERALL_API_CALL_DELAY_MS = 2500;
+const WAIT_FOR_API_KEY_MS = 15 * 1000;
 
-/**
- * Function to generate and store questions daily.
- * This function is scheduled to run automatically.
- */
 async function generateAndStoreDailyQuestions() {
     console.log(`[CRON] Starting daily question generation at ${new Date().toISOString()}`);
 
     const today = new Date();
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
 
-    const expectedTotalQuestions = SPORTS_TO_GENERATE_FOR.length * (QUESTION_BREAKDOWN.easy + QUESTION_BREAKDOWN.medium + QUESTION_BREAKDOWN.hard);
     const existingQuestionsCount = await Question.countDocuments({
         generatedAt: { $gte: startOfDay }
     });
 
-    if (existingQuestionsCount >= expectedTotalQuestions) {
+    if (existingQuestionsCount >= TOTAL_EXPECTED_QUESTIONS) {
         console.log("[CRON] Questions for today already seem to exist in sufficient quantity. Skipping generation.");
         return;
     }
 
+    const generationTasks = [];
     for (const sport of SPORTS_TO_GENERATE_FOR) {
         for (const [level, count] of Object.entries(QUESTION_BREAKDOWN)) {
-            const prompt = generateQuizPrompt(sport, level, count);
-            let currentApiKey = null;
-            let generatedForThisLevel = false;
-            let retryAttempts = 0;
-            const MAX_API_RETRIES = GEMINI_API_KEYS.length;
+            const countForSportLevel = await Question.countDocuments({
+                sport: sport,
+                difficulty: level,
+                generatedAt: { $gte: startOfDay }
+            });
 
-            while (!generatedForThisLevel && retryAttempts < MAX_API_RETRIES) {
-                currentApiKey = getAvailableApiKey();
+            if (countForSportLevel < count) {
+                generationTasks.push({ sport, level, count: count - countForSportLevel });
+            } else {
+                console.log(`[CRON] Already have enough ${level} questions for ${sport} (${countForSportLevel}/${count}). Skipping task.`);
+            }
+        }
+    }
 
-                if (!currentApiKey) {
-                    console.error(`[CRON] All API keys exhausted for ${sport} (${level}). Skipping further generation for this sport/level.`);
-                    break;
+    generationTasks.sort(() => Math.random() - 0.5);
+
+    let successfullyGeneratedThisRun = 0;
+
+    for (const task of generationTasks) {
+        const { sport, level, count } = task;
+        if (count <= 0) continue;
+
+        const prompt = generateQuizPrompt(sport, level, count); // This is where it was being called
+        let currentApiKey = null;
+        let successfulGenerationAttempt = false;
+        let retryCount = 0;
+        const MAX_API_RETRY_ATTEMPTS = 5;
+
+        while (!successfulGenerationAttempt && retryCount < MAX_API_RETRY_ATTEMPTS) {
+            currentApiKey = getAvailableApiKey();
+
+            if (!currentApiKey) {
+                console.warn(`[CRON] No API key available for ${sport} (${level}). Waiting ${WAIT_FOR_API_KEY_MS / 1000}s before checking again... (Attempt ${retryCount + 1}/${MAX_API_RETRY_ATTEMPTS})`);
+                await delay(WAIT_FOR_API_KEY_MS);
+                retryCount++;
+                continue;
+            }
+
+            try {
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                    }
+                };
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${currentApiKey}`;
+
+                console.log(`[CRON] Attempting to generate ${count} ${level} questions for ${sport} with key ${currentApiKey.substring(0, 5)}... (Attempt ${retryCount + 1})`);
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error(`[CRON] Gemini API error for key ${currentApiKey.substring(0, 5)}... (${sport}, ${level}): Status ${response.status}, Error:`, errorData);
+
+                    if (response.status === 429) {
+                        disableKeyTemporarily(currentApiKey);
+                        console.log(`[CRON] Key ${currentApiKey.substring(0, 5)}... hit rate limit (429). Switching keys and waiting.`);
+                        await delay(WAIT_FOR_API_KEY_MS);
+                    } else if (response.status >= 500) {
+                        console.error(`[CRON] Server error (${response.status}) from Gemini API. Retrying after delay...`);
+                        await delay(WAIT_FOR_API_KEY_MS * 2);
+                    } else if (response.status === 400 && errorData.error && errorData.error.message.includes("SAFETY")) {
+                        console.warn(`[CRON] Content safety filter triggered for ${sport} (${level}). Skipping this prompt.`);
+                        successfulGenerationAttempt = true;
+                        break;
+                    }
+                     else {
+                        console.error(`[CRON] Non-retryable API error (${response.status}) for ${sport} (${level}). Prompt or request might be an issue.`);
+                    }
+                    retryCount++;
+                    continue;
                 }
 
-                try {
-                    const payload = {
-                        contents: [{ role: "user", parts: [{ text: prompt }] }],
-                        generationConfig: {
-                            responseMimeType: "application/json",
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+
+                    const jsonString = result.candidates[0].content.parts[0].text;
+                    let parsedQuestions;
+                    try {
+                        parsedQuestions = JSON.parse(jsonString);
+                        if (!Array.isArray(parsedQuestions) || parsedQuestions.length === 0) {
+                            throw new Error("Parsed JSON is not an array or is empty.");
                         }
-                    };
-
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${currentApiKey}`;
-
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        console.error(`[CRON] Gemini API error for key ${currentApiKey.substring(0, 5)}...:`, response.status, errorData);
-                        if (response.status === 429) {
-                            updateKeyUsage(currentApiKey, GEMINI_PRO_DAILY_TOKEN_LIMIT); // Mark as fully used
-                            retryAttempts++;
-                            await delay(API_CALL_DELAY_MS * 5); // Longer delay before retrying with new key
-                            continue;
-                        } else {
-                            throw new Error(`Gemini API error: ${errorData.error.message || response.statusText}`);
-                        }
+                    } catch (parseError) {
+                        console.error(`[CRON] Failed to parse JSON response for ${sport} (${level}) with key ${currentApiKey.substring(0, 5)}...:`, parseError.message);
+                        console.error("Malformed JSON received (snippet):", jsonString.substring(0, 500) + "...");
+                        retryCount++;
+                        await delay(WAIT_FOR_API_KEY_MS / 2);
+                        continue;
                     }
 
-                    const result = await response.json();
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        
-                        const jsonString = result.candidates[0].content.parts[0].text;
-                        const parsedQuestions = JSON.parse(jsonString);
+                    const estimatedInputTokens = estimateTokens(prompt);
+                    const estimatedOutputTokens = estimateTokens(jsonString);
+                    updateKeyUsage(currentApiKey, estimatedInputTokens + estimatedOutputTokens);
 
-                        const estimatedTokens = jsonString.length / 4;
-                        updateKeyUsage(currentApiKey, estimatedTokens);
-                        
-                        for (const q of parsedQuestions) {
+                    let questionsSavedForThisTask = 0;
+                    for (const q of parsedQuestions) {
+                        if (q.question_text && Array.isArray(q.options) && q.options.length === 4 && q.correct_answer && q.explanation) {
                             const newQuestion = new Question({
                                 sport: sport,
                                 question_text: q.question_text,
@@ -152,54 +198,45 @@ async function generateAndStoreDailyQuestions() {
                                 generatedAt: new Date()
                             });
                             await newQuestion.save();
+                            successfullyGeneratedThisRun++;
+                            questionsSavedForThisTask++;
+                        } else {
+                            console.warn(`[CRON] Invalid question format received for ${sport} (${level}). Skipping question:`, JSON.stringify(q).substring(0, 100) + "...");
                         }
-                        console.log(`[CRON] Successfully generated and stored ${parsedQuestions.length} ${level} questions for ${sport}.`);
-                        generatedForThisLevel = true;
-                        retryAttempts = 0;
-                    } else {
-                        console.error("[CRON] Unexpected Gemini API response structure:", result);
-                        throw new Error("Failed to get valid content from Gemini API.");
                     }
-                } catch (apiError) {
-                    console.error(`[CRON] Error during Gemini API call for ${sport} (${level}) with key ${currentApiKey.substring(0, 5)}...:`, apiError);
-                    retryAttempts++;
-                    if (retryAttempts >= MAX_API_RETRIES) {
-                        console.error(`[CRON] Failed to generate questions for ${sport} (${level}) after multiple retries.`);
-                        break;
-                    }
-                    console.log(`[CRON] Retrying with a different key... (Attempt ${retryAttempts}/${MAX_API_RETRIES})`);
-                    await delay(API_CALL_DELAY_MS); // Delay before retrying with the same or next key
+                    console.log(`[CRON] Successfully generated and stored ${questionsSavedForThisTask} ${level} questions for ${sport}. Total this run: ${successfullyGeneratedThisRun}`);
+                    successfulGenerationAttempt = true;
+                    await delay(MIN_OVERALL_API_CALL_DELAY_MS);
+
+                } else {
+                    console.error("[CRON] Unexpected Gemini API response structure (no candidates/content parts):", result);
+                    retryCount++;
+                    await delay(WAIT_FOR_API_KEY_MS / 2);
+                    continue;
                 }
-            } // End while loop for retries
-            if (generatedForThisLevel) {
-                await delay(API_CALL_DELAY_MS); // Delay between different levels/sports API calls
+            } catch (apiError) {
+                console.error(`[CRON] Unhandled error during Gemini API call for ${sport} (${level}) with key ${currentApiKey.substring(0, 5)}...:`, apiError);
+                retryCount++;
+                await delay(WAIT_FOR_API_KEY_MS);
             }
         }
+        if (!successfulGenerationAttempt) {
+            console.error(`[CRON] Failed to generate questions for ${sport} (${level}) after ${MAX_API_RETRY_ATTEMPTS} attempts. Moving to next task.`);
+        }
     }
-    console.log(`[CRON] Daily question generation finished at ${new Date().toISOString()}`);
+    console.log(`[CRON] Daily question generation finished at ${new Date().toISOString()}. Total new questions generated/stored this run: ${successfullyGeneratedThisRun}`);
+    console.log(`[CRON] Final question count for today (including existing): ${await Question.countDocuments({ generatedAt: { $gte: startOfDay } })}`);
 }
 
-/**
- * Function to delete old questions from the database.
- * Questions are automatically deleted by the `expires` index on `generatedAt` field after 7 days (TTL index).
- * This function is primarily for logging that the TTL index is working.
- */
 async function deleteOldQuestions() {
-    console.log(`[CRON] Starting old question deletion at ${new Date().toISOString()}`);
-    console.log(`[CRON] Old question deletion process finished. (Handled by TTL index)`);
+    console.log(`[CRON] Starting old question deletion check at ${new Date().toISOString()}`);
+    console.log(`[CRON] Old question deletion process finished. (Handled by MongoDB TTL index on 'generatedAt' field, set to expire after 7 days).`);
 }
 
 
-// --- API Endpoint Functions ---
-
-/**
- * Handles the request to retrieve a new quiz for a user.
- * @param {object} req - Express request object.
- * @param {object} res - Express response object.
- */
 const generateQuizForUser = async (req, res) => {
     const { sports } = req.body;
-    const userId = req.user.id; // Get userId from authenticated user
+    const userId = req.user.id;
 
     const QUIZ_PATTERN = { easy: 3, medium: 3, hard: 4 };
 
@@ -228,14 +265,14 @@ const generateQuizForUser = async (req, res) => {
                     sport: sport,
                     difficulty: level,
                     _id: { $nin: newSeenQuestionIds }
-                }).limit(count * 10);
+                }).limit(count * 5);
 
                 if (availableQuestions.length < count) {
                     console.warn(`Not enough unseen ${level} questions for ${sport}. Fetching from all available, potentially repeating questions.`);
                     availableQuestions = await Question.find({
                         sport: sport,
                         difficulty: level
-                    }).limit(count * 10);
+                    }).limit(count * 5);
                 }
 
                 availableQuestions.sort(() => Math.random() - 0.5);
@@ -269,11 +306,6 @@ const generateQuizForUser = async (req, res) => {
     }
 };
 
-/**
- * Handles the request to get a user's quiz history (for debugging/display).
- * @param {object} req - Express request object.
- * @param {object} res - Express response object.
- */
 const getUserQuizHistory = async (req, res) => {
     try {
         const { userId } = req.params;
@@ -288,8 +320,10 @@ const getUserQuizHistory = async (req, res) => {
     }
 };
 
+// --- THIS IS THE CRUCIAL PART ---
+// Export all functions that need to be accessible from other modules
 module.exports = {
-    generateQuizPrompt,
+    generateQuizPrompt, // <-- MAKE SURE TO EXPORT IT HERE
     generateAndStoreDailyQuestions,
     deleteOldQuestions,
     generateQuizForUser,

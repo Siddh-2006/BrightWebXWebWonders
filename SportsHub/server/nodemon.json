@@ -1,0 +1,10 @@
+{
+  "watch": ["server"],
+  "ignore": [
+    "node_modules",
+    "*.test.js",
+    "*.spec.js",
+    "server/utils/apiKeyState.json" 
+  ],
+  "ext": "js,json"
+}
