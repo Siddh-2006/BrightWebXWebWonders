@@ -1,37 +1,54 @@
-const express=require('express');
-const app=express();
-const cookieParser=require("cookie-parser");
-const path=require('path');
-const db=require("./config/mongoose-connection");
-const expressSession=require("express-session");
-const flash=require("connect-flash");
-
-
-// const adminsRouter=require("./routes/adminsRouter");
-const usersRouter=require("./routes/usersRouter");
-// const indexRouter=require("./routes/index");
-const clubsRouter=require("./routes/clubsRouter");
-
+const express = require('express');
+const app = express();
+const cookieParser = require("cookie-parser");
+const path = require('path');
+const db = require("./config/mongoose-connection");
+const expressSession = require("express-session");
+const flash = require("connect-flash");
+const cors = require('cors');
+const config = require("config");
 require("dotenv").config();
 
+// Routes
+// const adminsRouter=require("./routes/adminsRouter");
+const usersRouter = require("./routes/usersRouter");
+// const indexRouter=require("./routes/index");
+const clubsRouter = require("./routes/clubsRouter");
+const quizRoutes = require('./routes/quizRoutes');
 
-app.set('view engine','ejs');
+// Cron Jobs
+const initQuizCronJobs = require('./cron/quizCronJobs');
+
+// View Engine & Middleware
+app.set('view engine', 'ejs');
+app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({extended:true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(
-    expressSession({
-        resave:false,
-        saveUninitialized:false,
-        secret:process.env.EXPRESS_SESSION_SECRET,
-    })
-)
+app.use(expressSession({
+    resave: false,
+    saveUninitialized: false,
+    secret: process.env.EXPRESS_SESSION_SECRET,
+}));
 app.use(flash());
-app.use(express.static(path.join(__dirname,'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
+// Routes
 // app.use("/",indexRouter);
+app.use('/api/quiz', quizRoutes);
+app.use("/users", usersRouter);
+app.use("/clubs", clubsRouter);
 
-app.use("/users",usersRouter);
-app.use("/clubs",clubsRouter);
+db.once('open', () => {
+  console.log('MongoDB connection is open');
+  initQuizCronJobs();
+  const PORT = config.get("PORT") || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+});
 
-app.listen(3000);
+db.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+  process.exit(1);
+});
