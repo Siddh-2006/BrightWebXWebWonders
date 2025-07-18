@@ -7,7 +7,8 @@ const questionSchema = new mongoose.Schema({
     correct_answer: { type: String, required: true },
     explanation: { type: String, required: true }, 
     difficulty: { type: String, enum: ['easy', 'medium', 'hard'], required: true },
-    generatedAt: { type: Date, default: Date.now, expires: '7d' } 
+    generatedAt: { type: Date, default: Date.now, expires: '7d' },
+    archiveAfter: { type: Date, required: true }
 });
 questionSchema.index({ sport: 1, difficulty: 1 });
 

@@ -1,331 +1,272 @@
-const mongoose = require('mongoose');
+// controllers/quizController.js
 const Question = require('../models/Question');
 const UserQuizHistory = require('../models/UserQuizHistory');
 const {
     getAvailableApiKey,
-    updateKeyUsage,
+    recordApiCall,
     disableKeyTemporarily,
-    estimateTokens,
-    MAX_RPM_CALLS_PER_KEY
 } = require('../utils/geminiApiManager');
-const fetch = require('node-fetch').default;
+const fetch = require('node-fetch').default; 
+const mongoose = require('mongoose');
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// --- Keep generateQuizPrompt function here ---
-// It's a helper function primarily for generateAndStoreDailyQuestions,
-// but it's good practice to keep it defined before its first use
-// and export it if other modules might need it for clarity,
-// although in your current setup, only quizController uses it directly.
-function generateQuizPrompt(sport, difficulty_level, count) {
-    let specific_instructions = "";
+function generateQuizPrompt(sport, difficulty, count, existingQuestions = []) {
+    const difficultyMap = {
+        easy: "General knowledge about rules, famous players, or basic terminology.",
+        medium: "Questions about significant past events, specific player achievements, or more detailed rules.",
+        hard: "In-depth questions requiring analysis, strategic understanding, or knowledge of niche historical facts."
+    };
 
-    if (difficulty_level === "easy") {
-        specific_instructions = `Easy: General knowledge about the basic rules, common terms, equipment, or famous players of ${sport}. Questions should be straightforward and widely known. Examples: "How many players are on a football team?", "What is the standard length of a cricket pitch in yards?".`;
-    } else if (difficulty_level === "medium") {
-        specific_instructions = `Medium: Questions about significant past matches, key historical events, important player achievements, or more detailed rules of ${sport}. Avoid asking for exact scores or obscure statistics. Focus on the narrative or impact. Examples: "Which famous football match is known as the 'Miracle of Istanbul'?", "Who holds the record for the most centuries in Test cricket?".`;
-    } else if (difficulty_level === "hard") {
-        specific_instructions = `Hard: Questions that require deeper understanding, logical deduction, scenario analysis, or distinguishing between very similar options. These should not be simple facts. For example, a question about complex qualification scenarios, strategic decisions, or subtle rule interpretations. Examples: "If CSK needs to maintain a Net Run Rate of +0.5 to qualify for the playoffs, and their next match is against RCB who needs to win by at least 30 runs to stay in contention, what's a realistic outcome for CSK to qualify assuming MI loses their next game?", "All of the following are types of 'outs' in cricket EXCEPT: a) Caught, b) Bowled, c) Leg Before Wicket, d) Run Out by a throw from the boundary." (where all options are valid but one is slightly out of context or a trick).`;
-    }
+    // Instruction to avoid similar questions based on recent ones
+    const uniquenessInstruction = existingQuestions.length > 0
+        ? `CRITICAL: Do not generate questions similar to these recent examples:\n${existingQuestions.map(q => `"${q}"`).join('\n')}\n`
+        : "Ensure questions are fresh and varied. Avoid repeating common facts.";
 
-    return `You are an expert sports quiz master. Your task is to generate exactly ${count} multiple-choice quiz questions about ${sport}.
-Each question should have 4 options, with only one correct answer.
-For each question, also provide a concise explanation (1-2 sentences) of why the correct answer is correct.
-The questions must adhere to the following difficulty level guidelines for a knowledgeable sports fan:
+    return `You are a world-class sports quiz master for ${sport}.
+Generate exactly ${count} unique, multiple-choice quiz questions about ${sport}.
+The difficulty level must be strictly '${difficulty}'. This means: ${difficultyMap[difficulty]}
 
-${specific_instructions}
+Each question must have:
+1. "question_text": The question itself.
+2. "options": An array of 4 string options.
+3. "correct_answer": The exact string of the correct option.
+4. "explanation": A brief, 1-2 sentence explanation.
 
-Ensure questions are engaging and test genuine fan knowledge, not just obscure facts or exact score memorization.
-The questions should be fresh and varied within the chosen sport and difficulty.
-Do not repeat questions.
-Format your output as a JSON array of question objects. Each object must have the following keys:
-- "question_text": (string) The full question.
-- "options": (array of strings) An array containing exactly 4 distinct answer options.
-- "correct_answer": (string) The exact text of the correct answer from the "options" array.
-- "explanation": (string) A brief explanation of why the correct answer is correct.
+${uniquenessInstruction}
 
-Example JSON structure for one question:
-[
-  {
-    "question_text": "What is the primary objective of a batsman in cricket?",
-    "options": ["To hit boundaries only", "To score runs and protect their wicket", "To get the opposition out", "To stop the ball from reaching the boundary"],
-    "correct_answer": "To score runs and protect their wicket",
-    "explanation": "The batsman's main goal is to score runs for their team while preventing their wicket from being dismissed by the fielding side."
-  }
-]
-`;
+Format your output as a valid JSON array of objects. Do not include any other text, markdown, or commentary.
+Example: [{"question_text": "...", "options": ["Option A", "Option B", "Option C", "Option D"], "correct_answer": "Option A", "explanation": "This is why."}]`;
 }
 
-
-// --- Scheduled Daily Question Generation ---
-const SPORTS_TO_GENERATE_FOR = ["Cricket", "Football", "Basketball", "Tennis", "Formula 1", "Boxing"];
-const QUESTION_BREAKDOWN = { easy: 20, medium: 20, hard: 20 }; // Now generating 60 questions per sport daily
-const TOTAL_EXPECTED_QUESTIONS = SPORTS_TO_GENERATE_FOR.length * (QUESTION_BREAKDOWN.easy + QUESTION_BREAKDOWN.medium + QUESTION_BREAKDOWN.hard);
-
-const MIN_OVERALL_API_CALL_DELAY_MS = 2500;
-const WAIT_FOR_API_KEY_MS = 15 * 1000;
+// --- Scheduled Daily Question Generation Configuration ---
+const SPORTS_TO_GENERATE_FOR = ["Cricket", "Football", "Basketball", "Tennis", "chess"];
+const QUESTION_BREAKDOWN = { easy: 20, medium: 20, hard: 20 }; // Each level now generates 20 questions
+const WAIT_BETWEEN_REQUESTS_MS = 2000; // A polite delay after each successful API call
+const WAIT_FOR_KEY_RETRY_MS = 10 * 1000; // Check for an available key every 10 seconds
 
 async function generateAndStoreDailyQuestions() {
     console.log(`[CRON] Starting daily question generation at ${new Date().toISOString()}`);
 
-    const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
-
-    const existingQuestionsCount = await Question.countDocuments({
-        generatedAt: { $gte: startOfDay }
-    });
-
-    if (existingQuestionsCount >= TOTAL_EXPECTED_QUESTIONS) {
-        console.log("[CRON] Questions for today already seem to exist in sufficient quantity. Skipping generation.");
-        return;
-    }
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0); // Start of today
 
     const generationTasks = [];
     for (const sport of SPORTS_TO_GENERATE_FOR) {
         for (const [level, count] of Object.entries(QUESTION_BREAKDOWN)) {
-            const countForSportLevel = await Question.countDocuments({
-                sport: sport,
-                difficulty: level,
-                generatedAt: { $gte: startOfDay }
-            });
-
-            if (countForSportLevel < count) {
-                generationTasks.push({ sport, level, count: count - countForSportLevel });
-            } else {
-                console.log(`[CRON] Already have enough ${level} questions for ${sport} (${countForSportLevel}/${count}). Skipping task.`);
+            // Count questions generated *today* for this sport and difficulty
+            const generatedToday = await Question.countDocuments({ sport, difficulty: level, generatedAt: { $gte: startOfDay } });
+            const needed = count - generatedToday;
+            if (needed > 0) {
+                generationTasks.push({ sport, level, count: needed });
             }
         }
     }
 
-    generationTasks.sort(() => Math.random() - 0.5);
+    if (generationTasks.length === 0) {
+        console.log("[CRON] All daily questions have already been generated. Job complete.");
+        return;
+    }
 
-    let successfullyGeneratedThisRun = 0;
+    console.log(`[CRON] Found ${generationTasks.length} tasks to complete.`);
 
+    // *** Main Sequential Loop ***
     for (const task of generationTasks) {
         const { sport, level, count } = task;
-        if (count <= 0) continue;
+        let apiKey = null;
 
-        const prompt = generateQuizPrompt(sport, level, count); // This is where it was being called
-        let currentApiKey = null;
-        let successfulGenerationAttempt = false;
-        let retryCount = 0;
-        const MAX_API_RETRY_ATTEMPTS = 5;
+        // 1. Wait for an available API key
+        while (!(apiKey = getAvailableApiKey())) {
+            console.log(`[CRON] No API key available. Waiting ${WAIT_FOR_KEY_RETRY_MS / 1000}s...`);
+            await delay(WAIT_FOR_KEY_RETRY_MS);
+        }
+        console.log(`[CRON] Acquired key ${apiKey.substring(0, 5)}... for ${sport} (${level})`);
 
-        while (!successfulGenerationAttempt && retryCount < MAX_API_RETRY_ATTEMPTS) {
-            currentApiKey = getAvailableApiKey();
+        // 2. Prepare and make the API call
+        try {
+            // Fetch recent questions (last 50) for uniqueness check by AI
+            const recentQuestions = await Question.find({ sport, difficulty: level })
+                .sort({ generatedAt: -1 }) // Most recent first
+                .limit(50)
+                .select('question_text');
+            const prompt = generateQuizPrompt(sport, level, count, recentQuestions.map(q => q.question_text));
 
-            if (!currentApiKey) {
-                console.warn(`[CRON] No API key available for ${sport} (${level}). Waiting ${WAIT_FOR_API_KEY_MS / 1000}s before checking again... (Attempt ${retryCount + 1}/${MAX_API_RETRY_ATTEMPTS})`);
-                await delay(WAIT_FOR_API_KEY_MS);
-                retryCount++;
+            // Use gemini-1.5-flash model
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                })
+            });
+
+            // Record the call *immediately* after it's made, before checking response.ok
+            recordApiCall(apiKey);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error(`[CRON] Gemini API Error (Status ${response.status}) for ${sport} (${level}):`, JSON.stringify(errorData));
+                if (response.status === 429) {
+                    disableKeyTemporarily(apiKey);
+                }
+                // Continue to the next task if this one failed due to API error
                 continue;
             }
 
-            try {
-                const payload = {
-                    contents: [{ role: "user", parts: [{ text: prompt }] }],
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                    }
-                };
+            // 3. Process and save the result
+            const result = await response.json();
+            const jsonString = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${currentApiKey}`;
-
-                console.log(`[CRON] Attempting to generate ${count} ${level} questions for ${sport} with key ${currentApiKey.substring(0, 5)}... (Attempt ${retryCount + 1})`);
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error(`[CRON] Gemini API error for key ${currentApiKey.substring(0, 5)}... (${sport}, ${level}): Status ${response.status}, Error:`, errorData);
-
-                    if (response.status === 429) {
-                        disableKeyTemporarily(currentApiKey);
-                        console.log(`[CRON] Key ${currentApiKey.substring(0, 5)}... hit rate limit (429). Switching keys and waiting.`);
-                        await delay(WAIT_FOR_API_KEY_MS);
-                    } else if (response.status >= 500) {
-                        console.error(`[CRON] Server error (${response.status}) from Gemini API. Retrying after delay...`);
-                        await delay(WAIT_FOR_API_KEY_MS * 2);
-                    } else if (response.status === 400 && errorData.error && errorData.error.message.includes("SAFETY")) {
-                        console.warn(`[CRON] Content safety filter triggered for ${sport} (${level}). Skipping this prompt.`);
-                        successfulGenerationAttempt = true;
-                        break;
-                    }
-                     else {
-                        console.error(`[CRON] Non-retryable API error (${response.status}) for ${sport} (${level}). Prompt or request might be an issue.`);
-                    }
-                    retryCount++;
-                    continue;
-                }
-
-                const result = await response.json();
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-
-                    const jsonString = result.candidates[0].content.parts[0].text;
-                    let parsedQuestions;
-                    try {
-                        parsedQuestions = JSON.parse(jsonString);
-                        if (!Array.isArray(parsedQuestions) || parsedQuestions.length === 0) {
-                            throw new Error("Parsed JSON is not an array or is empty.");
-                        }
-                    } catch (parseError) {
-                        console.error(`[CRON] Failed to parse JSON response for ${sport} (${level}) with key ${currentApiKey.substring(0, 5)}...:`, parseError.message);
-                        console.error("Malformed JSON received (snippet):", jsonString.substring(0, 500) + "...");
-                        retryCount++;
-                        await delay(WAIT_FOR_API_KEY_MS / 2);
-                        continue;
-                    }
-
-                    const estimatedInputTokens = estimateTokens(prompt);
-                    const estimatedOutputTokens = estimateTokens(jsonString);
-                    updateKeyUsage(currentApiKey, estimatedInputTokens + estimatedOutputTokens);
-
-                    let questionsSavedForThisTask = 0;
-                    for (const q of parsedQuestions) {
-                        if (q.question_text && Array.isArray(q.options) && q.options.length === 4 && q.correct_answer && q.explanation) {
-                            const newQuestion = new Question({
-                                sport: sport,
-                                question_text: q.question_text,
-                                options: q.options,
-                                correct_answer: q.correct_answer,
-                                explanation: q.explanation,
-                                difficulty: level,
-                                generatedAt: new Date()
-                            });
-                            await newQuestion.save();
-                            successfullyGeneratedThisRun++;
-                            questionsSavedForThisTask++;
-                        } else {
-                            console.warn(`[CRON] Invalid question format received for ${sport} (${level}). Skipping question:`, JSON.stringify(q).substring(0, 100) + "...");
-                        }
-                    }
-                    console.log(`[CRON] Successfully generated and stored ${questionsSavedForThisTask} ${level} questions for ${sport}. Total this run: ${successfullyGeneratedThisRun}`);
-                    successfulGenerationAttempt = true;
-                    await delay(MIN_OVERALL_API_CALL_DELAY_MS);
-
-                } else {
-                    console.error("[CRON] Unexpected Gemini API response structure (no candidates/content parts):", result);
-                    retryCount++;
-                    await delay(WAIT_FOR_API_KEY_MS / 2);
-                    continue;
-                }
-            } catch (apiError) {
-                console.error(`[CRON] Unhandled error during Gemini API call for ${sport} (${level}) with key ${currentApiKey.substring(0, 5)}...:`, apiError);
-                retryCount++;
-                await delay(WAIT_FOR_API_KEY_MS);
+            if (!jsonString) {
+                console.error('[CRON] Invalid API response structure or empty content:', result);
+                continue;
             }
-        }
-        if (!successfulGenerationAttempt) {
-            console.error(`[CRON] Failed to generate questions for ${sport} (${level}) after ${MAX_API_RETRY_ATTEMPTS} attempts. Moving to next task.`);
+
+            let parsedQuestions;
+            try {
+                parsedQuestions = JSON.parse(jsonString);
+                if (!Array.isArray(parsedQuestions)) {
+                    console.error('[CRON] API response was not a JSON array:', jsonString);
+                    continue;
+                }
+            } catch (jsonError) {
+                console.error('[CRON] JSON parsing error from API response:', jsonError.message, 'Raw response:', jsonString);
+                continue;
+            }
+
+            // Calculate archiveAfter date (2 days from now)
+            const archiveDate = new Date();
+            archiveDate.setDate(archiveDate.getDate() + 2);
+
+            const questionDocs = parsedQuestions.map(q => ({
+                sport,
+                difficulty: level,
+                question_text: q.question_text,
+                options: q.options,
+                correct_answer: q.correct_answer,
+                explanation: q.explanation,
+                generatedAt: new Date(),
+                archiveAfter: archiveDate // Set the deletion date
+            }));
+
+            if (questionDocs.length > 0) {
+                await Question.insertMany(questionDocs, { ordered: false }); // ordered: false to continue if some fail (e.g., duplicate question_text if unique was true)
+                console.log(`[CRON] ✅ Successfully generated and stored ${questionDocs.length} ${level} questions for ${sport}.`);
+            } else {
+                console.warn(`[CRON] ⚠️ API returned 0 questions for ${sport} (${level}) despite prompt for ${count}.`);
+            }
+
+        } catch (error) {
+            console.error(`[CRON] ❌ Failed to process task for ${sport} (${level}). Error:`, error.message);
+            // Catch network errors, other unexpected errors during fetch
+        } finally {
+            // 4. Polite delay before the next task
+            await delay(WAIT_BETWEEN_REQUESTS_MS);
         }
     }
-    console.log(`[CRON] Daily question generation finished at ${new Date().toISOString()}. Total new questions generated/stored this run: ${successfullyGeneratedThisRun}`);
-    console.log(`[CRON] Final question count for today (including existing): ${await Question.countDocuments({ generatedAt: { $gte: startOfDay } })}`);
+    console.log(`[CRON] Daily question generation run finished at ${new Date().toISOString()}.`);
 }
 
-async function deleteOldQuestions() {
-    console.log(`[CRON] Starting old question deletion check at ${new Date().toISOString()}`);
-    console.log(`[CRON] Old question deletion process finished. (Handled by MongoDB TTL index on 'generatedAt' field, set to expire after 7 days).`);
-}
-
-
+// --- API Endpoints ---
 const generateQuizForUser = async (req, res) => {
     const { sports } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.id; // Assuming user auth middleware populates req.user.id
 
-    const QUIZ_PATTERN = { easy: 3, medium: 3, hard: 4 };
+    const QUIZ_PATTERN = { easy: 3, medium: 4, hard: 3 }; // Example: 10 questions total for user quiz
 
-    if (!sports || sports.length === 0 || !userId) {
-        return res.status(400).json({ message: "Please select at least one sport and provide a userId." });
+    if (!sports || !Array.isArray(sports) || sports.length === 0 || !userId) {
+        return res.status(400).json({ message: "User ID and an array of sports are required." });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) { // Validate userId if it's an ObjectId
+        return res.status(400).json({ message: "Invalid User ID format." });
     }
 
     try {
         let userHistory = await UserQuizHistory.findOne({ userId });
         if (!userHistory) {
             userHistory = new UserQuizHistory({ userId, seenQuestionIds: [] });
-            await userHistory.save();
-            console.log(`New user history created for userId: ${userId}`);
         }
 
-        const seenIds = userHistory.seenQuestionIds.map(id => id.toString());
+        const seenIds = userHistory.seenQuestionIds;
         let selectedQuestions = [];
-        let newSeenQuestionIds = [...seenIds];
 
         for (const sport of sports) {
             for (const [level, count] of Object.entries(QUIZ_PATTERN)) {
-                let questionsForLevel = [];
-                let availableQuestions = [];
-
-                availableQuestions = await Question.find({
+                // Find questions that the user has NOT seen yet AND are not due for archiving
+                const questions = await Question.find({
                     sport: sport,
                     difficulty: level,
-                    _id: { $nin: newSeenQuestionIds }
-                }).limit(count * 5);
+                    _id: { $nin: seenIds },
+                    archiveAfter: { $gt: new Date() } // Question must not be older than 2 days
+                }).limit(count);
 
-                if (availableQuestions.length < count) {
-                    console.warn(`Not enough unseen ${level} questions for ${sport}. Fetching from all available, potentially repeating questions.`);
-                    availableQuestions = await Question.find({
-                        sport: sport,
-                        difficulty: level
-                    }).limit(count * 5);
-                }
-
-                availableQuestions.sort(() => Math.random() - 0.5);
-                questionsForLevel = availableQuestions.slice(0, count);
-
-                selectedQuestions = selectedQuestions.concat(questionsForLevel);
-                questionsForLevel.forEach(q => {
-                    if (!newSeenQuestionIds.includes(q._id.toString())) {
-                        newSeenQuestionIds.push(q._id.toString());
-                    }
-                });
+                selectedQuestions = selectedQuestions.concat(questions);
             }
         }
 
-        selectedQuestions.sort(() => Math.random() - 0.5);
-
-        userHistory.seenQuestionIds = newSeenQuestionIds;
-        userHistory.lastActivity = new Date();
-        await userHistory.save();
-        console.log(`User ${userId} quiz history updated. Seen questions: ${userHistory.seenQuestionIds.length}`);
-
-        if (selectedQuestions.length === 0) {
-            return res.status(404).json({ message: "Could not find enough questions for the selected sports and difficulty levels. Please try again later or select different sports." });
+        // Fallback: If not enough *unseen* questions, try to find any available (not yet archived)
+        if (selectedQuestions.length < (Object.values(QUIZ_PATTERN).reduce((a, b) => a + b, 0) * sports.length)) {
+             console.log("[Quiz] Not enough unseen questions. Attempting to fetch any unarchived questions as fallback.");
+             for (const sport of sports) {
+                 for (const [level, count] of Object.entries(QUIZ_PATTERN)) {
+                      // How many more do we need for this sport/level?
+                      const currentCount = selectedQuestions.filter(q => q.sport === sport && q.difficulty === level).length;
+                      if (currentCount < count) {
+                         const fallbackNeeded = count - currentCount;
+                         const fallbackQuestions = await Question.find({
+                             sport: sport,
+                             difficulty: level,
+                             _id: { $nin: selectedQuestions.map(q => q._id) }, // Avoid duplicates with already selected
+                             archiveAfter: { $gt: new Date() }
+                         }).limit(fallbackNeeded);
+                         selectedQuestions = selectedQuestions.concat(fallbackQuestions);
+                      }
+                 }
+             }
         }
 
-        res.status(200).json({ quizId: userHistory._id, questions: selectedQuestions });
+        if (selectedQuestions.length === 0) {
+            return res.status(404).json({ message: "Could not find any available questions for the selected sports and difficulties." });
+        }
+
+        // Add the new questions to the user's seen list and save
+        const newSeenIds = selectedQuestions.map(q => q._id);
+        userHistory.seenQuestionIds.push(...newSeenIds);
+        await userHistory.save();
+
+        res.status(200).json({ questions: selectedQuestions });
 
     } catch (error) {
-        console.error('Error retrieving quiz for user:', error);
-        res.status(500).json({ message: "An unexpected error occurred while retrieving your quiz.", error: error.message });
+        console.error('Error generating quiz for user:', error);
+        res.status(500).json({ message: "Server error while generating quiz." });
     }
 };
 
 const getUserQuizHistory = async (req, res) => {
     try {
         const { userId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: "Invalid User ID format." });
+        }
+
         const userHistory = await UserQuizHistory.findOne({ userId }).populate('seenQuestionIds');
+
         if (!userHistory) {
             return res.status(404).json({ message: "No quiz history found for this user." });
         }
+
         res.status(200).json(userHistory);
     } catch (error) {
         console.error('Error fetching user quiz history:', error);
-        res.status(500).json({ message: "Error fetching user quiz history.", error: error.message });
+        res.status(500).json({ message: "Server error while fetching history." });
     }
 };
 
-// --- THIS IS THE CRUCIAL PART ---
-// Export all functions that need to be accessible from other modules
 module.exports = {
-    generateQuizPrompt, // <-- MAKE SURE TO EXPORT IT HERE
     generateAndStoreDailyQuestions,
-    deleteOldQuestions,
     generateQuizForUser,
     getUserQuizHistory
 };

@@ -1,218 +1,165 @@
 // utils/geminiApiManager.js
-const dotenv = require('dotenv');
-dotenv.config();
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
-const GEMINI_API_KEYS = process.env.GEMINI_API_KEYS ? process.env.GEMINI_API_KEYS.split(',') : [];
-const GEMINI_PRO_DAILY_TOKEN_LIMIT_PER_KEY = 250000; // 250 RPD * 1000 tokens/request (adjust based on average prompt/response size)
-const MAX_RPM_CALLS_PER_KEY = 10; // Gemini 1.5 Pro RPM limit
-const RPM_WINDOW_MS = 60 * 1000; // 1 minute in milliseconds
-const TEMP_DISABLE_TIME_MS = 5 * 60 * 1000; // 5 minutes for temporary disable after a 429 error
+// --- Configuration ---
+const API_KEYS = process.env.GEMINI_API_KEYS ? process.env.GEMINI_API_KEYS.split(',') : [];
+const RPM_LIMIT_PER_KEY = 10; // Requests Per Minute (Google's default free tier is often 60 RPM per project)
+const RPD_LIMIT_PER_KEY = 250; // Requests Per Day (Google's default free tier is often 1500 RPD per project)
+const SAFETY_THRESHOLD_PERCENT = 0.8; // Use only 80% of quota to be safe
+
+const MAX_RPM_CALLS = Math.floor(RPM_LIMIT_PER_KEY * SAFETY_THRESHOLD_PERCENT);
+const MAX_RPD_CALLS = Math.floor(RPD_LIMIT_PER_KEY * SAFETY_THRESHOLD_PERCENT);
+
+const RPM_WINDOW_MS = 60 * 1000; // 1 minute
+const TEMP_DISABLE_TIME_MS = 5 * 60 * 1000; // 5 minutes disable on 429 error
 
 const API_KEY_STATE_FILE = path.join(__dirname, 'apiKeyState.json');
 
-// Structure for apiKeyState:
-// {
-//   "YOUR_API_KEY_1": {
-//     tokensUsedToday: 0,
-//     lastUsedDate: "YYYY-MM-DD",
-//     lastMinuteCalls: [], // Array of timestamps for calls in the last minute
-//     disabledUntil: 0     // Timestamp until which the key is temporarily disabled
-//   },
-//   ...
-// }
-let apiKeyState = {};
+// --- State Management ---
+let apiKeyState = {}; // In-memory state of API key usage
 
-// --- Persistence Functions ---
+function initializeKeyState(key) {
+    return {
+        requestsToday: 0,
+        lastResetDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+        lastMinuteCalls: [], // Array of timestamps for calls in the last minute
+        disabledUntil: 0, // Timestamp when key can be re-enabled
+        lastGenerationRun: 0, // Timestamp of the last time this key was successfully used for question generation
+    };
+}
+
 function loadApiKeyState() {
     try {
+        let loadedState = {};
         if (fs.existsSync(API_KEY_STATE_FILE)) {
             const data = fs.readFileSync(API_KEY_STATE_FILE, 'utf8');
-            const loadedState = JSON.parse(data);
-            // Merge loaded state with current keys, ensuring new keys are initialized
-            // and old keys are cleaned up if dotenv changes.
-            const newState = {};
-            GEMINI_API_KEYS.forEach(key => {
-                newState[key] = {
-                    tokensUsedToday: loadedState[key]?.tokensUsedToday || 0,
-                    lastUsedDate: loadedState[key]?.lastUsedDate || new Date().toISOString().split('T')[0],
-                    lastMinuteCalls: loadedState[key]?.lastMinuteCalls || [],
-                    disabledUntil: loadedState[key]?.disabledUntil || 0
-                };
-            });
-            apiKeyState = newState;
-            console.log("[API Manager] API key state loaded from file.");
-        } else {
-            // Initialize if file doesn't exist
-            GEMINI_API_KEYS.forEach(key => {
-                apiKeyState[key] = {
-                    tokensUsedToday: 0,
-                    lastUsedDate: new Date().toISOString().split('T')[0],
-                    lastMinuteCalls: [],
-                    disabledUntil: 0
-                };
-            });
-            saveApiKeyState(); // Save initial state
-            console.log("[API Manager] API key state initialized for the first time.");
+            loadedState = JSON.parse(data);
         }
+
+        const today = new Date().toISOString().split('T')[0];
+        apiKeyState = {}; // Reset in-memory state, will be populated from loadedState or initialized
+
+        API_KEYS.forEach(key => {
+            // Check if state exists for key and it's for today's date
+            if (loadedState[key] && loadedState[key].lastResetDate === today) {
+                apiKeyState[key] = loadedState[key];
+            } else {
+                // Initialize new keys or reset daily counters for old keys if it's a new day
+                apiKeyState[key] = initializeKeyState(key);
+            }
+        });
+
+        console.log('[API Manager] API key state loaded and synced.');
+        saveApiKeyState(); // Save to persist any initializations/resets
     } catch (error) {
-        console.error("[API Manager] Error loading API key state:", error);
-        // Fallback to initializing in memory if loading fails
-        GEMINI_API_KEYS.forEach(key => {
-            apiKeyState[key] = {
-                tokensUsedToday: 0,
-                lastUsedDate: new Date().toISOString().split('T')[0],
-                lastMinuteCalls: [],
-                disabledUntil: 0
-            };
+        console.error('[API Manager] Error loading API key state (starting fresh):', error.message);
+        // Fallback: if file corrupted or error, initialize all keys from scratch
+        API_KEYS.forEach(key => {
+            apiKeyState[key] = initializeKeyState(key);
         });
     }
 }
 
 function saveApiKeyState() {
     try {
-        fs.writeFileSync(API_KEY_STATE_FILE, JSON.stringify(apiKeyState, null, 2), 'utf8');
-        // console.log("[API Manager] API key state saved to file.");
+        fs.writeFileSync(API_KEY_STATE_FILE, JSON.stringify(apiKeyState, null, 2));
     } catch (error) {
-        console.error("[API Manager] Error saving API key state:", error);
+        console.error('[API Manager] Error saving API key state:', error.message);
     }
 }
 
-// Load state immediately when the module is required
-loadApiKeyState();
+// --- Core Logic ---
 
-// --- Core API Key Management Functions ---
-
-/**
- * Estimates tokens from a string. This is a very rough estimate.
- * @param {string} text
- * @returns {number}
- */
-function estimateTokens(text) {
-    if (!text) return 0;
-    // A common heuristic for English is 4 characters per token.
-    // This is a simplified approach. For true accuracy, one would use
-    // Google's tokenization library or their `countTokens` API.
-    return Math.ceil(text.length / 4);
-}
-
-/**
- * Gets an available API key based on usage and rate limits.
- * It prioritizes keys that are not disabled, haven't hit daily limits,
- * and haven't hit RPM limits, choosing the least recently used one.
- * @returns {string | null} An available API key string or null if none are available.
- */
 function getAvailableApiKey() {
     const now = Date.now();
     const today = new Date().toISOString().split('T')[0];
-    let bestKey = null;
-    let leastRecentUsageTime = Infinity;
 
-    for (const key of GEMINI_API_KEYS) {
-        const data = apiKeyState[key];
-
-        // Ensure daily usage is reset if the date has changed
-        if (data.lastUsedDate !== today) {
-            data.tokensUsedToday = 0;
-            data.lastUsedDate = today;
-            data.lastMinuteCalls = []; // Clear RPM history for new day
-            data.disabledUntil = 0; // Re-enable for new day
-            console.log(`[API Manager] Key ${key.substring(0, 5)}... usage reset for new day.`);
-            saveApiKeyState(); // Persist the reset immediately
+    // Prune old timestamps from lastMinuteCalls and reset daily counters if it's a new day
+    for (const key in apiKeyState) {
+        const state = apiKeyState[key];
+        if (state.lastResetDate !== today) {
+            state.requestsToday = 0;
+            state.lastResetDate = today;
+            // Also reset lastMinuteCalls and disabledUntil for a fresh start on a new day
+            state.lastMinuteCalls = [];
+            state.disabledUntil = 0;
         }
-
-        // 1. Check if the key is temporarily disabled
-        if (data.disabledUntil > now) {
-            continue; // Skip disabled keys
-        }
-
-        // 2. Check daily token limit
-        // Using a threshold helps proactively switch keys, but the hard limit is GEMINI_PRO_DAILY_TOKEN_LIMIT_PER_KEY
-        if (data.tokensUsedToday >= GEMINI_PRO_DAILY_TOKEN_LIMIT_PER_KEY) {
-            continue; // Skip keys over daily limit
-        }
-
-        // 3. Check per-minute rate limit (RPM)
-        data.lastMinuteCalls = data.lastMinuteCalls.filter(timestamp => now - timestamp < RPM_WINDOW_MS);
-        if (data.lastMinuteCalls.length >= MAX_RPM_CALLS_PER_KEY) {
-            continue; // Skip keys over RPM limit
-        }
-
-        // If the key passes all checks, consider it
-        // Prioritize the key that was used least recently
-        // The last element of lastMinuteCalls represents the most recent usage
-        const currentKeyLastUsage = data.lastMinuteCalls.length > 0 ? data.lastMinuteCalls[data.lastMinuteCalls.length - 1] : 0; // 0 for never used in current minute window
-
-        if (currentKeyLastUsage < leastRecentUsageTime) {
-            bestKey = key;
-            leastRecentUsageTime = currentKeyLastUsage;
-        }
+        state.lastMinuteCalls = state.lastMinuteCalls.filter(ts => now - ts < RPM_WINDOW_MS);
     }
 
-    if (bestKey) {
-        // Mark the chosen key as used now for RPM tracking
-        apiKeyState[bestKey].lastMinuteCalls.push(now);
-        saveApiKeyState(); // Persist the usage immediately
-        return bestKey;
+    // Filter and sort available keys
+    const availableKeys = API_KEYS.map(key => ({ key, state: apiKeyState[key] }))
+        .filter(({ state }) =>
+            state.disabledUntil <= now && // Key is not temporarily disabled
+            state.requestsToday < MAX_RPD_CALLS && // Daily quota not exceeded
+            state.lastMinuteCalls.length < MAX_RPM_CALLS // Minute quota not exceeded
+        )
+        .sort((a, b) => a.state.lastMinuteCalls.length - b.state.lastMinuteCalls.length); // Prefer keys with fewer recent calls
+
+    if (availableKeys.length > 0) {
+        return availableKeys[0].key;
     }
 
-    console.warn('[API Manager] No API key currently available. All are either disabled, daily-limited, or RPM-limited.');
-    return null;
+    return null; // No key is currently available
 }
 
-/**
- * Updates the usage for a specific API key. Call this after a successful API request.
- * @param {string} apiKey - The API key string.
- * @param {number} tokens - The number of tokens estimated to be used for the *response*.
- */
-function updateKeyUsage(apiKey, tokens) {
-    if (apiKeyState[apiKey]) {
-        apiKeyState[apiKey].tokensUsedToday += tokens;
-        console.log(`[API Manager] Key ${apiKey.substring(0, 5)}... usage: ${apiKeyState[apiKey].tokensUsedToday}/${GEMINI_PRO_DAILY_TOKEN_LIMIT_PER_KEY} tokens today.`);
-        saveApiKeyState(); // Persist the updated usage
-    } else {
-        console.warn(`[API Manager] Attempted to update usage for unknown key: ${apiKey.substring(0, 5)}...`);
+function recordApiCall(apiKey) {
+    if (!apiKeyState[apiKey]) {
+        // If key not in state (e.g., new key added but state not reloaded), initialize it
+        apiKeyState[apiKey] = initializeKeyState(apiKey);
     }
+
+    const now = Date.now();
+    apiKeyState[apiKey].requestsToday++;
+    apiKeyState[apiKey].lastMinuteCalls.push(now);
+    apiKeyState[apiKey].lastGenerationRun = now; // Update the last time this key was used for content generation
+
+    console.log(`[API Manager] Call recorded for key ${apiKey.substring(0, 5)}... RPM: ${apiKeyState[apiKey].lastMinuteCalls.length}/${MAX_RPM_CALLS}, RPD: ${apiKeyState[apiKey].requestsToday}/${MAX_RPD_CALLS}`);
+    saveApiKeyState();
 }
 
-/**
- * Disables an API key temporarily, typically after a 429 error.
- * @param {string} apiKey - The API key string.
- */
 function disableKeyTemporarily(apiKey) {
-    const keyData = apiKeyState[apiKey];
-    if (keyData) {
-        keyData.disabledUntil = Date.now() + TEMP_DISABLE_TIME_MS;
-        console.warn(`[API Manager] Key ${apiKey.substring(0, 5)}... temporarily disabled until ${new Date(keyData.disabledUntil).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' })}.`);
-        saveApiKeyState(); // Persist the disabled state
-    }
+    if (!apiKeyState[apiKey]) return;
+
+    const disabledUntil = Date.now() + TEMP_DISABLE_TIME_MS;
+    apiKeyState[apiKey].disabledUntil = disabledUntil;
+    console.warn(`[API Manager] Key ${apiKey.substring(0, 5)}... temporarily disabled until ${new Date(disabledUntil).toLocaleTimeString()} IST.`); // Adjusted for IST
+    saveApiKeyState();
 }
 
-/**
- * Resets daily usage for all keys. This should be called by a daily cron job.
- * Note: The `getAvailableApiKey` function also handles daily resets if it detects a date change.
- * This explicit `resetDailyKeyUsage` function is for cleaner cron job scheduling.
- */
 function resetDailyKeyUsage() {
+    console.log(`[API Manager] Performing explicit daily API key usage reset at ${new Date().toLocaleTimeString()} IST.`);
     const today = new Date().toISOString().split('T')[0];
-    console.log(`[API Manager] Explicit daily API key usage reset initiated at ${new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' })}.`);
-    GEMINI_API_KEYS.forEach(key => {
-        apiKeyState[key].tokensUsedToday = 0;
-        apiKeyState[key].lastUsedDate = today;
-        apiKeyState[key].lastMinuteCalls = []; // Clear RPM history
-        apiKeyState[key].disabledUntil = 0; // Re-enable all keys
+    API_KEYS.forEach(key => {
+        apiKeyState[key] = initializeKeyState(key); // Re-initialize each key
+        apiKeyState[key].lastResetDate = today; // Ensure it's marked for today
     });
-    saveApiKeyState(); // Persist the reset
+    saveApiKeyState();
+    console.log('[API Manager] All key usages have been reset for the new day.');
 }
+
+// Function to get the latest generation timestamp across all keys
+function getLastGenerationTimestamp() {
+    let latestTimestamp = 0;
+    for (const key in apiKeyState) {
+        if (apiKeyState[key].lastGenerationRun > latestTimestamp) {
+            latestTimestamp = apiKeyState[key].lastGenerationRun;
+        }
+    }
+    return latestTimestamp;
+}
+
+// Initial load of API key state when module is loaded
+loadApiKeyState();
 
 module.exports = {
     getAvailableApiKey,
-    updateKeyUsage,
+    recordApiCall,
     disableKeyTemporarily,
-    resetDailyKeyUsage, // Export this for the cron job
-    estimateTokens,
-    GEMINI_API_KEYS, // Still useful for knowing total key count
-    GEMINI_PRO_DAILY_TOKEN_LIMIT_PER_KEY, // Renamed for clarity
-    MAX_RPM_CALLS_PER_KEY
+    resetDailyKeyUsage,
+    getLastGenerationTimestamp, // Export this for the cron job logic
+    // Export constants for visibility if needed elsewhere
+    RPM_WINDOW_MS
 };
