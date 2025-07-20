@@ -64,8 +64,4 @@ const initQuizCronJobs = () => {
     console.log("[CRON] Old question deletion is managed by the scheduled task using 'archiveAfter' field.");
 };
 
-<<<<<<< HEAD
-module.exports = initQuizCronJobs; // <--- You are exporting the function 'initQuizCronJobs'
-=======
 module.exports = initQuizCronJobs;
->>>>>>> 63247770e738bf33a63f483cd832a10460dc1c71
