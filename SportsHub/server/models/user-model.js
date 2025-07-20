@@ -7,6 +7,11 @@ const userSchema=mongoose.Schema({
         trim: true
     },
 
+    isAdmin: { 
+        type: Boolean,
+        default: false
+    },
+
     email: {
         type: String,
         required: true,
