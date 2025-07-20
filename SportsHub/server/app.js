@@ -8,18 +8,13 @@
   const config = require("config");
   const session = require('express-session');
   require("dotenv").config();
-  const { GoogleGenerativeAI } = require("@google/generative-ai");
-
 
   // Routes
   // const adminsRouter=require("./routes/adminsRouter");
-  const challengeRouter = require('./routes/challengeRouter');
   const usersRouter = require("./routes/usersRouter");
-  // const matchRouter = require("./routes/matchRouter");
   // const indexRouter=require("./routes/index");
   const clubsRouter = require("./routes/clubsRouter");
   const quizRoutes = require('./routes/quizRoutes');
-  const aiGuruChatRouter=require("./routes/aiGuruChatRouter");
 
   // Cron Jobs
   const initQuizCronJobs = require('./cron/quizCronJobs');
@@ -49,11 +44,8 @@
   // app.use("/",indexRouter);
   app.use("/api/ai-guru-chat", aiGuruChatRouter);
   app.use('/api/quiz', quizRoutes);
-  // app.use("/match", matchRouter);
   app.use("/users", usersRouter);
   app.use("/clubs", clubsRouter);
-  app.use('/challenges',challengeRouter);
-
 
   db.once('open', () => {
     console.log('MongoDB connection is open');

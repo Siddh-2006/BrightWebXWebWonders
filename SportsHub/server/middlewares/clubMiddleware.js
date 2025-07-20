@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user-model');
-const Club=require("../models/club-model");
 
 const protect = async (req, res, next) => {
    const token =
@@ -24,28 +23,4 @@ const adminOnly = (req, res, next) => {
   next();
 };
 
-
-const verifyClubOwnership = async (req, res, next) => {
-  try {
-    const userId = req.user._id; // Comes from isLoggedIn middleware
-
-    // Find club created by the logged-in user
-    const club = await Club.findOne({ createdBy: userId });
-
-    if (!club) {
-      return res.status(404).json({ message: "No club found for this user." });
-    }
-
-    // Attach the club to request for further use
-    req.club = club;
-
-    // ✅ All good, proceed
-    next();
-  } catch (err) {
-    console.error("Ownership verification failed", err);
-    res.status(500).json({ message: "Server error while verifying ownership" });
-  }
-};
-
-
-module.exports = { protect, adminOnly ,verifyClubOwnership};
+module.exports = { protect, adminOnly };
