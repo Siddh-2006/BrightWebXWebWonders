@@ -1,46 +1,71 @@
-// D:\WebWonders\SPORTS_HUB\SportsHub\server\cron\quizCronJobs.js
+// cron/quizCronJobs.js
 const cron = require('node-cron');
-const { generateAndStoreDailyQuestions, deleteOldQuestions } = require('../controllers/quizController');
-const { resetDailyKeyUsage } = require('../utils/geminiApiManager');
 const mongoose = require('mongoose');
+const { generateAndStoreDailyQuestions } = require('../controllers/quizController');
+const { resetDailyKeyUsage, getLastGenerationTimestamp } = require('../utils/geminiApiManager');
+const Question = require('../models/Question'); // Need to import Question model for deletion
 
-const initQuizCronJobs = () => { // <--- This function is defined, but not directly assigned to module.exports
+const MIN_TIME_BETWEEN_GENERATION_RUNS_MS = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
 
+const initQuizCronJobs = () => {
+    console.log('Initializing Quiz Cron Jobs...');
+
+    // Logic to run `generateAndStoreDailyQuestions` on startup IF it hasn't run recently
+    const checkAndRunOnStartup = async () => {
+        const now = Date.now();
+        const lastGenTimestamp = getLastGenerationTimestamp(); // Get the latest recorded generation timestamp
+
+        if (now - lastGenTimestamp >= MIN_TIME_BETWEEN_GENERATION_RUNS_MS) {
+            console.log(`[CRON] Last generation run was > ${MIN_TIME_BETWEEN_GENERATION_RUNS_MS / (60 * 60 * 1000)} hours ago. Initiating immediate startup generation.`);
+            await generateAndStoreDailyQuestions();
+        } else {
+            console.log(`[CRON] Daily question generation run detected within last ${MIN_TIME_BETWEEN_GENERATION_RUNS_MS / (60 * 60 * 1000)} hours. Skipping immediate startup generation.`);
+        }
+    };
+
+    // Ensure MongoDB is connected before running startup tasks
     if (mongoose.connection.readyState === 1) {
-        console.log("MongoDB connected. Running initial cron tasks for today.");
-        resetDailyKeyUsage();
-        generateAndStoreDailyQuestions();
-        deleteOldQuestions();
+        console.log("MongoDB is connected. Checking for startup generation.");
+        checkAndRunOnStartup();
     } else {
-        console.log("MongoDB not connected. Skipping initial cron run.");
+        mongoose.connection.once('open', () => {
+            console.log("MongoDB connection opened. Checking for startup generation.");
+            checkAndRunOnStartup();
+        });
     }
 
-    cron.schedule('5 0 * * *', () => {
+    // Schedule 1: Reset API key usage at midnight (00:00).
+    // This ensures daily quotas are refreshed for the new day.
+    cron.schedule('0 0 * * *', () => {
+        console.log("[CRON] It's midnight! Resetting daily API key usage stats.");
+        resetDailyKeyUsage();
+    }, { timezone: "Asia/Kolkata" }); // Set your desired timezone
+
+    // Schedule 2: Generate questions at 12:15 AM, after the API key reset.
+    // This is the primary daily generation trigger.
+    cron.schedule('15 0 * * *', () => {
+        console.log("[CRON] Starting scheduled daily quiz generation (00:15 AM).");
+        generateAndStoreDailyQuestions();
+    }, { timezone: "Asia/Kolkata" });
+
+    // Schedule 3: Delete questions older than 2 days at 01:00 AM.
+    // This job cleans up questions whose `archiveAfter` date has passed.
+    cron.schedule('0 1 * * *', async () => {
+        console.log("[CRON] Starting scheduled 2-day old question deletion (01:00 AM).");
         try {
-            console.log("Cron: Starting 00:05 AM daily API key usage reset.");
-            resetDailyKeyUsage();
-        } catch (err) {
-            console.error("Cron 00:05 AM reset error:", err);
+            // Delete documents where `archiveAfter` is less than or equal to the current time
+            const result = await Question.deleteMany({ archiveAfter: { $lte: new Date() } });
+            console.log(`[CRON] Deleted ${result.deletedCount} questions older than 2 days.`);
+        } catch (error) {
+            console.error("[CRON] Error deleting old questions:", error);
         }
     }, { timezone: "Asia/Kolkata" });
 
-    cron.schedule('0 2 * * *', () => {
-        try {
-            console.log("Cron: Starting 2 AM quiz generation");
-            generateAndStoreDailyQuestions();
-        } catch (err) {
-            console.error("Cron 2 AM generation error:", err);
-        }
-    }, { timezone: "Asia/Kolkata" });
-
-    cron.schedule('0 3 * * *', () => {
-        try {
-            console.log("Cron: Starting 3 AM old question deletion.");
-            deleteOldQuestions();
-        } catch (err) {
-            console.error("Cron 3 AM deletion error:", err);
-        }
-    }, { timezone: "Asia/Kolkata" });
+    console.log("[CRON] Old question deletion is managed by the scheduled task using 'archiveAfter' field.");
 };
 
+<<<<<<< HEAD
 module.exports = initQuizCronJobs; // <--- You are exporting the function 'initQuizCronJobs'
+=======
+module.exports = initQuizCronJobs;
+>>>>>>> 63247770e738bf33a63f483cd832a10460dc1c71
