@@ -28,8 +28,8 @@ export default function LiveScores() {
   }, [sport]);
 
   return (
-    <div className="p-4 max-w-xl mx-auto bg-black text-white rounded-xl shadow-lg">
-      <h2 className="text-2xl font-bold mb-4 text-center text-orange-500">Live Scores</h2>
+    <div className="p-4 max-w-xl h-screen mx-auto bg-black text-white rounded-xl shadow-lg">
+      <h2 className="text-2xl mt-12 font-bold mb-4 text-center text-orange-500">Live Scores</h2>
 
       {/* Sport Selector */}
       <div className="mb-4 flex justify-center">

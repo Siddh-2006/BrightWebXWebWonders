@@ -1,7 +1,10 @@
 import React,{useState} from 'react'
 import { Search, MapPin, Star, Users, Calendar, Trophy, Heart, MessageCircle, Share2, Plus } from 'lucide-react';
+import NavbarProfiles from './UI/NavbarProfiles';
 function PlayerCard({player}) {
   return (
+    <div>
+    <NavbarProfiles/>
       <div className="bg-gradient-to-br from-purple-900/50 via-gray-900 to-blue-900/50 rounded-xl overflow-hidden shadow-xl border border-purple-500/30 hover:border-orange-400 hover:shadow-orange-500/20 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm">
       <div className="p-6 relative">
         {/* Subtle glow effect */}
@@ -68,7 +71,7 @@ function PlayerCard({player}) {
         </div>
       </div>
     </div>
-   
+  </div>
   )
 }
 

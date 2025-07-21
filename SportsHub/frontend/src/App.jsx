@@ -2,9 +2,8 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import Layout from './components/UI/Layout'
-import Home from "./components/Home"
-import PlayerCard from './components/Home'
-import ClubCard from './components/ClubCard'
+import Profiles from './components/profiles'
+import Home from './components/Home'
 import { RouterProvider,createBrowserRouter ,Routes,createRoutesFromElements, Route} from 'react-router'
 import LiveScores from './components/LiveScores'
 function App() {
@@ -14,6 +13,7 @@ function App() {
       <>
       <Route path="/" element={<Layout/>}>
         <Route path="" element={<Home/>}/>
+        <Route path="Profiles/" element={<Profiles/>}/>
         <Route path="LiveScores/" element={<LiveScores/>}/>
       </Route>
       </>
