@@ -2,11 +2,25 @@ const userModel=require("../models/user-model");
 const bcrypt= require("bcrypt");
 const jwt=require("jsonwebtoken");
 const {generateToken}=require("../utils/generateToken");
+const uploadToCloudinary = require("../utils/uploadToCloudinary");
+const DEFAULT_PROFILE_PHOTO = "https://res.cloudinary.com/dddwnvp4w/image/upload/v1753179130/default-profile_e7m8je.png";
+
 
 module.exports.registerUser=async (req,res)=>{
     try{
         let { email,password,fullname,institutionType}=req.body;
-        let profilePhoto = req.file ? req.file.buffer : null;
+        // Step 1: Upload photo if provided
+        let profilePhotoUrl = DEFAULT_PROFILE_PHOTO;
+
+        // Upload photo if provided
+        if (req.file && req.file.buffer) {
+        try {
+            profilePhotoUrl = await uploadToCloudinary(req.file.buffer, "profile_photos");
+        } catch (uploadErr) {
+            console.error("Cloudinary upload failed:", uploadErr.message);
+            return res.status(500).send("Photo upload failed");
+        }
+        }
 
         let user=await userModel.findOne({email:email});
         if(user) return res.status(401).send("You already have an account, please login..");
@@ -20,10 +34,14 @@ module.exports.registerUser=async (req,res)=>{
                         password:hash,
                         fullname,
                         institutionType,
-                        profilePhoto,
+                        profilePhoto:profilePhotoUrl,
                     });
                     let token=generateToken(user);
-                    res.cookie("token",token);
+                    res.cookie("token", token, {
+                        httpOnly: true,
+                        sameSite: "Lax",
+                        secure: process.env.NODE_ENV === "production",
+                     });
                     res.send("User created successfully");
                 }
             });
@@ -44,7 +62,11 @@ module.exports.loginUser=async (req,res)=>{
     bcrypt.compare(password,user.password,(err,result)=>{
         if(result){
             let token=generateToken(user);
-            res.cookie("token",token);
+            res.cookie("token", token, {
+                httpOnly: true,
+                sameSite: "Lax",
+                secure: process.env.NODE_ENV === "production",
+            });
             res.send("You can login..");
         }else{
             res.send("Email or password incorrect..");

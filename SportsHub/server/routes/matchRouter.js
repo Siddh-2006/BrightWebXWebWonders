@@ -1,16 +1,7 @@
-// const express = require("express");
-// const router = express.Router();
-// const {
-//   sendChallenge,
-//   getReceivedChallenges,
-//   acceptChallenge,
-//   rejectChallenge,
-// } = require("../controllers/matchController");
-// const { verifyToken } = require("../middleware/authMiddleware");
+const express = require('express');
+const router = express.Router();
+const matchController = require('../controllers/matchController');
 
-// router.post("/challenge", verifyToken, sendChallenge);
-// router.get("/challenges/received", verifyToken, getReceivedChallenges);
-// router.post("/challenge/:id/accept", verifyToken, acceptChallenge);
-// router.post("/challenge/:id/reject", verifyToken, rejectChallenge);
+router.get('/live', matchController.getLiveMatches);
 
-// module.exports = router;
+module.exports=router;

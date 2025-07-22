@@ -6,9 +6,23 @@
   const flash = require("connect-flash");
   const cors = require('cors');
   const config = require("config");
+  const http = require('http');
+  const socketIO = require('socket.io');
   const session = require('express-session');
   require("dotenv").config();
   const { GoogleGenerativeAI } = require("@google/generative-ai");
+  const runMatchStatusCron = require('./cron/matchStatusUpdater');
+   
+
+  const server = http.createServer(app);
+  const io = socketIO(server, {
+  cors: {
+    origin: "http://localhost:5173", // frontend URL
+    methods: ["GET", "POST"]
+  }
+  });
+  runMatchStatusCron();
+  
 
 
   // Routes
@@ -33,10 +47,13 @@
 
   // View Engine & Middleware
   app.set('view engine', 'ejs');
-  app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
+  app.use(cors({
+    origin: "http://localhost:5173", // Frontend URL
+    credentials: true
+  }));
   app.use(session({
       resave: false,
       saveUninitialized: false,
@@ -44,6 +61,7 @@
   }));
   app.use(flash());
   app.use(express.static(path.join(__dirname, 'public')));
+
 
   // Routes
   // app.use("/",indexRouter);
@@ -54,6 +72,19 @@
   app.use("/clubs", clubsRouter);
   app.use('/challenges',challengeRouter);
 
+  io.on('connection', (socket) => {
+    console.log('New client connected');
+
+    // Listen for score updates from admin/moderator
+    socket.on('scoreUpdate', (data) => {
+      // Broadcast to all clients
+      io.emit('liveScore', data);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Client disconnected');
+    });
+  });
 
   db.once('open', () => {
     console.log('MongoDB connection is open');
