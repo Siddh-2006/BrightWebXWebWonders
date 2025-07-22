@@ -25,8 +25,8 @@ const userSchema=mongoose.Schema({
     },
 
     profilePhoto: {
-        type: Buffer,
-        contentType:String
+        type: String,
+        default:"https://res.cloudinary.com/dddwnvp4w/image/upload/v1753179130/default-profile_e7m8je.png",
     },
 
     institutionType: {

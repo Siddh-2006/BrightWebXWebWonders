@@ -78,3 +78,12 @@ module.exports.logoutUser=async(req,res)=>{
     res.cookie("token","");
     // res.redirect("/");
 }
+
+module.exports.getUserProfile = async (req, res) => {
+    try {
+        const user = await userModel.findById(req.user._id).select("-password");
+        res.json(user);
+    } catch (err) {
+        res.status(500).send("Server error");
+    }
+};
