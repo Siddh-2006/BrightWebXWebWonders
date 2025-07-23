@@ -6,12 +6,8 @@ import {
   Share2, Plus, ChevronRight, Zap, Brain, BarChart3
 } from 'lucide-react';
 
-interface ProfileProps {
-  isDarkMode: boolean;
-}
-
-const Profile: React.FC<ProfileProps> = ({ isDarkMode }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'stats' | 'achievements' | 'settings'>('overview');
+const Profile = ({ isDarkMode }) => {
+  const [activeTab, setActiveTab] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
 
   const playerData = {
@@ -190,7 +186,7 @@ const Profile: React.FC<ProfileProps> = ({ isDarkMode }) => {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id)}
               className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
                 activeTab === tab.id
                   ? isDarkMode

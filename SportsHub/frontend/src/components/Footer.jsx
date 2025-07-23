@@ -2,11 +2,7 @@ import React from 'react';
 import { Link } from 'react-router';
 import { Trophy, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Linkedin } from 'lucide-react';
 
-interface FooterProps {
-  isDarkMode: boolean;
-}
-
-const Footer: React.FC<FooterProps> = ({ isDarkMode }) => {
+const Footer = ({ isDarkMode }) => {
   const footerSections = [
     {
       title: 'Platform',

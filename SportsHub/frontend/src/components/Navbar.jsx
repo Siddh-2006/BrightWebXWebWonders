@@ -6,14 +6,7 @@ import {
   Menu, X, Sun, Moon, Zap, Target, Award
 } from 'lucide-react';
 
-interface NavbarProps {
-  userType: 'player' | 'faculty' | 'guest';
-  isLoggedIn: boolean;
-  isDarkMode: boolean;
-  toggleTheme: () => void;
-}
-
-const Navbar: React.FC<NavbarProps> = ({ userType, isLoggedIn, isDarkMode, toggleTheme }) => {
+const Navbar = ({ userType, isLoggedIn, isDarkMode, toggleTheme }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -34,7 +27,7 @@ const Navbar: React.FC<NavbarProps> = ({ userType, isLoggedIn, isDarkMode, toggl
     ])
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path) => location.pathname === path;
 
   return (
     <motion.nav 

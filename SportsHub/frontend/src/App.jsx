@@ -13,7 +13,7 @@ import Login from './pages/Login';
 import Footer from './components/Footer';
 
 function App() {
-  const [userType, setUserType] = useState<'player' | 'faculty' | 'guest'>('player');
+  const [userType, setUserType] = useState('player');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
 

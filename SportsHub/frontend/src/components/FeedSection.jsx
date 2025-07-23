@@ -1,25 +1,9 @@
 import React, { useState } from 'react';
 import { Heart, MessageCircle, Share2, Play, Eye, Calendar, MapPin, Trophy } from 'lucide-react';
 
-interface Post {
-  id: number;
-  type: 'vlog' | 'post' | 'highlight';
-  title: string;
-  author: string;
-  club: string;
-  sport: string;
-  content: string;
-  image: string;
-  likes: number;
-  comments: number;
-  views: number;
-  timestamp: string;
-  isLiked: boolean;
-}
-
-const FeedSection: React.FC = () => {
-  const [activeFilter, setActiveFilter] = useState<'all' | 'vlogs' | 'posts' | 'highlights'>('all');
-  const [posts, setPosts] = useState<Post[]>([
+const FeedSection = () => {
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [posts, setPosts] = useState([
     {
       id: 1,
       type: 'highlight',
@@ -82,7 +66,7 @@ const FeedSection: React.FC = () => {
     }
   ]);
 
-  const handleLike = (postId: number) => {
+  const handleLike = (postId) => {
     setPosts(posts.map(post => 
       post.id === postId 
         ? { ...post, isLiked: !post.isLiked, likes: post.isLiked ? post.likes - 1 : post.likes + 1 }
@@ -92,9 +76,9 @@ const FeedSection: React.FC = () => {
 
   const filteredPosts = activeFilter === 'all' 
     ? posts 
-    : posts.filter(post => post.type === activeFilter.slice(0, -1) as 'vlog' | 'post' | 'highlight');
+    : posts.filter(post => post.type === activeFilter.slice(0, -1));
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type) => {
     switch (type) {
       case 'vlog': return <Play className="w-4 h-4" />;
       case 'highlight': return <Trophy className="w-4 h-4" />;
@@ -102,7 +86,7 @@ const FeedSection: React.FC = () => {
     }
   };
 
-  const getTypeColor = (type: string) => {
+  const getTypeColor = (type) => {
     switch (type) {
       case 'vlog': return 'bg-red-500';
       case 'highlight': return 'bg-yellow-500';
@@ -129,7 +113,7 @@ const FeedSection: React.FC = () => {
             {['all', 'vlogs', 'posts', 'highlights'].map((filter) => (
               <button
                 key={filter}
-                onClick={() => setActiveFilter(filter as any)}
+                onClick={() => setActiveFilter(filter)}
                 className={`px-6 py-3 rounded-lg font-medium capitalize transition-all duration-200 ${
                   activeFilter === filter
                     ? 'bg-blue-500 text-white shadow-md'

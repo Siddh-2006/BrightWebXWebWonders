@@ -5,11 +5,7 @@ import {
   Filter, Play, Eye, Star, Calendar, Target, Zap
 } from 'lucide-react';
 
-interface LiveProps {
-  isDarkMode: boolean;
-}
-
-const Live: React.FC<LiveProps> = ({ isDarkMode }) => {
+const Live = ({ isDarkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSport, setSelectedSport] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -122,7 +118,7 @@ const Live: React.FC<LiveProps> = ({ isDarkMode }) => {
     return matchesSport && matchesStatus && matchesSearch;
   });
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status) => {
     switch (status) {
       case 'live': return isDarkMode ? 'bg-red-500' : 'bg-red-500';
       case 'upcoming': return isDarkMode ? 'bg-blue-500' : 'bg-blue-500';
@@ -131,7 +127,7 @@ const Live: React.FC<LiveProps> = ({ isDarkMode }) => {
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status) => {
     switch (status) {
       case 'live': return 'LIVE';
       case 'upcoming': return 'UPCOMING';

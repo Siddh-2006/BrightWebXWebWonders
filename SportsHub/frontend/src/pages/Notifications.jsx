@@ -5,13 +5,8 @@ import {
   CheckCircle, X, Filter, Search, Star, Award, Target
 } from 'lucide-react';
 
-interface NotificationsProps {
-  isDarkMode: boolean;
-  userType: 'player' | 'faculty' | 'guest';
-}
-
-const Notifications: React.FC<NotificationsProps> = ({ isDarkMode, userType }) => {
-  const [activeFilter, setActiveFilter] = useState<'all' | 'clubs' | 'jobs' | 'challenges' | 'achievements'>('all');
+const Notifications = ({ isDarkMode, userType }) => {
+  const [activeFilter, setActiveFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   const playerNotifications = [
@@ -198,7 +193,7 @@ const Notifications: React.FC<NotificationsProps> = ({ isDarkMode, userType }) =
                 {filters.map((filter) => (
                   <button
                     key={filter.id}
-                    onClick={() => setActiveFilter(filter.id as any)}
+                    onClick={() => setActiveFilter(filter.id)}
                     className={`flex items-center space-x-2 px-6 py-4 rounded-2xl font-medium whitespace-nowrap transition-all duration-300 ${
                       activeFilter === filter.id
                         ? isDarkMode

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Users, Target, Zap, Award, Heart, Globe, Rocket, Shield } from 'lucide-react';
 
-const AboutSection: React.FC = () => {
+const AboutSection = () => {
   const teamMembers = [
     {
       name: 'Alex Rodriguez',

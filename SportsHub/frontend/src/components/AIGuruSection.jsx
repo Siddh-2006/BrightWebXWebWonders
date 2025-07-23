@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Brain, Camera, Target, TrendingUp, MessageCircle, Upload, Zap, Award, BarChart3 } from 'lucide-react';
 
-const AIGuruSection: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'chat' | 'posture' | 'progress'>('chat');
+const AIGuruSection = () => {
+  const [activeTab, setActiveTab] = useState('chat');
   const [chatMessage, setChatMessage] = useState('');
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [uploadedImage, setUploadedImage] = useState(null);
 
   const features = [
     {
@@ -34,12 +34,12 @@ const AIGuruSection: React.FC = () => {
     "Best nutrition plan for endurance sports?"
   ];
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleImageUpload = (event) => {
+    const file = event.target.files && event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setUploadedImage(e.target?.result as string);
+        setUploadedImage(e.target.result);
       };
       reader.readAsDataURL(file);
     }
@@ -96,7 +96,7 @@ const AIGuruSection: React.FC = () => {
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 flex items-center justify-center space-x-2 py-6 px-4 transition-all duration-300 ${
                   activeTab === tab.id
                     ? 'bg-blue-500/20 text-blue-300 border-b-2 border-blue-400'

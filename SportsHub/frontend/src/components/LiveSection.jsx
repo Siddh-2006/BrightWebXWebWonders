@@ -1,24 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Radio, Users, MessageCircle, BarChart3, Clock, MapPin, Trophy, Search } from 'lucide-react';
 
-interface LiveMatch {
-  id: number;
-  sport: string;
-  homeTeam: string;
-  awayTeam: string;
-  homeScore: number;
-  awayScore: number;
-  status: 'live' | 'upcoming' | 'finished';
-  time: string;
-  venue: string;
-  viewers: number;
-  league: string;
-}
-
-const LiveSection: React.FC = () => {
+const LiveSection = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSport, setSelectedSport] = useState('all');
-  const [matches, setMatches] = useState<LiveMatch[]>([
+  const [matches, setMatches] = useState([
     {
       id: 1,
       sport: 'Football',
@@ -98,7 +84,7 @@ const LiveSection: React.FC = () => {
     return matchesSport && matchesSearch;
   });
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status) => {
     switch (status) {
       case 'live': return 'bg-red-500';
       case 'upcoming': return 'bg-blue-500';
@@ -107,7 +93,7 @@ const LiveSection: React.FC = () => {
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status) => {
     switch (status) {
       case 'live': return 'LIVE';
       case 'upcoming': return 'UPCOMING';

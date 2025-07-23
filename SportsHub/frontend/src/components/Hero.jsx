@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { Play, ArrowRight, Zap, Target, Users } from 'lucide-react';
 
-const Hero: React.FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+const Hero = () => {
+  const canvasRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -14,14 +14,7 @@ const Hero: React.FC = () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const particles: Array<{
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      size: number;
-      opacity: number;
-    }> = [];
+    const particles = [];
 
     // Create particles
     for (let i = 0; i < 50; i++) {

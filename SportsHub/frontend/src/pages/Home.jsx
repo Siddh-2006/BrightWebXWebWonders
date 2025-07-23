@@ -6,12 +6,8 @@ import {
   Share2, Eye, Trophy, Star, TrendingUp, Award, Calendar
 } from 'lucide-react';
 
-interface HomeProps {
-  isDarkMode: boolean;
-}
-
-const Home: React.FC<HomeProps> = ({ isDarkMode }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+const Home = ({ isDarkMode }) => {
+  const canvasRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -23,14 +19,7 @@ const Home: React.FC<HomeProps> = ({ isDarkMode }) => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const particles: Array<{
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      size: number;
-      opacity: number;
-    }> = [];
+    const particles = [];
 
     for (let i = 0; i < 80; i++) {
       particles.push({

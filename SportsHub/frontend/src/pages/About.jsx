@@ -6,11 +6,7 @@ import {
   Linkedin, Twitter, Github
 } from 'lucide-react';
 
-interface AboutProps {
-  isDarkMode: boolean;
-}
-
-const About: React.FC<AboutProps> = ({ isDarkMode }) => {
+const About = ({ isDarkMode }) => {
   const teamMembers = [
     {
       name: 'Alex Rodriguez',

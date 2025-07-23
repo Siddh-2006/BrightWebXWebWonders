@@ -5,14 +5,10 @@ import {
   BarChart3, Send, Mic, Image, Video, Star, CheckCircle, ArrowRight
 } from 'lucide-react';
 
-interface AIGuruProps {
-  isDarkMode: boolean;
-}
-
-const AIGuru: React.FC<AIGuruProps> = ({ isDarkMode }) => {
-  const [activeTab, setActiveTab] = useState<'chat' | 'posture' | 'progress'>('chat');
+const AIGuru = ({ isDarkMode }) => {
+  const [activeTab, setActiveTab] = useState('chat');
   const [chatMessage, setChatMessage] = useState('');
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [uploadedImage, setUploadedImage] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const features = [
@@ -58,12 +54,12 @@ const AIGuru: React.FC<AIGuruProps> = ({ isDarkMode }) => {
     }
   ];
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleImageUpload = (event) => {
+    const file = event.target.files && event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setUploadedImage(e.target?.result as string);
+        setUploadedImage(e.target.result);
       };
       reader.readAsDataURL(file);
     }
@@ -185,7 +181,7 @@ const AIGuru: React.FC<AIGuruProps> = ({ isDarkMode }) => {
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id)}
                   className={`flex-1 flex items-center justify-center space-x-2 py-6 px-4 transition-all duration-300 ${
                     activeTab === tab.id
                       ? isDarkMode

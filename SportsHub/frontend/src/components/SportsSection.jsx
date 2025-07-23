@@ -1,19 +1,8 @@
 import React from 'react';
 import { ArrowRight, Users, Calendar, Trophy, Target } from 'lucide-react';
 
-interface Sport {
-  id: number;
-  name: string;
-  description: string;
-  image: string;
-  participants: number;
-  upcomingEvents: number;
-  topClubs: string[];
-  icon: string;
-}
-
-const SportsSection: React.FC = () => {
-  const sports: Sport[] = [
+const SportsSection = () => {
+  const sports = [
     {
       id: 1,
       name: 'Football',

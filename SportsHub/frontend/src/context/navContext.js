@@ -1,4 +1,5 @@
-import React,{useState} from "react";
+import { createContext } from 'react';
 
-const navContext=React.createContext();
-export default navContext
+const navContext = createContext(undefined);
+
+export default navContext;

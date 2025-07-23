@@ -6,11 +6,7 @@ import {
   MapPin, Star, Clock, Play, Eye, Heart
 } from 'lucide-react';
 
-interface SportsProps {
-  isDarkMode: boolean;
-}
-
-const Sports: React.FC<SportsProps> = ({ isDarkMode }) => {
+const Sports = ({ isDarkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 

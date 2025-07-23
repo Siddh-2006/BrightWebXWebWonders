@@ -6,12 +6,7 @@ import {
   ArrowRight, Shield, Zap, Target, Users
 } from 'lucide-react';
 
-interface LoginProps {
-  isDarkMode: boolean;
-  setIsLoggedIn: (value: boolean) => void;
-}
-
-const Login: React.FC<LoginProps> = ({ isDarkMode, setIsLoggedIn }) => {
+const Login = ({ isDarkMode, setIsLoggedIn }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -23,14 +18,14 @@ const Login: React.FC<LoginProps> = ({ isDarkMode, setIsLoggedIn }) => {
     userType: 'player'
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     // Handle login/signup logic here
     setIsLoggedIn(true);
