@@ -12,7 +12,17 @@
   require("dotenv").config();
   const { GoogleGenerativeAI } = require("@google/generative-ai");
   const runMatchStatusCron = require('./cron/matchStatusUpdater');
-   
+  const connectDB = require('./config/db');
+  const commonMiddleware = require('./middlewares/commonMiddleware');
+  const analysisRoutes = require('./routes/analysisRoutes');
+  const customErrorHandler = require('./utils/customErrorHandler');
+  const aiGuruChatRouter=require("./routes/aiGuruChatRouter");
+  const quizRoutes = require('./routes/quizRoutes');
+  const challengeRouter = require('./routes/challengeRouter');
+  const usersRouter = require("./routes/usersRouter");
+  const clubsRouter = require("./routes/clubsRouter");
+  const initQuizCronJobs = require('./cron/quizCronJobs');
+
 
   const server = http.createServer(app);
   const io = socketIO(server, {
@@ -22,49 +32,21 @@
   }
   });
   // runMatchStatusCron();
-  
+  // Connect to MongoDB
+  connectDB();  
 
+  // Apply common middleware
+  commonMiddleware(app);
 
   // Routes
   // const adminsRouter=require("./routes/adminsRouter");
-  const challengeRouter = require('./routes/challengeRouter');
-  const usersRouter = require("./routes/usersRouter");
   // const matchRouter = require("./routes/matchRouter");
   // const indexRouter=require("./routes/index");
-  const clubsRouter = require("./routes/clubsRouter");
-  const quizRoutes = require('./routes/quizRoutes');
-  const aiGuruChatRouter=require("./routes/aiGuruChatRouter");
-
-  // Cron Jobs
-  const initQuizCronJobs = require('./cron/quizCronJobs');
-
-  const geminiApiKey = process.env.GEMINI_API_KEY_AI_GURU; // Your specific key name
-  if (!geminiApiKey) {
-    console.error("Error: GEMINI_API_KEY_AI_GURU is not set in the .env file!");
-    process.exit(1);
-  }
-  const genAI = new GoogleGenerativeAI(geminiApiKey);
-
-  // View Engine & Middleware
-  app.set('view engine', 'ejs');
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-  app.use(cookieParser());
-  app.use(cors({
-    origin: "http://localhost:5173", // Frontend URL
-    credentials: true
-  }));
-  app.use(session({
-      resave: false,
-      saveUninitialized: false,
-      secret: process.env.SESSION_SECRET || 'your-super-secret-key',
-  }));
-  app.use(flash());
-  app.use(express.static(path.join(__dirname, 'public')));
-
 
   // Routes
   // app.use("/",indexRouter);
+  // Use the analysis routes under the /api base path
+  app.use('/api', analysisRoutes);
   app.use("/api/ai-guru-chat", aiGuruChatRouter);
   app.use('/api/quiz', quizRoutes);
   // app.use("/match", matchRouter);
@@ -88,16 +70,16 @@
     });
   });
 
-  db.once('open', () => {
-    console.log('MongoDB connection is open');
-    // initQuizCronJobs();
-    const PORT = config.get("PORT") || 3000;
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  });
+  // initQuizCronJobs();
 
-  db.on('error', (err) => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
-  });
+  // Error handling middleware (should be last middleware)
+  app.use(customErrorHandler);
+
+  // Start the server
+const PORT = config.get("PORT") || 3000; // Port set back to 3000
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+
+// Export app and server for testing if needed
+module.exports = { app, server };

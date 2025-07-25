@@ -1,13 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Brain, Camera, Target, TrendingUp, MessageCircle, Upload, Zap, Award,
-  BarChart3, Send, Image, Video, Star, CheckCircle, ArrowRight, Sun, Moon
+  BarChart3, Send, Image, Video, Star, CheckCircle, ArrowRight, Sun, Moon,
+  User, X, Loader2, AlertCircle
 } from 'lucide-react';
 import { getAIGuruResponse } from '../services/aiGuruService';
 import { renderMarkdown } from '../utils/markdownRenderer';
-// import { analyzePosture, fileToBase64, getMediaType, extractVideoFrame } from '../services/postureService';
-// import { testMediaPipeSupport, runQuickPoseTest } from '../utils/mediaPipeTest';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+
+import * as poseDetection from '@tensorflow-models/pose-detection';
+import * as tf from '@tensorflow/tfjs';
+import '@tensorflow/tfjs-backend-webgl'; 
 
 const AIGuru = ({ isDarkMode = true }) => {
   const [activeTab, setActiveTab] = useState('chat');
@@ -22,11 +26,29 @@ const AIGuru = ({ isDarkMode = true }) => {
     {
       type: 'ai',
       role: 'assistant',
-      text: "**🎯 Welcome to AI Guru!** 👋\n\nHey there! I'm your personal sports coach ready to help you excel! Whether you want to improve your technique, learn new strategies, or get training advice, I'm here to guide you every step of the way.\n\n**💪 What I can help you with:**\n• Training techniques and strategies\n• Performance improvement tips\n• Nutrition and fitness advice\n• Sport-specific coaching\n\n**🚀 Ready to get started?** What sport or skill would you like to work on today?",
-      message: "**🎯 Welcome to AI Guru!** 👋\n\nHey there! I'm your personal sports coach ready to help you excel! Whether you want to improve your technique, learn new strategies, or get training advice, I'm here to guide you every step of the way.\n\n**💪 What I can help you with:**\n• Training techniques and strategies\n• Performance improvement tips\n• Nutrition and fitness advice\n• Sport-specific coaching\n\n**🚀 Ready to get started?** What sport or skill would you like to work on today?",
+      text: "**🎯 Welcome to AI Guru!** 👋\n\nHey there! I'm your personal sports coach ready to help you excel! Whether you want to improve your technique, learn new strategies, or get training advice, I'm here to guide you every step of the way.\n\n**💪 What I can help you with:**\n• Training techniques and strategies\n• Performance improvement tips\n• Nutrition and fitness advice\n• Sport-specific coaching\n• Advanced posture analysis\n\n**🚀 Ready to get started?** What sport or skill would you like to work on today?",
+      message: "**🎯 Welcome to AI Guru!** 👋\n\nHey there! I'm your personal sports coach ready to help you excel! Whether you want to improve your technique, learn new strategies, or get training advice, I'm here to guide you every step of the way.\n\n**💪 What I can help you with:**\n• Training techniques and strategies\n• Performance improvement tips\n• Nutrition and fitness advice\n• Sport-specific coaching\n• Advanced posture analysis\n\n**🚀 Ready to get started?** What sport or skill would you like to work on today?",
       time: 'Just now'
     }
   ]);
+
+  // Posture Analysis State
+  const [userProfile, setUserProfile] = useState({
+    name: '',
+    age: '',
+    height: '',
+    weight: '',
+    sport: 'cricket',
+    goal: '',
+    roleModel: ''
+  });
+  const [videoFile, setVideoFile] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
+  const [customAlertMessage, setCustomAlertMessage] = useState(null);
+  const [poseDetector, setPoseDetector] = useState(null);
+  const [detectorLoading, setDetectorLoading] = useState(true);
+  const videoRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Mock user details - in a real app, this would come from user profile
   const userDetails = {
@@ -40,8 +62,58 @@ const AIGuru = ({ isDarkMode = true }) => {
     language: 'en-IN'
   };
 
+  // --- Initialize Pose Detector ---
+  useEffect(() => {
+    const loadDetector = async () => {
+      setDetectorLoading(true);
+      try {
+        // Set up TensorFlow.js backend
+        await tf.setBackend('webgl');
+        await tf.ready();
+
+        // Load the MoveNet model
+        const detectorConfig = { modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER };
+        const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, detectorConfig);
+        setPoseDetector(detector);
+        console.log('MediaPipe Pose Detector loaded successfully.');
+      } catch (error) {
+        console.error('Failed to load MediaPipe Pose Detector:', error);
+        showCustomAlert('Failed to load posture analysis model. Please try again or check your internet connection.');
+      } finally {
+        setDetectorLoading(false);
+      }
+    };
+    loadDetector();
+  }, []);
+
+  // Handle profile changes
+  const handleProfileChange = (e) => {
+    const { name, value } = e.target;
+    setUserProfile(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Custom Alert/Message Box Function
+  const showCustomAlert = (message) => {
+    setCustomAlertMessage(message);
+    setTimeout(() => setCustomAlertMessage(null), 5000);
+  };
+
+  // Format file size
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  // Validate form
+  const isFormValid = () => {
+    return userProfile.name && userProfile.age && userProfile.height &&
+      userProfile.weight && userProfile.sport && videoFile;
+  };
+
   // Debug function to test MediaPipe fixes - moved up before it's referenced
-  // COMMENTED OUT: Posture correction logic disabled - keeping only UI/UX
   const handleDebugTest = async () => {
     console.log('🧪 MediaPipe debug test disabled - posture correction logic commented out');
     
@@ -175,191 +247,184 @@ const AIGuru = ({ isDarkMode = true }) => {
     }
   ];
 
-  // COMMENTED OUT: Posture correction logic disabled - keeping only UI/UX
-  const handleMediaUpload = async (event) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      try {
-        setUploadedFile(file);
-        // Basic media type detection for UI display
-        const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
-        setMediaType(mediaType);
-        
-        // Create preview URL for UI display only
-        const previewUrl = URL.createObjectURL(file);
-        setUploadedPreview(previewUrl);
-        
-        console.log('📁 Media uploaded (UI only):', {
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          mediaType: mediaType
-        });
-      } catch (error) {
-        console.error('❌ File upload error:', error);
-      }
+  // Handle file upload for posture analysis
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const validTypes = ['video/mp4', 'video/webm', 'video/ogg', 'image/jpeg', 'image/png', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      showCustomAlert('Please select a valid video or image file.');
+      return;
     }
-    
-    // Original posture processing logic commented out:
-    /*
-    if (file) {
-      try {
-        setUploadedFile(file);
-        setMediaType(getMediaType(file));
-        
-        if (file.type.startsWith('video/')) {
-          // For videos, extract a frame for preview
-          const frameData = await extractVideoFrame(file, 1);
-          setUploadedPreview(frameData);
-        } else {
-          // For images, use the file directly
-          const base64Data = await fileToBase64(file);
-          setUploadedPreview(base64Data);
-        }
-        
-        console.log('📁 Media uploaded:', {
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          mediaType: getMediaType(file)
-        });
-      } catch (error) {
-        console.error('❌ File upload error:', error);
-      }
+
+    if (file.size > 100 * 1024 * 1024) { // 100MB
+      showCustomAlert('File size must be less than 100MB.');
+      return;
     }
-    */
+
+    setVideoFile(file);
+    setMediaType(file.type.startsWith('video/') ? 'video' : 'image');
+
+    const previewUrl = URL.createObjectURL(file);
+    setVideoPreview(previewUrl);
+
+    // Reset previous results
+    setAnalysisResults(null);
   };
 
-  // COMMENTED OUT: Posture correction logic disabled - keeping only UI/UX
-  const handlePostureAnalysis = async () => {
-    if (!uploadedFile) return;
+  // Clear uploaded file
+  const clearFile = () => {
+    setVideoFile(null);
+    setVideoPreview(null);
+    setMediaType(null);
+    setAnalysisResults(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    if (videoPreview) {
+      URL.revokeObjectURL(videoPreview);
+    }
+  };
+
+  // Legacy media upload handler for backward compatibility
+  const handleMediaUpload = async (event) => {
+    handleFileUpload(event);
+  };
+
+  // Analyze posture by detecting pose landmarks and sending to backend
+  const analyzePosture = async () => {
+    if (!isFormValid()) {
+      showCustomAlert('Please fill in all required profile fields and upload a file.');
+      return;
+    }
+    if (!poseDetector) {
+      showCustomAlert('Pose detection model is still loading or failed to load. Please wait or refresh.');
+      return;
+    }
 
     setIsAnalyzing(true);
     setAnalysisResults(null);
 
-    // Simulate analysis for UI demonstration
-    setTimeout(() => {
-      const demoMessage = `**🎯 Posture Analysis Demo**\n\n⚠️ **Feature Currently Disabled**\n\nThe AI posture analysis system is temporarily disabled. This is a UI/UX demonstration only.\n\n**Current Status:**\n• ✅ File upload working\n• ✅ UI components functional\n• ❌ Analysis logic disabled\n• ❌ MediaPipe integration disabled\n\n**Demo Analysis Results:**\nThis would normally show detailed posture analysis including metrics, recommendations, and safety notes for your uploaded ${mediaType}.`;
-      
-      // Add demo message to chat
-      setChatHistory(prev => [
-        ...prev,
-        {
-          type: 'ai',
-          role: 'assistant',
-          text: demoMessage,
-          message: demoMessage,
-          time: 'Just now'
-        }
-      ]);
-
-      // Set demo analysis results for UI display
-      setAnalysisResults({
-        overallScore: 7.5,
-        assessment: "Demo analysis - posture correction logic is currently disabled for UI/UX testing",
-        metrics: {
-          posturalAlignment: { score: 8, notes: "Demo metric - logic disabled" },
-          jointStability: { score: 7, notes: "Demo metric - logic disabled" },
-          movementEfficiency: { score: 7, notes: "Demo metric - logic disabled" },
-          sportSpecificForm: { score: 8, notes: "Demo metric - logic disabled" }
-        },
-        recommendations: [
-          "This is a demo recommendation - actual analysis is disabled",
-          "UI/UX components are working correctly",
-          "Posture correction logic needs to be re-enabled for real analysis"
-        ],
-        safetyNotes: "Demo safety note - actual analysis logic is currently disabled"
-      });
-
-      setIsAnalyzing(false);
-    }, 2000);
-
-    // Original posture analysis logic commented out:
-    /*
     try {
-      // Convert file to base64 for API
-      const base64Data = await fileToBase64(uploadedFile);
-      
-      // Prepare user profile data
-      const userProfile = {
-        name: userDetails.name,
-        age: userDetails.age,
-        sport: userDetails.sport,
-        experience: 'Intermediate', // Could be extracted from userDetails
-        goals: userDetails.details
-      };
+      let poses = [];
+      if (mediaType === 'video') {
+        const videoElement = videoRef.current;
+        if (!videoElement) {
+          throw new Error("Video element not found for pose detection.");
+        }
 
-      console.log('🎯 Starting posture analysis...');
-      
-      // Add progress message to chat
-      const progressMessage = `**🔄 Analyzing ${mediaType === 'video' ? 'Video' : 'Image'}...**\n\nI'm processing your ${mediaType} using AI pose detection. This may take a few moments...`;
+        await new Promise(resolve => {
+          if (videoElement.readyState >= 2) {
+            resolve();
+          } else {
+            videoElement.addEventListener('loadeddata', resolve, { once: true });
+          }
+        });
+
+        const middleTime = videoElement.duration / 2;
+        videoElement.currentTime = middleTime;
+
+        await new Promise(resolve => {
+          videoElement.addEventListener('seeked', resolve, { once: true });
+        });
+
+        try {
+          const detectedPoses = await poseDetector.estimatePoses(videoElement);
+          if (detectedPoses.length > 0) {
+            poses.push(detectedPoses[0]);
+          } else {
+            showCustomAlert('No human pose detected in the video. Please ensure the person is clearly visible.');
+            setIsAnalyzing(false);
+            return;
+          }
+        } catch (error) {
+          if (error.name === 'AbortError') {
+            console.warn('MediaPipe Pose Detection Warning: Video play/seek interrupted, but still attempting to process frame.', error);
+            showCustomAlert('Pose detection faced a minor issue (video playback interrupted). Please ensure video is stable.');
+            setIsAnalyzing(false);
+            return;
+          }
+          throw error;
+        }
+
+      } else { // mediaType === 'image'
+        const imageElement = videoRef.current;
+        if (!imageElement) {
+          throw new Error("Image element not found for pose detection.");
+        }
+        const detectedPoses = await poseDetector.estimatePoses(imageElement);
+        if (detectedPoses.length > 0) {
+          poses.push(detectedPoses[0]);
+        } else {
+          showCustomAlert('No human pose detected in the image. Please ensure the person is clearly visible.');
+          setIsAnalyzing(false);
+          return;
+        }
+      }
+
+      if (poses.length === 0) {
+        showCustomAlert('Could not detect a clear human pose for analysis. Please try a different media file.');
+        setIsAnalyzing(false);
+        return;
+      }
+
+      // Extract relevant landmark data
+      const landmarksToSend = poses[0].keypoints.map(kp => ({
+        name: kp.name,
+        x: kp.x,
+        y: kp.y,
+        z: kp.z,
+        score: kp.score
+      }));
+
+      console.log('MediaPipe Pose Landmarks (sent to backend):', landmarksToSend);
+
+      // Send landmark data and profile to backend
+      const response = await fetch('http://localhost:3000/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          profile: userProfile,
+          mediaType: mediaType,
+          landmarks: landmarksToSend
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Analysis failed on the server');
+      }
+
+      const analysis = await response.json();
+      setAnalysisResults(analysis);
+
+      // Add analysis to chat history with enhanced formatting
+      const analysisMessage = formatAnalysisForChat(analysis);
       setChatHistory(prev => [
         ...prev,
         {
           type: 'ai',
           role: 'assistant',
-          text: progressMessage,
-          message: progressMessage,
+          text: analysisMessage,
+          message: analysisMessage,
           time: 'Just now'
         }
       ]);
-      
-      // Call the posture analysis service
-      const result = await analyzePosture({
-        userProfile,
-        mediaFile: base64Data,
-        mediaType: mediaType
-      });
-
-      if (result.success) {
-        setAnalysisResults(result.analysis);
-        
-        // Add analysis to chat history
-        const analysisMessage = formatAnalysisForChat(result.analysis);
-        setChatHistory(prev => [
-          ...prev.slice(0, -1), // Remove progress message
-          {
-            type: 'ai',
-            role: 'assistant',
-            text: analysisMessage,
-            message: analysisMessage,
-            time: 'Just now'
-          }
-        ]);
-      } else {
-        throw new Error(result.error || 'Analysis failed');
-      }
 
     } catch (error) {
-      console.error('❌ Posture analysis error:', error);
-      
-      // Determine error type and provide appropriate message
-      let errorMessage = `**🚫 Analysis Error**\n\n`;
-      
-      if (error.message.includes('timeout')) {
-        errorMessage += `The analysis took too long to complete. This can happen with large files or slow connections.\n\n**💡 Try:**\n• Using a smaller file\n• Checking your internet connection\n• Trying again in a moment`;
-      } else if (error.message.includes('load failed')) {
-        errorMessage += `I couldn't load your ${mediaType}. Please make sure it's a valid file.\n\n**💡 Try:**\n• Using a different ${mediaType}\n• Checking the file format (JPG, PNG for images; MP4, WebM for videos)\n• Making sure the file isn't corrupted`;
-      } else if (error.message.includes('Network Error') || error.message.includes('fetch')) {
-        errorMessage += `I'm having trouble connecting to the analysis service.\n\n**💡 Try:**\n• Checking your internet connection\n• Refreshing the page\n• Trying again in a few moments`;
-      } else {
-        errorMessage += `Something went wrong during the analysis. ${error.message}\n\n**💡 Try:**\n• Uploading a different ${mediaType}\n• Refreshing the page\n• Trying again in a moment`;
-      }
-      
-      setChatHistory(prev => [
-        ...prev.slice(0, -1), // Remove progress message if it exists
-        {
-          type: 'ai',
-          role: 'assistant',
-          text: errorMessage,
-          message: errorMessage,
-          time: 'Just now'
-        }
-      ]);
+      console.error('Analysis error:', error);
+      showCustomAlert(`Analysis failed: ${error.message}`);
     } finally {
       setIsAnalyzing(false);
     }
-    */
+  };
+
+  // Legacy handler for backward compatibility
+  const handlePostureAnalysis = () => {
+    analyzePosture();
   };
 
   const formatAnalysisForChat = (analysis) => {
@@ -623,17 +688,27 @@ const AIGuru = ({ isDarkMode = true }) => {
                     <div className="space-y-4">
                       {chatHistory.map((chat, index) => (
                         <div key={index} className={`flex ${chat.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-4xl p-6 rounded-2xl ${
+                          <div className={`max-w-4xl p-6 rounded-2xl relative ${
                             chat.type === 'user'
                               ? isDarkMode
-                                ? 'bg-orange-500 text-white'
-                                : 'bg-orange-600 text-white'
+                                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg border-2 border-orange-400/50'
+                                : 'bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-lg border-2 border-orange-500/50'
                               : isDarkMode
                                 ? 'bg-white/10 text-white'
                                 : 'bg-black/10 text-gray-900'
                           }`}>
+                            {chat.type === 'user' && (
+                              <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded-full">
+                                ❓ QUESTION
+                              </div>
+                            )}
                             {chat.type === 'user' ? (
-                              <p className="whitespace-pre-line text-base leading-relaxed">{chat.message}</p>
+                              <div>
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <span className="text-yellow-200 font-semibold text-sm">🎯 Your Question:</span>
+                                </div>
+                                <p className="whitespace-pre-line text-base leading-relaxed font-medium">{chat.message}</p>
+                              </div>
                             ) : (
                               <div className="text-base leading-relaxed">
                                 {renderMarkdown(chat.message, isDarkMode)}
@@ -651,84 +726,99 @@ const AIGuru = ({ isDarkMode = true }) => {
                   </div>
 
                   {/* Example Questions */}
-                  <div className="grid md:grid-cols-2 gap-3 mb-6">
-                    {sampleQuestions.map((question, index) => (
-                      <button
-                        key={index}
-                        onClick={async () => {
-                          if (isLoading) return;
-                          
-                          setChatMessage(question);
-                          // Auto-send the question
-                          const userMessage = {
-                            type: 'user',
-                            role: 'user',
-                            text: question,
-                            message: question,
-                            time: 'Just now'
-                          };
-                          
-                          const newChat = [...chatHistory, userMessage];
-                          setChatHistory(newChat);
-                          setChatMessage('');
-                          setIsLoading(true);
-                          
-                          try {
-                            console.log('🎯 AIGuru (sample): Starting API call...');
+                  <div className="mb-6">
+                    <div className="text-center mb-4">
+                      <h4 className="text-lg font-semibold mb-2">Try These Sample Questions</h4>
+                      <p className={`text-sm ${isDarkMode ? 'text-yellow-400' : 'text-orange-600'} font-medium`}>
+                        💡 AI Guru will answer about the specific sport mentioned in your question, regardless of your profile sport
+                      </p>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      {sampleQuestions.map((question, index) => (
+                        <button
+                          key={index}
+                          onClick={async () => {
+                            if (isLoading) return;
                             
-                            // Call the actual Gemini API
-                            const response = await getAIGuruResponse({
-                              chat: newChat,
-                              userDetails: userDetails
-                            });
+                            setChatMessage(question);
+                            // Auto-send the question
+                            const userMessage = {
+                              type: 'user',
+                              role: 'user',
+                              text: question,
+                              message: question,
+                              time: 'Just now'
+                            };
                             
-                            console.log('🎯 AIGuru (sample): Got response:', response);
+                            const newChat = [...chatHistory, userMessage];
+                            setChatHistory(newChat);
+                            setChatMessage('');
+                            setIsLoading(true);
                             
-                            // Add AI response to chat
-                            setChatHistory([
-                              ...newChat,
-                              {
-                                type: 'ai',
-                                role: 'assistant',
-                                text: response,
-                                message: response,
-                                time: 'Just now'
-                              }
-                            ]);
-                          } catch (error) {
-                            const errorMessage = handleAIError(error, 'sample question');
-                            setChatHistory([
-                              ...newChat,
-                              {
-                                type: 'ai',
-                                role: 'assistant',
-                                text: errorMessage,
-                                message: errorMessage,
-                                time: 'Just now'
-                              }
-                            ]);
-                          } finally {
-                            setIsLoading(false);
-                          }
-                        }}
-                        className={`text-left p-4 rounded-xl border transition-all duration-300 group hover:scale-[1.02] ${
-                          isDarkMode
-                            ? 'bg-white/5 border-white/10 hover:bg-orange-500/10 hover:border-orange-500/30'
-                            : 'bg-black/5 border-black/10 hover:bg-orange-500/10 hover:border-orange-500/30'
-                        }`}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-2 h-2 rounded-full ${isDarkMode ? 'bg-orange-400' : 'bg-orange-500'}`}></div>
-                          <p className={`group-hover:text-current transition-colors text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                            {question}
-                          </p>
-                        </div>
-                      </button>
-                    ))}
+                            try {
+                              console.log('🎯 AIGuru (sample): Starting API call...');
+                              
+                              // Call the actual Gemini API
+                              const response = await getAIGuruResponse({
+                                chat: newChat,
+                                userDetails: userDetails
+                              });
+                              
+                              console.log('🎯 AIGuru (sample): Got response:', response);
+                              
+                              // Add AI response to chat
+                              setChatHistory([
+                                ...newChat,
+                                {
+                                  type: 'ai',
+                                  role: 'assistant',
+                                  text: response,
+                                  message: response,
+                                  time: 'Just now'
+                                }
+                              ]);
+                            } catch (error) {
+                              const errorMessage = handleAIError(error, 'sample question');
+                              setChatHistory([
+                                ...newChat,
+                                {
+                                  type: 'ai',
+                                  role: 'assistant',
+                                  text: errorMessage,
+                                  message: errorMessage,
+                                  time: 'Just now'
+                                }
+                              ]);
+                            } finally {
+                              setIsLoading(false);
+                            }
+                          }}
+                          className={`text-left p-4 rounded-xl border transition-all duration-300 group hover:scale-[1.02] relative ${
+                            isDarkMode
+                              ? 'bg-white/5 border-white/10 hover:bg-orange-500/10 hover:border-orange-500/30'
+                              : 'bg-black/5 border-black/10 hover:bg-orange-500/10 hover:border-orange-500/30'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-2 h-2 rounded-full ${isDarkMode ? 'bg-orange-400' : 'bg-orange-500'}`}></div>
+                            <p className={`group-hover:text-current transition-colors text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                              {question}
+                            </p>
+                          </div>
+                          {/* Sport indicator */}
+                          <div className="absolute top-2 right-2">
+                            {question.includes('football') && <span className="text-xs">⚽</span>}
+                            {question.includes('basketball') && <span className="text-xs">🏀</span>}
+                            {question.includes('tennis') && <span className="text-xs">🎾</span>}
+                            {question.includes('nutrition') && <span className="text-xs">🥗</span>}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Debug Test Button */}
-                  <div className="mb-6">
+                  {/* <div className="mb-6">
                     <div className="text-center mb-3">
                       <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                         Debug Tools
@@ -750,7 +840,7 @@ const AIGuru = ({ isDarkMode = true }) => {
                         </div>
                       </button>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Chat Input */}
                   <div className="flex space-x-4">
@@ -758,7 +848,7 @@ const AIGuru = ({ isDarkMode = true }) => {
                       type="text"
                       value={chatMessage}
                       onChange={(e) => setChatMessage(e.target.value)}
-                      placeholder="Ask about sports training, techniques, or strategies..."
+                      placeholder="Ask about ANY sport - basketball, tennis, football, etc. I'll answer based on your question!"
                       onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                       className={`flex-1 px-6 py-4 rounded-2xl font-medium transition-all duration-300 ${
                         isDarkMode
@@ -795,82 +885,386 @@ const AIGuru = ({ isDarkMode = true }) => {
                 </div>
               )}
 
+              {/* Chat History Section */}
+                  {chatHistory.filter(chat => chat.type === 'user').length > 0 && (
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      className={`rounded-2xl p-6 border ${
+                        isDarkMode ? 'bg-blue-900/20 border-blue-500/30' : 'bg-blue-100 border-blue-300'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3 mb-4">
+                        <MessageCircle className={`w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                        <h3 className="text-xl font-bold">Recent Questions Asked</h3>
+                      </div>
+                      <p className={`text-sm mb-4 ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+                        Here are the questions you've asked in the AI Chat. This context helps provide better posture analysis.
+                      </p>
+                      <div className="space-y-3">
+                        {chatHistory
+                          .filter(chat => chat.type === 'user')
+                          .slice(-5) // Show last 5 questions
+                          .map((chat, index) => (
+                            <div key={index} className={`p-3 rounded-lg ${
+                              isDarkMode ? 'bg-white/10' : 'bg-white/70'
+                            }`}>
+                              <div className="flex items-start space-x-3">
+                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0 ${
+                                  isDarkMode ? 'bg-blue-500 text-white' : 'bg-blue-600 text-white'
+                                }`}>
+                                  Q{index + 1}
+                                </div>
+                                <div className="flex-1">
+                                  <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                    {chat.message}
+                                  </p>
+                                  <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    {chat.time}
+                                  </span>
+                                </div>
+                                {/* Sport detection */}
+                                <div className="flex-shrink-0">
+                                  {chat.message.toLowerCase().includes('basketball') && <span className="text-lg">🏀</span>}
+                                  {chat.message.toLowerCase().includes('football') && <span className="text-lg">⚽</span>}
+                                  {chat.message.toLowerCase().includes('tennis') && <span className="text-lg">🎾</span>}
+                                  {chat.message.toLowerCase().includes('cricket') && <span className="text-lg">🏏</span>}
+                                  {chat.message.toLowerCase().includes('nutrition') && <span className="text-lg">🥗</span>}
+                                  {chat.message.toLowerCase().includes('swimming') && <span className="text-lg">🏊</span>}
+                                  {chat.message.toLowerCase().includes('golf') && <span className="text-lg">⛳</span>}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                      {chatHistory.filter(chat => chat.type === 'user').length > 5 && (
+                        <p className={`text-xs mt-3 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          Showing last 5 questions. Switch to AI Chat tab to see full history.
+                        </p>
+                      )}
+                    </motion.div>
+                  )}
+
               {activeTab === 'posture' && (
-                <div className="space-y-6 min-h-[600px]">
+                <div className="space-y-8 min-h-[600px]">
+                  {/* Custom Alert Message */}
+                  {customAlertMessage && (
+                    <motion.div
+                      initial={{ y: -50, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -50, opacity: 0 }}
+                      className="fixed top-4 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg z-50"
+                    >
+                      {customAlertMessage}
+                    </motion.div>
+                  )}
+
                   <div className="text-center mb-8">
                     <h3 className="text-3xl font-bold mb-4">AI Posture Analysis</h3>
                     <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                      Upload training videos/images for instant technique feedback
+                      Advanced technique analysis using MediaPipe Pose and AI-powered insights
                     </p>
                   </div>
 
-                  <div className="grid lg:grid-cols-2 gap-8">
-                    {/* Upload Area */}
-                    <div className="space-y-6">
-                      <div className={`border-2 border-dashed rounded-3xl p-12 text-center transition-colors ${
-                        isDarkMode
-                          ? 'border-white/30 hover:border-orange-400'
-                          : 'border-black/30 hover:border-orange-500'
-                      }`}>
-                        <input
-                          type="file"
-                          accept="image/*,video/*"
-                          onChange={handleMediaUpload}
-                          className="hidden"
-                          id="file-upload"
-                        />
-                        <label htmlFor="file-upload" className="cursor-pointer">
-                          <Upload className={`w-16 h-16 mx-auto mb-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                          <p className="text-xl font-medium mb-2">Upload Image or Video</p>
-                          <p className={isDarkMode ? 'text-gray-500' : 'text-gray-400'}>
-                            Drag & drop or click to select
-                          </p>
-                          <div className="flex items-center justify-center space-x-4 mt-4">
-                            <div className="flex items-center space-x-2">
-                              <Image className="w-5 h-5" />
-                              <span className="text-sm">Images</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Video className="w-5 h-5" />
-                              <span className="text-sm">Videos</span>
-                            </div>
-                          </div>
-                        </label>
-                      </div>
+                  {/* Profile Section */}
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className={`rounded-2xl p-6 border ${
+                      isDarkMode ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3 mb-6">
+                      <User className={`w-6 h-6 ${isDarkMode ? 'text-orange-400' : 'text-orange-500'}`} />
+                      <h3 className="text-2xl font-bold">Athlete Profile</h3>
+                    </div>
 
-                      {uploadedPreview && (
-                        <div className="rounded-2xl overflow-hidden">
-                          <div className="relative">
-                            <img src={uploadedPreview} alt="Uploaded media" className="w-full h-64 object-cover" />
-                            {mediaType === 'video' && (
-                              <div className="absolute top-4 left-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm flex items-center space-x-1">
-                                <Video className="w-4 h-4" />
-                                <span>Video Preview</span>
-                              </div>
-                            )}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Name *
+                          </label>
+                          <input
+                            type="text"
+                            name="name"
+                            value={userProfile.name}
+                            onChange={handleProfileChange}
+                            className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                              isDarkMode
+                                ? 'bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
+                                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-orange-500'
+                            } focus:outline-none`}
+                            placeholder="Your name"
+                            required
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                              Age *
+                            </label>
+                            <input
+                              type="number"
+                              name="age"
+                              value={userProfile.age}
+                              onChange={handleProfileChange}
+                              min="5"
+                              max="100"
+                              className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                                isDarkMode
+                                  ? 'bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
+                                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-orange-500'
+                              } focus:outline-none`}
+                              placeholder="25"
+                              required
+                            />
                           </div>
-                          <div className="p-4 bg-white/5 text-sm">
-                            <p><strong>File:</strong> {uploadedFile?.name}</p>
-                            <p><strong>Type:</strong> {mediaType === 'video' ? 'Video' : 'Image'}</p>
-                            <p><strong>Size:</strong> {(uploadedFile?.size / 1024 / 1024).toFixed(2)} MB</p>
+
+                          <div>
+                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                              Sport *
+                            </label>
+                            <select
+                              name="sport"
+                              value={userProfile.sport}
+                              onChange={handleProfileChange}
+                              className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                                isDarkMode
+                                  ? 'bg-white/10 border-white/20 text-white focus:border-orange-500'
+                                  : 'bg-white border-gray-300 text-gray-900 focus:border-orange-500'
+                              } focus:outline-none`}
+                              style={{
+                                color: isDarkMode ? 'white' : 'black'
+                              }}
+                              required
+                            >
+                              <option value="cricket" style={{ color: 'black' }}>Cricket</option>
+                              <option value="tennis" style={{ color: 'black' }}>Tennis</option>
+                              <option value="basketball" style={{ color: 'black' }}>Basketball</option>
+                              <option value="soccer" style={{ color: 'black' }}>Soccer</option>
+                              <option value="golf" style={{ color: 'black' }}>Golf</option>
+                              <option value="baseball" style={{ color: 'black' }}>Baseball</option>
+                              <option value="swimming" style={{ color: 'black' }}>Swimming</option>
+                              <option value="athletics" style={{ color: 'black' }}>Athletics</option>
+                            </select>
                           </div>
                         </div>
-                      )}
+                      </div>
 
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                              Height (cm) *
+                            </label>
+                            <input
+                              type="number"
+                              name="height"
+                              value={userProfile.height}
+                              onChange={handleProfileChange}
+                              min="50"
+                              max="250"
+                              className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                                isDarkMode
+                                  ? 'bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
+                                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-orange-500'
+                              } focus:outline-none`}
+                              placeholder="175"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                              Weight (kg) *
+                            </label>
+                            <input
+                              type="number"
+                              name="weight"
+                              value={userProfile.weight}
+                              onChange={handleProfileChange}
+                              min="20"
+                              max="200"
+                              className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                                isDarkMode
+                                  ? 'bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
+                                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-orange-500'
+                              } focus:outline-none`}
+                              placeholder="70"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Performance Goal
+                          </label>
+                          <textarea
+                            name="goal"
+                            value={userProfile.goal}
+                            onChange={handleProfileChange}
+                            rows="3"
+                            className={`w-full px-4 py-3 rounded-xl border transition-colors resize-none ${
+                              isDarkMode
+                                ? 'bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
+                                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-orange-500'
+                            } focus:outline-none`}
+                            placeholder="e.g., Improve bowling accuracy, perfect tennis serve..."
+                          />
+                        </div>
+                        <div>
+                          <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Role Model (Optional)
+                          </label>
+                          <input
+                            type="text"
+                            name="roleModel"
+                            value={userProfile.roleModel}
+                            onChange={handleProfileChange}
+                            className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                              isDarkMode
+                                ? 'bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
+                                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-orange-500'
+                            } focus:outline-none`}
+                            placeholder="e.g., Roger Federer, Virat Kohli"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Video Upload Section */}
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                    className={`rounded-2xl p-6 border ${
+                      isDarkMode ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3 mb-6">
+                      <Video className={`w-6 h-6 ${isDarkMode ? 'text-orange-400' : 'text-orange-500'}`} />
+                      <h3 className="text-2xl font-bold">Upload Training Media</h3>
+                    </div>
+
+                    {!videoPreview ? (
+                      <div
+                        className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer ${
+                          isDarkMode
+                            ? 'border-white/30 hover:border-orange-400 hover:bg-white/5'
+                            : 'border-black/30 hover:border-orange-500 hover:bg-black/5'
+                        }`}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="video/*,image/*"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
+
+                        <Upload className={`w-16 h-16 mx-auto mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                        <p className="text-xl font-medium mb-2">Upload Image or Video</p>
+                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          Drag & drop or click to select your training media
+                        </p>
+                        
+                        <div className={`mt-6 p-4 rounded-xl ${isDarkMode ? 'bg-white/5' : 'bg-black/5'}`}>
+                          <p className="font-semibold text-base mb-2">For Best Analysis Results:</p>
+                          <ul className={`list-disc list-inside text-left space-y-1 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <li>Ensure the video/image is **static** (camera is not moving).</li>
+                            <li>Wear clothes that **contrast** with your background.</li>
+                            <li>Only **one athlete** should be in the frame.</li>
+                            <li>Record in a well-lit environment.</li>
+                          </ul>
+                        </div>
+
+                        <div className="flex items-center justify-center space-x-6 mt-6">
+                          <div className={`flex items-center space-x-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <Image className="w-5 h-5" />
+                            <span className="text-sm">Images</span>
+                          </div>
+                          <div className={`flex items-center space-x-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <Video className="w-5 h-5" />
+                            <span className="text-sm">Videos</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="relative rounded-2xl overflow-hidden bg-black">
+                          {mediaType === 'video' ? (
+                            <video
+                              ref={videoRef}
+                              src={videoPreview}
+                              controls
+                              className="w-full h-64 object-contain"
+                            />
+                          ) : (
+                            <img
+                              ref={videoRef}
+                              src={videoPreview}
+                              alt="Preview"
+                              className="w-full h-64 object-contain"
+                            />
+                          )}
+
+                          <button
+                            onClick={clearFile}
+                            className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <div className={`rounded-xl p-4 ${isDarkMode ? 'bg-white/5' : 'bg-black/5'}`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              {mediaType === 'video' ? (
+                                <Video className="w-8 h-8 text-blue-400" />
+                              ) : (
+                                <Image className="w-8 h-8 text-green-400" />
+                              )}
+                              <div>
+                                <p className="font-medium">{videoFile?.name}</p>
+                                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                  {formatFileSize(videoFile?.size)} • {mediaType === 'video' ? 'Video' : 'Image'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-green-400">✓ Ready</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Analysis Button */}
+                    <div className="mt-6">
                       <button
-                        onClick={handlePostureAnalysis}
-                        disabled={!uploadedFile || isAnalyzing}
+                        onClick={analyzePosture}
+                        disabled={!isFormValid() || isAnalyzing || detectorLoading}
                         className={`w-full py-4 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
-                          uploadedFile && !isAnalyzing
+                          (isFormValid() && !isAnalyzing && !detectorLoading)
                             ? isDarkMode
-                              ? 'bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-400 hover:to-orange-500 text-white'
-                              : 'bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white'
+                              ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white'
+                              : 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white'
                             : isDarkMode
-                              ? 'bg-white/10 text-gray-500 cursor-not-allowed'
+                              ? 'bg-white/10 text-gray-400 cursor-not-allowed'
                               : 'bg-black/10 text-gray-500 cursor-not-allowed'
                         }`}
                       >
-                        {isAnalyzing ? (
+                        {detectorLoading ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <span>Loading AI Model...</span>
+                          </>
+                        ) : isAnalyzing ? (
                           <>
                             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                             <span>Analyzing with AI...</span>
@@ -883,127 +1277,213 @@ const AIGuru = ({ isDarkMode = true }) => {
                         )}
                       </button>
                     </div>
+                  </motion.div>
 
-                    {/* Analysis Results */}
-                    <div className="space-y-6">
-                      <h4 className="text-2xl font-bold mb-6">Analysis Results</h4>
-                      
-                      {analysisResults ? (
-                        <div className="space-y-6">
-                          {/* Overall Score */}
-                          <div className={`p-6 rounded-2xl text-center ${
-                            isDarkMode ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30' : 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30'
-                          }`}>
-                            <div className="text-4xl font-bold mb-2">{analysisResults.overallScore}/10</div>
-                            <div className="text-lg font-medium">Overall Performance Score</div>
+                  {/* Enhanced Analysis Results */}
+                  {analysisResults && (
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                      className={`rounded-2xl p-6 border ${
+                        isDarkMode ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3 mb-6">
+                        <Target className={`w-6 h-6 ${isDarkMode ? 'text-orange-400' : 'text-orange-500'}`} />
+                        <h3 className="text-2xl font-bold">Analysis Results</h3>
+                      </div>
+
+                      {/* Overall Score */}
+                      <div className="text-center mb-8">
+                        <div className={`inline-flex items-center justify-center w-32 h-32 rounded-full mb-4 ${
+                          isDarkMode ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30'
+                            : 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30'
+                        }`}>
+                          <div className="text-center">
+                            <div className="text-4xl font-bold">{analysisResults.overallScore}/100</div>
+                            <div className="text-sm font-medium">Score</div>
                           </div>
-
-                          {/* Metrics */}
-                          <div className="space-y-4">
-                            {analysisResults.metrics && Object.entries(analysisResults.metrics).map(([key, metric]) => {
-                              const getColorClass = (score) => {
-                                if (score >= 8) return 'green';
-                                if (score >= 6) return 'yellow';
-                                return 'red';
-                              };
-                              
-                              const color = getColorClass(metric.score);
-                              const colorClasses = {
-                                green: {
-                                  bg: isDarkMode ? 'bg-green-500/20 border-green-500/30' : 'bg-green-500/20 border-green-500/30',
-                                  text: 'text-green-400',
-                                  icon: CheckCircle
-                                },
-                                yellow: {
-                                  bg: isDarkMode ? 'bg-yellow-500/20 border-yellow-500/30' : 'bg-yellow-500/20 border-yellow-500/30',
-                                  text: 'text-yellow-400',
-                                  icon: Target
-                                },
-                                red: {
-                                  bg: isDarkMode ? 'bg-red-500/20 border-red-500/30' : 'bg-red-500/20 border-red-500/30',
-                                  text: 'text-red-400',
-                                  icon: ArrowRight
-                                }
-                              };
-                              
-                              const currentColor = colorClasses[color];
-                              const IconComponent = currentColor.icon;
-                              
-                              // Format metric name for display
-                              const formatMetricName = (key) => {
-                                const nameMap = {
-                                  posturalAlignment: 'Postural Alignment',
-                                  jointStability: 'Joint Stability',
-                                  movementEfficiency: 'Movement Efficiency',
-                                  sportSpecificForm: 'Sport-Specific Form',
-                                  balanceControl: 'Balance & Control',
-                                  powerGeneration: 'Power Generation',
-                                  flexibilityRange: 'Flexibility & Range',
-                                  injuryRisk: 'Injury Risk Assessment',
-                                  balance: 'Balance',
-                                  posture: 'Posture',
-                                  movement: 'Movement',
-                                  technique: 'Technique'
-                                };
-                                return nameMap[key] || key.replace(/([A-Z])/g, ' $1').trim();
-                              };
-                              
-                              return (
-                                <div key={key} className={`flex items-center justify-between p-6 rounded-2xl border ${currentColor.bg}`}>
-                                  <div className="flex items-center space-x-3">
-                                    <IconComponent className={`w-6 h-6 ${currentColor.text}`} />
-                                    <div>
-                                      <div className="font-medium">{formatMetricName(key)}</div>
-                                      <div className={`text-sm ${currentColor.text}`}>{metric.notes || 'Assessment completed'}</div>
-                                    </div>
-                                  </div>
-                                  <span className={`${currentColor.text} font-bold`}>{metric.score}/10</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                          {/* Recommendations */}
-                          <div className={`p-6 rounded-2xl ${isDarkMode ? 'bg-white/5' : 'bg-black/5'}`}>
-                            <h5 className="font-bold mb-3 flex items-center space-x-2">
-                              <Star className="w-5 h-5 text-orange-400" />
-                              <span>AI Recommendations</span>
-                            </h5>
-                            <ul className="space-y-3 text-sm">
-                              {analysisResults.recommendations.map((rec, index) => (
-                                <li key={index} className="flex items-start space-x-2">
-                                  <div className="w-2 h-2 bg-orange-400 rounded-full mt-2 flex-shrink-0"></div>
-                                  <span>{rec}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-
-                          {/* Safety Notes */}
-                          {analysisResults.safetyNotes && (
-                            <div className={`p-6 rounded-2xl ${isDarkMode ? 'bg-amber-500/20 border border-amber-500/30' : 'bg-amber-500/20 border border-amber-500/30'}`}>
-                              <h5 className="font-bold mb-3 flex items-center space-x-2 text-amber-400">
-                                <span>⚠️</span>
-                                <span>Safety Notes</span>
-                              </h5>
-                              <p className="text-sm">{analysisResults.safetyNotes}</p>
-                            </div>
-                          )}
                         </div>
-                      ) : (
-                        <div className="text-center py-12">
-                          <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
-                            isDarkMode ? 'bg-white/10' : 'bg-black/10'
-                          }`}>
-                            <BarChart3 className={`w-8 h-8 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                        <h4 className="text-xl font-semibold mb-2">Overall Performance</h4>
+                        <p className={`max-w-2xl mx-auto ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {analysisResults.detailedFeedback?.overview || 'Detailed analysis of your sports technique.'}
+                        </p>
+                      </div>
+
+                      {/* Metrics Charts */}
+                      {analysisResults.metrics && Object.keys(analysisResults.metrics).length > 0 && (
+                        <div className="grid md:grid-cols-2 gap-8 mb-8">
+                          <div className="space-y-4">
+                            <h4 className="text-lg font-semibold">Performance Radar</h4>
+                            <div className="h-64">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={
+                                  Object.entries(analysisResults.metrics).filter(([, value]) => value > 0).map(([key, value]) => ({
+                                    metric: key,
+                                    score: value,
+                                    fullMark: 100,
+                                  }))
+                                }>
+                                  <PolarGrid stroke={isDarkMode ? "#ffffff30" : "#00000030"} />
+                                  <PolarAngleAxis
+                                    dataKey="metric"
+                                    tick={{ fill: isDarkMode ? "#fff" : "#000", fontSize: 12 }}
+                                  />
+                                  <PolarRadiusAxis domain={[0, 100]} />
+                                  <Radar
+                                    name="Score"
+                                    dataKey="score"
+                                    stroke="#8884d8"
+                                    fill="#8884d8"
+                                    fillOpacity={0.6}
+                                  />
+                                  <Tooltip
+                                    contentStyle={isDarkMode ? {
+                                      backgroundColor: '#333',
+                                      borderColor: '#555',
+                                      color: '#fff'
+                                    } : {}}
+                                  />
+                                </RadarChart>
+                              </ResponsiveContainer>
+                            </div>
                           </div>
-                          <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
-                            Upload an image or video to see your analysis results here
+                          
+                          <div className="space-y-4">
+                            <h4 className="text-lg font-semibold">Metrics Comparison</h4>
+                            <div className="h-64">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={
+                                  Object.entries(analysisResults.metrics).filter(([, value]) => value > 0).map(([key, value]) => ({
+                                    name: key,
+                                    score: value,
+                                  }))
+                                } layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                  <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#ffffff30" : "#00000030"} />
+                                  <XAxis
+                                    type="number"
+                                    domain={[0, 100]}
+                                    stroke={isDarkMode ? "#fff" : "#000"}
+                                  />
+                                  <YAxis
+                                    dataKey="name"
+                                    type="category"
+                                    stroke={isDarkMode ? "#fff" : "#000"}
+                                    width={80}
+                                  />
+                                  <Tooltip
+                                    contentStyle={isDarkMode ? {
+                                      backgroundColor: '#333',
+                                      borderColor: '#555',
+                                      color: '#fff'
+                                    } : {}}
+                                  />
+                                  <Bar dataKey="score" fill="#82ca9d" />
+                                </BarChart>
+                              </ResponsiveContainer>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Detailed Feedback */}
+                      {analysisResults.detailedFeedback && analysisResults.detailedFeedback.points && analysisResults.detailedFeedback.points.length > 0 && (
+                        <div className={`p-6 rounded-xl mb-6 ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-100'}`}>
+                          <h5 className="font-bold mb-4 flex items-center space-x-2 text-blue-500">
+                            <MessageCircle className="w-5 h-5" />
+                            <span>Detailed Feedback</span>
+                          </h5>
+                          <div className="space-y-4">
+                            {analysisResults.detailedFeedback.points.map((point, index) => (
+                              <div key={index} className="flex items-start space-x-3">
+                                <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5 flex-shrink-0">
+                                  {index + 1}
+                                </div>
+                                <div>
+                                  <p className="font-medium">{point.joint || point.area}</p>
+                                  <p className="text-sm">{point.feedback}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Strengths */}
+                      {analysisResults.strengths && analysisResults.strengths.length > 0 && (
+                        <div className={`p-6 rounded-xl mb-6 ${isDarkMode ? 'bg-green-900/20' : 'bg-green-100'}`}>
+                          <h5 className="font-bold mb-4 flex items-center space-x-2 text-green-500">
+                            <Star className="w-5 h-5" />
+                            <span>Your Strengths</span>
+                          </h5>
+                          <ul className="space-y-3">
+                            {analysisResults.strengths.map((strength, index) => (
+                              <li key={index} className="flex items-start space-x-3">
+                                <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5 flex-shrink-0">
+                                  {index + 1}
+                                </div>
+                                <span className="text-sm">{strength}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Improvements */}
+                      {analysisResults.improvements && analysisResults.improvements.length > 0 && (
+                        <div className={`p-6 rounded-xl mb-6 ${isDarkMode ? 'bg-yellow-900/20' : 'bg-yellow-100'}`}>
+                          <h5 className="font-bold mb-4 flex items-center space-x-2 text-yellow-500">
+                            <AlertCircle className="w-5 h-5" />
+                            <span>Areas for Improvement</span>
+                          </h5>
+                          <ul className="space-y-3">
+                            {analysisResults.improvements.map((improvement, index) => (
+                              <li key={index} className="flex items-start space-x-3">
+                                <div className="w-6 h-6 bg-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5 flex-shrink-0">
+                                  {index + 1}
+                                </div>
+                                <span className="text-sm">{improvement}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Steps */}
+                      {analysisResults.steps && analysisResults.steps.length > 0 && (
+                        <div className={`p-6 rounded-xl mb-6 ${isDarkMode ? 'bg-purple-900/20' : 'bg-purple-100'}`}>
+                          <h5 className="font-bold mb-4 flex items-center space-x-2 text-purple-500">
+                            <ArrowRight className="w-5 h-5" />
+                            <span>Action Steps</span>
+                          </h5>
+                          <ul className="space-y-3">
+                            {analysisResults.steps.map((step, index) => (
+                              <li key={index} className="flex items-start space-x-3">
+                                <div className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5 flex-shrink-0">
+                                  {index + 1}
+                                </div>
+                                <span className="text-sm">{step}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Prime Athlete Comparison */}
+                      {analysisResults.primeAthleteComparison && analysisResults.primeAthleteComparison.name && analysisResults.primeAthleteComparison.techniqueDescription && (
+                        <div className={`p-6 rounded-xl mb-6 ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-100'}`}>
+                          <h5 className="font-bold mb-4 flex items-center space-x-2 text-blue-500">
+                            <Award className="w-5 h-5" />
+                            <span>Prime Athlete Technique: {analysisResults.primeAthleteComparison.name}</span>
+                          </h5>
+                          <p className="text-sm leading-relaxed">
+                            {analysisResults.primeAthleteComparison.techniqueDescription}
                           </p>
                         </div>
                       )}
-                    </div>
-                  </div>
+                    </motion.div>
+                  )}
                 </div>
               )}
 
