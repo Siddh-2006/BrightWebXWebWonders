@@ -3,10 +3,13 @@ import { motion } from 'framer-motion';
 import {
   Brain, Camera, Target, TrendingUp, MessageCircle, Upload, Zap, Award,
   BarChart3, Send, Image, Video, Star, CheckCircle, ArrowRight, Sun, Moon,
-  User, X, Loader2, AlertCircle
+  User, X, Loader2, AlertCircle, Settings, ChevronLeft
 } from 'lucide-react';
 import { getAIGuruResponse } from '../services/aiGuruService';
+import { generateTrainingPlan } from '../services/trainingPlanService';
 import { renderMarkdown } from '../utils/markdownRenderer';
+import TrainingPlanModal from './TrainingPlanModal';
+import CustomTrainingPlanCreator from './CustomTrainingPlanCreator';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 import * as poseDetection from '@tensorflow-models/pose-detection';
@@ -49,6 +52,12 @@ const AIGuru = ({ isDarkMode = true }) => {
   const [detectorLoading, setDetectorLoading] = useState(true);
   const videoRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  // Training Plan Modal State
+  const [showTrainingPlanModal, setShowTrainingPlanModal] = useState(false);
+  const [currentTrainingPlan, setCurrentTrainingPlan] = useState(null);
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [showCustomPlanCreator, setShowCustomPlanCreator] = useState(false);
 
   // Mock user details - in a real app, this would come from user profile
   const userDetails = {
@@ -182,8 +191,8 @@ const AIGuru = ({ isDarkMode = true }) => {
     },
     {
       icon: TrendingUp,
-      title: 'Progress Tracking',
-      description: 'Monitor improvement with personalized analytics',
+      title: 'Training Plans',
+      description: 'Get personalized training plans based on your sport and goals',
       color: isDarkMode ? 'from-amber-500 to-yellow-400' : 'from-amber-600 to-yellow-500'
     }
   ];
@@ -574,6 +583,45 @@ const AIGuru = ({ isDarkMode = true }) => {
       ]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Handle training plan generation
+  const handleShowTrainingPlan = async (plan) => {
+    setShowTrainingPlanModal(true);
+    setIsGeneratingPlan(true);
+    setCurrentTrainingPlan(null);
+
+    try {
+      console.log('🎯 Generating training plan for:', plan);
+      
+      // Extract sport from plan title (e.g., "Beginner Football Training" -> "Football")
+      const sportMatch = plan.title.match(/\b(Football|Basketball|Cricket|Tennis|Swimming|Athletic)\b/i);
+      const sport = sportMatch ? sportMatch[1] : plan.title.split(' ')[1] || 'General';
+      
+      const trainingPlan = await generateTrainingPlan({
+        userInfo: {
+          name: userDetails.name,
+          age: userDetails.age,
+          details: userDetails.details
+        },
+        sport: sport,
+        difficulty: plan.difficulty,
+        duration: plan.duration,
+        sessions: plan.sessions
+      });
+
+      setCurrentTrainingPlan(trainingPlan);
+    } catch (error) {
+      console.error('Failed to generate training plan:', error);
+      // Show error in modal or close it
+      setCurrentTrainingPlan({
+        planTitle: `${plan.title} - Error`,
+        overview: 'Failed to generate training plan. Please try again later.',
+        error: true
+      });
+    } finally {
+      setIsGeneratingPlan(false);
     }
   };
 
@@ -1487,13 +1535,37 @@ const AIGuru = ({ isDarkMode = true }) => {
                 </div>
               )}
 
-              {activeTab === 'training' && (
+              {activeTab === 'training' && !showCustomPlanCreator && (
                 <div className="space-y-6 min-h-[600px]">
                   <div className={`backdrop-blur-md rounded-2xl p-6 border ${isDarkMode ? 'bg-white/5 border-orange-500/20' : 'bg-black/5 border-orange-500/20'}`}>
-                    <h2 className={`text-2xl font-bold mb-6 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                      <Award className={`h-6 w-6 ${isDarkMode ? 'text-orange-400' : 'text-orange-500'}`} />
-                      Personalized Training Plans
-                    </h2>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className={`text-2xl font-bold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <Award className={`h-6 w-6 ${isDarkMode ? 'text-orange-400' : 'text-orange-500'}`} />
+                        Training Plans
+                      </h2>
+                      <button
+                        onClick={() => setShowCustomPlanCreator(true)}
+                        className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl ${
+                          isDarkMode
+                            ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
+                            : 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700'
+                        } text-white`}
+                      >
+                        <Settings className="w-5 h-5" />
+                        <span>Create Custom Plan</span>
+                      </button>
+                    </div>
+
+                    <div className="mb-6">
+                      <p className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                        Choose from our pre-designed training plans or create your own custom plan tailored to your specific needs.
+                      </p>
+                    </div>
+
+                    <div className="mb-8">
+                      <h3 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        Quick Start Plans
+                      </h3>
                     
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {trainingPlans.map((plan, index) => (
@@ -1523,13 +1595,41 @@ const AIGuru = ({ isDarkMode = true }) => {
                             </div>
                           </div>
                           
-                          <button className={`w-full bg-gradient-to-r ${plan.color} text-white py-3 rounded-lg font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl`}>
-                            Start Training Plan
+                          <button
+                            onClick={() => handleShowTrainingPlan(plan)}
+                            className={`w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white py-3 rounded-lg font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl`}
+                          >
+                            Show Training Plan
                           </button>
                         </div>
                       ))}
                     </div>
+                    </div>
                   </div>
+                </div>
+              )}
+
+              {activeTab === 'training' && showCustomPlanCreator && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className={`text-2xl font-bold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <Settings className={`h-6 w-6 ${isDarkMode ? 'text-orange-400' : 'text-orange-500'}`} />
+                      Custom Training Plan Creator
+                    </h2>
+                    <button
+                      onClick={() => setShowCustomPlanCreator(false)}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+                        isDarkMode
+                          ? 'bg-white/10 text-gray-300 hover:bg-white/20'
+                          : 'bg-black/10 text-gray-700 hover:bg-black/20'
+                      }`}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      <span>Back to Plans</span>
+                    </button>
+                  </div>
+                  
+                  <CustomTrainingPlanCreator isDarkMode={isDarkMode} />
                 </div>
               )}
             </div>
@@ -1561,6 +1661,15 @@ const AIGuru = ({ isDarkMode = true }) => {
           </div>
         </div>
       </section>
+
+      {/* Training Plan Modal */}
+      <TrainingPlanModal
+        isOpen={showTrainingPlanModal}
+        onClose={() => setShowTrainingPlanModal(false)}
+        trainingPlan={currentTrainingPlan}
+        isLoading={isGeneratingPlan}
+        isDarkMode={isDarkMode}
+      />
     </div>
   );
 };

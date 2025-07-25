@@ -22,7 +22,8 @@
   const usersRouter = require("./routes/usersRouter");
   const clubsRouter = require("./routes/clubsRouter");
   const initQuizCronJobs = require('./cron/quizCronJobs');
-
+  const trainingPlanRouter = require('./routes/trainingPlanRouter');
+  const customTrainingPlanRouter = require('./routes/customTrainingPlanRouter');
 
   const server = http.createServer(app);
   const io = socketIO(server, {
@@ -50,6 +51,8 @@
   app.use("/api/ai-guru-chat", aiGuruChatRouter);
   app.use('/api/quiz', quizRoutes);
   // app.use("/match", matchRouter);
+  app.use("/api/training-plans", trainingPlanRouter);
+  app.use("/api/custom-training-plans", customTrainingPlanRouter);
   app.use("/users", usersRouter);
   app.use("/clubs", clubsRouter);
   app.use('/challenges',challengeRouter);
