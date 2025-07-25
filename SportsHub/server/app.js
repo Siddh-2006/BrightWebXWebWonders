@@ -71,7 +71,7 @@
   app.use("/users", usersRouter);
   app.use("/clubs", clubsRouter);
   app.use('/challenges',challengeRouter);
-  app.use("/profile", verifyToken, getUserProfile);
+  
 
   io.on('connection', (socket) => {
     console.log('New client connected');

@@ -1,7 +1,7 @@
 // cron/quizCronJobs.js
 const cron = require('node-cron');
 const mongoose = require('mongoose');
-const { generateAndStoreDailyQuestions } = require('../controllers/quizController');
+const { generateAndStoreDailyQuestions } = require('../controllers/quizController.js');
 const { resetDailyKeyUsage, getLastGenerationTimestamp } = require('../utils/geminiApiManager');
 const Question = require('../models/Question'); // Need to import Question model for deletion
 

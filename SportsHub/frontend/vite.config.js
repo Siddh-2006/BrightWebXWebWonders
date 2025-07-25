@@ -29,10 +29,18 @@ export default defineConfig({
   },
   // Development server configuration
   server: {
-    port: 3000,
+    port: 5173,
     open: true,
     hmr: {
       overlay: true
+    },
+    proxy:{
+      "/api":{
+        target:"http://localhost:3000",
+        changeOrigin:true,
+        secure:false,
+        rewrite: path => path.replace(/^\/api/, ''), // removing /api 
+      }
     }
   },
   // Modern JavaScript features

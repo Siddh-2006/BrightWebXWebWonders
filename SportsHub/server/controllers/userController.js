@@ -55,6 +55,7 @@ module.exports.registerUser=async (req,res)=>{
 }
 
 module.exports.loginUser=async (req,res)=>{
+    console.log("req body",req.body)
     let {email,password}=req.body;
     let user=await userModel.findOne({email:email});
     if(!user) return res.send("Email or password incorrect...");
@@ -69,7 +70,7 @@ module.exports.loginUser=async (req,res)=>{
             });
             res.send("You can login..");
         }else{
-            res.send("Email or password incorrect..");
+            res.status(401).send("Email or password incorrect..");
         }
     })
 }

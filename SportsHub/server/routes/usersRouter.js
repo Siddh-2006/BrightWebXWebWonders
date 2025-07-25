@@ -9,7 +9,7 @@ router.get("/",(req,res)=>{
 })
 
 router.post("/register",upload.single("profilePhoto"),registerUser);
-router.post("/login",loginUser);
+router.post("/login",upload.none(),loginUser);
 router.get("/logout",logoutUser);
 router.get("/profile", isLoggedIn, getUserProfile);
 

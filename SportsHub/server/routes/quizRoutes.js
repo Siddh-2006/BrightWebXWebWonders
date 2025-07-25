@@ -1,7 +1,7 @@
 // routes/quizRoutes.js
 const express = require('express');
 const router = express.Router();
-const quizController = require('../controllers/quizController');
+const quizController = require('../controllers/quizController.js');
 
 // Route to generate a quiz for a user
 router.post('/generate', quizController.generateQuizForUser);

@@ -11,12 +11,14 @@ import About from './pages/About';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Footer from './components/Footer';
-
+import { useContext } from 'react';
+import loginContext from './context/loginContext';
+import Logout from './pages/Logout';
 function App() {
   const [userType, setUserType] = useState('player');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
-
+  const login_info=useContext(loginContext);
+  console.log(login_info)
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
   };
@@ -30,7 +32,7 @@ function App() {
       <Router>
         <Navbar 
           userType={userType} 
-          isLoggedIn={isLoggedIn} 
+          isLoggedIn={login_info.isLoggedIn} 
           isDarkMode={isDarkMode}
           toggleTheme={toggleTheme}
         />
@@ -43,8 +45,9 @@ function App() {
             <Route path="/notifications" element={<Notifications isDarkMode={isDarkMode} userType={userType} />} />
             <Route path="/ai-guru" element={<AIGuru isDarkMode={isDarkMode} />} />
             <Route path="/about" element={<About isDarkMode={isDarkMode} />} />
-            <Route path="/profile" element={<Profile isDarkMode={isDarkMode} />} />
-            <Route path="/login" element={<Login isDarkMode={isDarkMode} setIsLoggedIn={setIsLoggedIn} />} />
+            <Route path="/profile" element={<Profile isDarkMode={isDarkMode} isLoggedIn={login_info.isLoggedIn} />} />
+            <Route path="/login" element={<Login isDarkMode={isDarkMode} setIsLoggedIn={login_info.setIsLoggedIn} isLoggedIn={login_info.isLoggedIn} />} />
+            <Route path="/logout" element={<Logout setIsLoggedIn={login_info.setIsLoggedIn}/>}/>
           </Routes>
         </AnimatePresence>
         
