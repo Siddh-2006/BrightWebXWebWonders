@@ -21,7 +21,7 @@
     methods: ["GET", "POST"]
   }
   });
-  runMatchStatusCron();
+  // runMatchStatusCron();
   
 
 
@@ -72,6 +72,7 @@
   app.use("/clubs", clubsRouter);
   app.use('/challenges',challengeRouter);
   
+  // app.use("/profile", verifyToken, getUserProfile);
 
   io.on('connection', (socket) => {
     console.log('New client connected');
@@ -89,7 +90,7 @@
 
   db.once('open', () => {
     console.log('MongoDB connection is open');
-    initQuizCronJobs();
+    // initQuizCronJobs();
     const PORT = config.get("PORT") || 3000;
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

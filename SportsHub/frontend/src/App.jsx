@@ -6,7 +6,7 @@ import Home from './pages/Home';
 import Sports from './pages/Sports';
 import Live from './pages/Live';
 import Notifications from './pages/Notifications';
-import AIGuru from './pages/AIGuru';
+import AIGuru from './components/AIGuru';
 import About from './pages/About';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
