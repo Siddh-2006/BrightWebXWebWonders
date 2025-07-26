@@ -930,10 +930,9 @@ const AIGuru = ({ isDarkMode = true }) => {
                       )}
                     </button>
                   </div>
-                </div>
-              )}
+                  <br />
 
-              {/* Chat History Section */}
+                  {/* Chat History Section */}
                   {chatHistory.filter(chat => chat.type === 'user').length > 0 && (
                     <motion.div
                       initial={{ y: 20, opacity: 0 }}
@@ -992,6 +991,9 @@ const AIGuru = ({ isDarkMode = true }) => {
                       )}
                     </motion.div>
                   )}
+                  
+                </div>
+              )}
 
               {activeTab === 'posture' && (
                 <div className="space-y-8 min-h-[600px]">

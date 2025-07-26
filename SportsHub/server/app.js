@@ -1,31 +1,33 @@
   const express = require('express');
-  const app = express();
-  const cookieParser = require("cookie-parser");
-  const path = require('path');
-  const db = require("./config/mongoose-connection");
-  const flash = require("connect-flash");
-  const cors = require('cors');
-  const config = require("config");
   const http = require('http');
   const socketIO = require('socket.io');
-  const session = require('express-session');
   require("dotenv").config();
-  const { GoogleGenerativeAI } = require("@google/generative-ai");
-  const runMatchStatusCron = require('./cron/matchStatusUpdater');
+  const config = require("config");
+  
+  // Import modular components
   const connectDB = require('./config/db');
   const commonMiddleware = require('./middlewares/commonMiddleware');
   const analysisRoutes = require('./routes/analysisRoutes');
-  const customErrorHandler = require('./utils/customErrorHandler');
-  const aiGuruChatRouter=require("./routes/aiGuruChatRouter");
-  const quizRoutes = require('./routes/quizRoutes');
   const challengeRouter = require('./routes/challengeRouter');
   const usersRouter = require("./routes/usersRouter");
   const clubsRouter = require("./routes/clubsRouter");
-  const initQuizCronJobs = require('./cron/quizCronJobs');
+  const quizRoutes = require('./routes/quizRoutes');
+  const aiGuruChatRouter=require("./routes/aiGuruChatRouter");
   const trainingPlanRouter = require('./routes/trainingPlanRouter');
   const customTrainingPlanRouter = require('./routes/customTrainingPlanRouter');
-
+  const customErrorHandler = require('./utils/customErrorHandler');
+  const cookieParser = require("cookie-parser");
+  const path = require('path');
+  const flash = require("connect-flash");
+  const cors = require('cors');
+  const session = require('express-session');
+  const { GoogleGenerativeAI } = require("@google/generative-ai");
+  const runMatchStatusCron = require('./cron/matchStatusUpdater');
+  const initQuizCronJobs = require('./cron/quizCronJobs');
+  
+  const app = express();
   const server = http.createServer(app);
+
   const io = socketIO(server, {
   cors: {
     origin: "http://localhost:5173", // frontend URL

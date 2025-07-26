@@ -1,7 +1,7 @@
 const CustomTrainingPlan = require('../models/CustomTrainingPlan');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-const geminiApiKey = process.env.GEMINI_API_KEY_AI_GURU || process.env.GEMINI_API_KEY_PostureCorrector;
+const geminiApiKey = process.env.GEMINI_API_KEY_TrainingPlan || process.env.GEMINI_API_KEY_AI_GURU || process.env.GEMINI_API_KEY_PostureCorrector;
 if (!geminiApiKey) {
   console.error("Error: No Gemini API Key found for custom training plans!");
 }
