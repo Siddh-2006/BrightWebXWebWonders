@@ -14,11 +14,8 @@
   const challengeRouter = require('./routes/challengeRouter');
   const usersRouter = require("./routes/usersRouter");
   const clubsRouter = require("./routes/clubsRouter");
-  const quizRoutes = require('./routes/quizRoutes');
-  const aiGuruChatRouter=require("./routes/aiGuruChatRouter");
   const trainingPlanRouter = require('./routes/trainingPlanRouter');
   const customTrainingPlanRouter = require('./routes/customTrainingPlanRouter');
-  const customErrorHandler = require('./utils/customErrorHandler');
   const cookieParser = require("cookie-parser");
   const path = require('path');
   const flash = require("connect-flash");
@@ -37,9 +34,8 @@
     methods: ["GET", "POST"]
   }
   });
-  runMatchStatusCron();
   // Connect to MongoDB
-  // connectDB();  
+  connectDB();  
 
   // Apply common middleware
   commonMiddleware(app);
@@ -79,6 +75,7 @@
   });
 
   // initQuizCronJobs();
+   runMatchStatusCron();
 
   // Error handling middleware (should be last middleware)
   app.use(customErrorHandler);
