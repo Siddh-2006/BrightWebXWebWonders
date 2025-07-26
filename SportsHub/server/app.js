@@ -7,7 +7,10 @@
   // Import modular components
   const connectDB = require('./config/db');
   const commonMiddleware = require('./middlewares/commonMiddleware');
-  const analysisRoutes = require('./routes/analysisRoutes');
+  // const analysisRoutes = require('./routes/analysisRoutes');
+  const customErrorHandler = require('./utils/customErrorHandler');
+  const aiGuruChatRouter=require("./routes/aiGuruChatRouter");
+  const quizRoutes = require('./routes/quizRoutes');
   const challengeRouter = require('./routes/challengeRouter');
   const usersRouter = require("./routes/usersRouter");
   const clubsRouter = require("./routes/clubsRouter");
@@ -34,25 +37,25 @@
     methods: ["GET", "POST"]
   }
   });
-  // runMatchStatusCron();
+  runMatchStatusCron();
   // Connect to MongoDB
-  connectDB();  
+  // connectDB();  
 
   // Apply common middleware
   commonMiddleware(app);
 
   // Routes
   // const adminsRouter=require("./routes/adminsRouter");
-  // const matchRouter = require("./routes/matchRouter");
+  const matchRouter = require("./routes/matchRouter");
   // const indexRouter=require("./routes/index");
 
   // Routes
   // app.use("/",indexRouter);
   // Use the analysis routes under the /api base path
-  app.use('/api', analysisRoutes);
+  // app.use('/api', analysisRoutes);
   app.use("/api/ai-guru-chat", aiGuruChatRouter);
   app.use('/api/quiz', quizRoutes);
-  // app.use("/match", matchRouter);
+  app.use("/match", matchRouter);
   app.use("/api/training-plans", trainingPlanRouter);
   app.use("/api/custom-training-plans", customTrainingPlanRouter);
   app.use("/users", usersRouter);

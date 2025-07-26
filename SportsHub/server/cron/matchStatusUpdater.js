@@ -1,28 +1,31 @@
 const cron = require('node-cron');
+const mongoose = require('mongoose');
 const Match = require('../models/match-model');
 
-// ⏱ CRON JOB: Runs every minute to update match statuses
+// CRON to update match statuses every minute
 const runMatchStatusCron = () => {
   cron.schedule('* * * * *', async () => {
     const now = new Date();
+    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000); // 2 hrs ago
 
     try {
-      // ➤ Set Not Started → Live
-      await Match.updateMany(
+      // Update Not Started → Live
+      const liveMatches = await Match.updateMany(
         { startTime: { $lte: now }, status: 'Not Started' },
-        { status: 'Live', isLive: true }
+        { $set: { status: 'Live', isLive: true } }
       );
 
-      // ➤ Set Live → Ended (assuming match is 2 hours long)
-      const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-      await Match.updateMany(
+      // Update Live → Ended
+      const endedMatches = await Match.updateMany(
         { startTime: { $lte: twoHoursAgo }, status: 'Live' },
-        { status: 'Ended', isLive: false }
+        { $set: { status: 'Ended', isLive: false } }
       );
 
-      console.log('✅ Match status CRON ran at', now.toLocaleString());
-    } catch (error) {
-      console.error('❌ Error in match status CRON:', error.message);
+      console.log(`🟢 CRON RUN at ${now.toLocaleString()}`);
+      console.log(`▶️ Matches made Live: ${liveMatches.modifiedCount}`);
+      console.log(`⏹ Matches Ended: ${endedMatches.modifiedCount}`);
+    } catch (err) {
+      console.error('❌ CRON ERROR:', err.message);
     }
   });
 };
