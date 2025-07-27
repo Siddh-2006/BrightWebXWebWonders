@@ -1,93 +1,151 @@
-// src/components/LiveScoreAdmin.jsx
-import React, { useState ,useEffect} from 'react';
-import { useParams } from 'react-router';
-const LiveScoreAdmin = () => {
-  const { sport,match_id } = useParams(); // Get match_id from route
-  const [matchStatus, setMatchStatus] = useState("Ongoing");
-  const [team1, setTeam1] = useState({ name: "Team A", score: 0 });
-  const [team2, setTeam2] = useState({ name: "Team B", score: 0 });
-  const [player, setPlayer] = useState({ name: "", runs: 0, wickets: 0 });
+import React, { useState } from 'react';
+import io from 'socket.io-client';
 
-  const handleScoreUpdate = (teamSetter, field, value) => {
-    teamSetter(prev => ({ ...prev, [field]: value }));
+const socket = io('http://localhost:5000'); // Change to your backend server
+
+const LiveScoreAdmin = () => {
+  const [sport, setSport] = useState('');
+  const [matchId, setMatchId] = useState('');
+  const [clubA, setClubA] = useState({ name: '', logo: '' });
+  const [clubB, setClubB] = useState({ name: '', logo: '' });
+  const [timeline, setTimeline] = useState([]);
+  const [score, setScore] = useState('0 - 0');
+
+  const [event, setEvent] = useState({
+    team: 'clubA',
+    playerId: '',
+    assistBy: '',
+    time: '',
+  });
+
+  const updateMatch = () => {
+    const matchData = {
+      clubA,
+      clubB,
+      score,
+      timeline,
+    };
+
+    socket.emit('scoreUpdate', { sport, matchId, update: matchData });
+    alert('Match data sent to viewers!');
   };
 
-  const handlePlayerChange = (field, value) => {
-    setPlayer(prev => ({ ...prev, [field]: value }));
+  const addEvent = () => {
+    const updatedTimeline = [...timeline, event];
+    setTimeline(updatedTimeline);
+
+    const scoreParts = score.split(' - ').map(Number);
+    if (event.team === 'clubA') scoreParts[0]++;
+    else scoreParts[1]++;
+    setScore(`${scoreParts[0]} - ${scoreParts[1]}`);
+
+    // Reset input
+    setEvent({ team: 'clubA', playerId: '', assistBy: '', time: '' });
   };
 
   return (
-    <div className="bg-gray-900 text-white p-6 rounded-lg max-w-4xl mx-auto shadow-lg">
-      <h2 className="text-2xl font-bold mb-4 text-center">Live Score Admin Panel</h2>
+    <div className="min-h-screen pt-20 bg-transparent text-white p-6 space-y-6">
+      <h1 className="text-3xl font-bold text-center mb-4">Admin Match Dashboard</h1>
 
-      {/* Match Status */}
-      <div className="mb-4">
-        <label className="block font-semibold mb-1">Match Status</label>
+      {/* Match metadata */}
+      <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto bg-gray-800 p-4 rounded-lg">
+        <input
+          type="text"
+          className="p-2 rounded bg-gray-700"
+          placeholder="Sport (e.g., football)"
+          value={sport}
+          onChange={(e) => setSport(e.target.value)}
+        />
+        <input
+          type="text"
+          className="p-2 rounded bg-gray-700"
+          placeholder="Match ID"
+          value={matchId}
+          onChange={(e) => setMatchId(e.target.value)}
+        />
+
+        {/* Club A */}
+        <input
+          type="text"
+          className="p-2 rounded bg-gray-700"
+          placeholder="Club A Name"
+          value={clubA.name}
+          onChange={(e) => setClubA({ ...clubA, name: e.target.value })}
+        />
+        <input
+          type="text"
+          className="p-2 rounded bg-gray-700"
+          placeholder="Club A Logo URL"
+          value={clubA.logo}
+          onChange={(e) => setClubA({ ...clubA, logo: e.target.value })}
+        />
+
+        {/* Club B */}
+        <input
+          type="text"
+          className="p-2 rounded bg-gray-700"
+          placeholder="Club B Name"
+          value={clubB.name}
+          onChange={(e) => setClubB({ ...clubB, name: e.target.value })}
+        />
+        <input
+          type="text"
+          className="p-2 rounded bg-gray-700"
+          placeholder="Club B Logo URL"
+          value={clubB.logo}
+          onChange={(e) => setClubB({ ...clubB, logo: e.target.value })}
+        />
+      </div>
+
+      {/* Add goal/event */}
+      <div className="max-w-3xl mx-auto bg-gray-800 p-4 rounded-lg space-y-3">
+        <h2 className="text-xl font-semibold">Add Goal/Event</h2>
         <select
-          className="w-full p-2 rounded bg-gray-800"
-          value={matchStatus}
-          onChange={e => setMatchStatus(e.target.value)}
+          className="w-full p-2 bg-gray-700 rounded"
+          value={event.team}
+          onChange={(e) => setEvent({ ...event, team: e.target.value })}
         >
-          <option>Ongoing</option>
-          <option>Paused</option>
-          <option>Ended</option>
+          <option value="clubA">{clubA.name || 'Club A'}</option>
+          <option value="clubB">{clubB.name || 'Club B'}</option>
         </select>
-      </div>
-
-      {/* Teams Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        {[team1, team2].map((team, index) => (
-          <div key={index} className="bg-gray-800 p-4 rounded">
-            <h3 className="text-lg font-bold mb-2">Team {index + 1}</h3>
-            <input
-              className="w-full p-2 mb-2 rounded bg-gray-700"
-              value={team.name}
-              onChange={(e) => handleScoreUpdate(index === 0 ? setTeam1 : setTeam2, 'name', e.target.value)}
-              placeholder="Team Name"
-            />
-            <input
-              type="number"
-              className="w-full p-2 rounded bg-gray-700"
-              value={team.score}
-              onChange={(e) => handleScoreUpdate(index === 0 ? setTeam1 : setTeam2, 'score', parseInt(e.target.value))}
-              placeholder="Score"
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Player Info */}
-      <div className="bg-gray-800 p-4 rounded mb-6">
-        <h3 className="text-lg font-bold mb-2">Player Update</h3>
         <input
-          className="w-full p-2 mb-2 rounded bg-gray-700"
+          type="text"
           placeholder="Player Name"
-          value={player.name}
-          onChange={(e) => handlePlayerChange("name", e.target.value)}
+          className="w-full p-2 bg-gray-700 rounded"
+          value={event.playerId}
+          onChange={(e) => setEvent({ ...event, playerId: e.target.value })}
         />
         <input
-          type="number"
-          className="w-full p-2 mb-2 rounded bg-gray-700"
-          placeholder="Runs"
-          value={player.runs}
-          onChange={(e) => handlePlayerChange("runs", parseInt(e.target.value))}
+          type="text"
+          placeholder="Assist By (optional)"
+          className="w-full p-2 bg-gray-700 rounded"
+          value={event.assistBy}
+          onChange={(e) => setEvent({ ...event, assistBy: e.target.value })}
         />
         <input
-          type="number"
-          className="w-full p-2 rounded bg-gray-700"
-          placeholder="Wickets"
-          value={player.wickets}
-          onChange={(e) => handlePlayerChange("wickets", parseInt(e.target.value))}
+          type="text"
+          placeholder="Time (e.g., 45+2)"
+          className="w-full p-2 bg-gray-700 rounded"
+          value={event.time}
+          onChange={(e) => setEvent({ ...event, time: e.target.value })}
         />
+        <button
+          onClick={addEvent}
+          className="w-full py-2 bg-blue-600 rounded hover:bg-blue-700"
+        >
+          ➕ Add Event
+        </button>
       </div>
 
-      {/* Summary */}
-      <div className="bg-gray-800 p-4 rounded">
-        <h3 className="text-lg font-bold mb-2">Live Summary</h3>
-        <p><strong>Status:</strong> {matchStatus}</p>
-        <p><strong>{team1.name}:</strong> {team1.score}</p>
-        <p><strong>{team2.name}:</strong> {team2.score}</p>
-        <p><strong>Player:</strong> {player.name} - {player.runs} Runs, {player.wickets} Wickets</p>
+      {/* Preview + Submit */}
+      <div className="max-w-3xl mx-auto text-center">
+        <h3 className="text-xl mb-2">Current Score: {score}</h3>
+        <button
+          onClick={updateMatch}
+          className="px-6 py-3 bg-green-600 rounded hover:bg-green-700 font-bold"
+        >
+          🚀 Send Live Update
+        </button>
       </div>
     </div>
   );

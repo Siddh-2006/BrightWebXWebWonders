@@ -55,8 +55,6 @@
 
   // Routes
   // const adminsRouter=require("./routes/adminsRouter");
-  const challengeRouter = require('./routes/challengeRouter');
-  const usersRouter = require("./routes/usersRouter");
   const matchRouter = require("./routes/matchRouter");
   // const indexRouter=require("./routes/index");
 
@@ -85,7 +83,7 @@
 
   // Start the server
 const PORT = config.get("PORT") || 3000; // Port set back to 3000
-server.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 
