@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
+import axios from "axios"
 import { motion } from 'framer-motion';
 import { 
   Radio, Users, MessageCircle, BarChart3, Clock, MapPin, Trophy, Search,
@@ -9,7 +10,20 @@ const Live = ({ isDarkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSport, setSelectedSport] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  useEffect(()=>{
+    const fetch_live=async ()=>{
+      try{
+      const res =await axios.get("http://localhost:3000/match/live",{withCredentials:true});
+      if(res.status==200){
+        console.log(res.data);
+      }
 
+    }catch(err){
+      console.log(err)
+    }
+    }
+    fetch_live()
+  },[])
   const matches = [
     {
       id: 1,

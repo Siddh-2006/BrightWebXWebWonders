@@ -12,7 +12,7 @@
   require("dotenv").config();
   const { GoogleGenerativeAI } = require("@google/generative-ai");
   const runMatchStatusCron = require('./cron/matchStatusUpdater');
-   
+  const handleSocketConnection = require("./live_match_server/server");
 
   const server = http.createServer(app);
   const io = socketIO(server, {
@@ -21,15 +21,24 @@
     methods: ["GET", "POST"]
   }
   });
+
+  //handel websocket server
+  handleSocketConnection(io)
+  // start the server on port 5000
+  server.listen(5000, () => {
+  console.log(`🚀[socketserver] Server running on http://localhost:5000`);
+  });
+
   // runMatchStatusCron();
   
+
 
 
   // Routes
   // const adminsRouter=require("./routes/adminsRouter");
   const challengeRouter = require('./routes/challengeRouter');
   const usersRouter = require("./routes/usersRouter");
-  // const matchRouter = require("./routes/matchRouter");
+  const matchRouter = require("./routes/matchRouter");
   // const indexRouter=require("./routes/index");
   const clubsRouter = require("./routes/clubsRouter");
   const quizRoutes = require('./routes/quizRoutes');
@@ -67,26 +76,14 @@
   // app.use("/",indexRouter);
   app.use("/api/ai-guru-chat", aiGuruChatRouter);
   app.use('/api/quiz', quizRoutes);
-  // app.use("/match", matchRouter);
+  app.use("/match", matchRouter);
   app.use("/users", usersRouter);
   app.use("/clubs", clubsRouter);
   app.use('/challenges',challengeRouter);
   
   // app.use("/profile", verifyToken, getUserProfile);
 
-  io.on('connection', (socket) => {
-    console.log('New client connected');
 
-    // Listen for score updates from admin/moderator
-    socket.on('scoreUpdate', (data) => {
-      // Broadcast to all clients
-      io.emit('liveScore', data);
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Client disconnected');
-    });
-  });
 
   db.once('open', () => {
     console.log('MongoDB connection is open');

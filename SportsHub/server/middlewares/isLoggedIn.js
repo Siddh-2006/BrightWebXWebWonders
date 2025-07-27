@@ -17,6 +17,6 @@ module.exports=async (req,res,next)=>{
         next();
     }catch(err){
         req.flash("error","something went wrong");
-        // res.redirect("/");
+        res.status(401).send("not verified")
     }
 }

@@ -1,7 +1,8 @@
 // src/components/LiveScoreAdmin.jsx
-import React, { useState } from 'react';
-
+import React, { useState ,useEffect} from 'react';
+import { useParams } from 'react-router';
 const LiveScoreAdmin = () => {
+  const { sport,match_id } = useParams(); // Get match_id from route
   const [matchStatus, setMatchStatus] = useState("Ongoing");
   const [team1, setTeam1] = useState({ name: "Team A", score: 0 });
   const [team2, setTeam2] = useState({ name: "Team B", score: 0 });

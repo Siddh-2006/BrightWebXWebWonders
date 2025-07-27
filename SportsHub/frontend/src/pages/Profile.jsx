@@ -28,35 +28,40 @@ import {
   Brain,
   BarChart3,
 } from "lucide-react";
+import { ToastContainer } from "react-toastify";
 
 const Profile = ({ isDarkMode, isLoggedIn }) => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState({});
+  const [loading, setLoading] = useState(true);
   // for navigation
   const navigate = useNavigate();
   // basic check
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      navigate("/login");
-    }
     const fetch_data = async () => {
       try {
+        console.log("fecthing");
         const res = await axios.get("http://localhost:3000/users/profile", {
           withCredentials: true,
         });
         if (res.status == 200) {
           setUserData(res.data);
-          console.log(res.data);
+        } else {
+          console.log(res);
         }
       } catch (err) {
         console.log(err);
         showCustomToast("error", err.message + err.response.data);
       }
     };
-    fetch_data()
-  }, []);
+    if (isLoggedIn) {
+      fetch_data();
+    } else {
+      navigate("/login");
+    }
+  }, [isLoggedIn]);
 
   const playerData = {
     name: "Alex Rodriguez",
@@ -65,8 +70,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
     bio: "Professional footballer passionate about excellence. Always pushing limits and inspiring others to achieve greatness.",
     location: "Los Angeles, CA",
     joinDate: "March 2023",
-    profileImage:
-      userData.profilePhoto,
+    profileImage: userData.profilePhoto,
     coverImage:
       "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80",
     sports: ["Football", "Basketball", "Tennis"],
@@ -157,6 +161,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
       exit={{ opacity: 0 }}
       className="min-h-screen pt-20"
     >
+      <ToastContainer />
       {/* Cover Photo & Profile Header */}
       <div className="relative">
         <div className="h-80 overflow-hidden">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
@@ -14,6 +14,10 @@ import Footer from './components/Footer';
 import { useContext } from 'react';
 import loginContext from './context/loginContext';
 import Logout from './pages/Logout';
+import axios from 'axios';
+import LivePage from './pages/LivePage';
+import LiveScoreAdmin from './pages/LiveScoreAdmin';
+
 function App() {
   const [userType, setUserType] = useState('player');
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -22,7 +26,26 @@ function App() {
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
   };
-
+  // check to see if the user is logged in
+  
+  useEffect(()=>{
+    const fetch_user=async ()=>{
+      try{
+      const res =await axios.get("http://localhost:3000/users/profile",{withCredentials:true});
+      if(res.status==200){
+        login_info.setIsLoggedIn(true);
+      }
+      else{
+        login_info.setIsLoggedIn(false);
+      }
+    }catch(err){
+      console.log(err)
+      login_info.setIsLoggedIn(false);
+    }
+    }
+    fetch_user()
+  },[])
+  
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
       isDarkMode 
@@ -48,6 +71,8 @@ function App() {
             <Route path="/profile" element={<Profile isDarkMode={isDarkMode} isLoggedIn={login_info.isLoggedIn} />} />
             <Route path="/login" element={<Login isDarkMode={isDarkMode} setIsLoggedIn={login_info.setIsLoggedIn} isLoggedIn={login_info.isLoggedIn} />} />
             <Route path="/logout" element={<Logout setIsLoggedIn={login_info.setIsLoggedIn}/>}/>
+            <Route path="/live_match/:sport/:match_id" element={<LivePage/>}></Route>
+            <Route path="/live_match_admin/:sport/:match_id" element={<LiveScoreAdmin/>}></Route>
           </Routes>
         </AnimatePresence>
         
