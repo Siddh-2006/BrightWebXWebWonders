@@ -39,7 +39,6 @@
 
   //handel websocket server
   handleSocketConnection(io)
-  // start the server on port 5000
   server.listen(5000, () => {
   console.log(`🚀[socketserver] Server running on http://localhost:5000`);
   });
@@ -55,6 +54,7 @@
 
   // Routes
   // const adminsRouter=require("./routes/adminsRouter");
+
   const matchRouter = require("./routes/matchRouter");
   // const indexRouter=require("./routes/index");
 
