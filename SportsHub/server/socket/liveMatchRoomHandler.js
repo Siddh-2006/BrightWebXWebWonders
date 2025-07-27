@@ -1,0 +1,95 @@
+const Match = require("../models/match-model");
+const verifyClubOwnershipSocket = require("../utils/verifyClubOwnershipSocket");
+
+module.exports = (io, socket) => {
+  // User joins a match room
+  socket.on("joinMatchRoom", async ({ matchId }) => {
+    try {
+      const match = await Match.findById(matchId);
+      if (!match) return socket.emit("error", "Match not found");
+
+      socket.join(matchId.toString());
+
+      // Send initial data (stream + score)
+      socket.emit("initialLiveData", {
+        liveStreamUrl: match.liveStreamUrl || null,
+        sport: match.sport,
+        liveScore: match.liveScore || null,
+      });
+    } catch (err) {
+      console.error("joinMatchRoom error:", err);
+    }
+  });
+
+  // Admin updates stream + score
+  socket.on("adminUpdateScore", async ({ matchId, streamUrl, sport, scoreData }) => {
+    const clubInfo = await verifyClubOwnershipSocket(socket);
+    if (!clubInfo) {
+      return socket.emit("error", "Unauthorized: Not a club admin");
+    }
+
+    try {
+      // Update the match in DB
+      const updatedMatch = await Match.findByIdAndUpdate(
+        matchId,
+        {
+          liveStreamUrl: streamUrl,
+          liveScore: buildScoreForSport(sport, scoreData),
+        },
+        { new: true }
+      );
+
+      // Broadcast to all users in room
+      io.to(matchId.toString()).emit("liveScoreUpdated", {
+        sport,
+        liveScore: updatedMatch.liveScore,
+        liveStreamUrl: updatedMatch.liveStreamUrl,
+      });
+    } catch (err) {
+      console.error("adminUpdateScore error:", err);
+      socket.emit("error", "Update failed");
+    }
+  });
+
+  // Live chat
+  socket.on("sendMessage", ({ matchId, username, message }) => {
+    io.to(matchId.toString()).emit("receiveMessage", {
+      username,
+      message,
+      timestamp: new Date(),
+    });
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected", socket.id);
+  });
+};
+
+// Helper to structure score by sport
+function buildScoreForSport(sport, data) {
+  switch (sport) {
+    case "football":
+      return {
+        teamAScore: data.teamAScore || 0,
+        teamBScore: data.teamBScore || 0,
+        goalDetails: data.goalDetails || [],
+      };
+    case "cricket":
+      return {
+        inning: data.inning || "1st",
+        teamA: {
+          runs: data.teamA?.runs || 0,
+          wickets: data.teamA?.wickets || 0,
+          overs: data.teamA?.overs || "0.0",
+        },
+        teamB: {
+          runs: data.teamB?.runs || 0,
+          wickets: data.teamB?.wickets || 0,
+          overs: data.teamB?.overs || "0.0",
+        },
+      };
+    // Add more sports as needed
+    default:
+      return data;
+  }
+}
