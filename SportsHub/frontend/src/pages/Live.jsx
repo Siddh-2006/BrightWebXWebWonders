@@ -10,12 +10,26 @@ const Live = ({ isDarkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSport, setSelectedSport] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [liveMatches, setLiveMatches] = useState([]);
+  const [upcomingMatches, setUpcomingMatches] = useState([]);
+  const [finished, setfinishedMatches] = useState([]);
   useEffect(()=>{
     const fetch_live=async ()=>{
       try{
       const res =await axios.get("http://localhost:3000/match/live",{withCredentials:true});
       if(res.status==200){
-        console.log(res.data);
+        setLiveMatches((prev)=>([...res.data.matches]));
+        console.log(res.data.matches);
+      }
+      const res2 =await axios.get("http://localhost:3000/match/upcoming",{withCredentials:true});
+      if(res2.status==200){
+        setUpcomingMatches((prev)=>([...res2.data.matches]));
+        console.log(res2.data.matches);
+      }
+      const res3 =await axios.get("http://localhost:3000/match/past",{withCredentials:true});
+      if(res3.status==200){
+        setfinishedMatches((prev)=>([...res3.data.matches]));
+        console.log(res3.data.matches);
       }
 
     }catch(err){
@@ -24,6 +38,7 @@ const Live = ({ isDarkMode }) => {
     }
     fetch_live()
   },[])
+  const all_matches = finished.concat(upcomingMatches).concat(liveMatches);
   const matches = [
     {
       id: 1,
@@ -118,35 +133,46 @@ const Live = ({ isDarkMode }) => {
   ];
 
   const sports = ['all', 'Football', 'Basketball', 'Tennis', 'Cricket', 'Swimming'];
-  const statuses = ['all', 'live', 'upcoming', 'finished'];
+  const statuses = ['all', 'live', 'upcoming', 'Ended'];
 
-  const filteredMatches = matches.filter(match => {
+  const filteredMatches = all_matches.filter(match => {
     const matchesSport = selectedSport === 'all' || match.sport === selectedSport;
     const matchesStatus = selectedStatus === 'all' || match.status === selectedStatus;
     const matchesSearch = searchTerm === '' || 
-      match.homeTeam.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      match.awayTeam.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      match.league.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      match.venue.toLowerCase().includes(searchTerm.toLowerCase());
+      match.clubA.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      match.clubB.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      match.matchType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      match.location.city.toLowerCase().includes(searchTerm.toLowerCase());
     
     return matchesSport && matchesStatus && matchesSearch;
   });
+  console.log(filteredMatches)
 
   const getStatusColor = (status) => {
+    try{
     switch (status) {
       case 'live': return isDarkMode ? 'bg-red-500' : 'bg-red-500';
       case 'upcoming': return isDarkMode ? 'bg-blue-500' : 'bg-blue-500';
-      case 'finished': return isDarkMode ? 'bg-gray-500' : 'bg-gray-500';
+      case 'ended': return isDarkMode ? 'bg-gray-500' : 'bg-gray-500';
       default: return isDarkMode ? 'bg-gray-500' : 'bg-gray-500';
+    }}
+    catch(err){
+      console.log(err)
+      
     }
   };
 
   const getStatusText = (status) => {
+    try{
     switch (status) {
+      
       case 'live': return 'LIVE';
       case 'upcoming': return 'UPCOMING';
-      case 'finished': return 'FINISHED';
+      case 'ended': return 'ENDED';
       default: return status.toUpperCase();
+    }}
+    catch(err){
+      console.log(err)
     }
   };
 
@@ -248,11 +274,11 @@ const Live = ({ isDarkMode }) => {
           <div className="grid lg:grid-cols-2 gap-8">
             {filteredMatches.map((match, index) => (
               <motion.div
-                key={match.id}
+                key={match._id}
                 initial={{ y: 50, opacity: 0 }}
                 whileInView={{ y: 0, opacity: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * 0.01 }}
                 className={`group relative overflow-hidden rounded-3xl transition-all duration-300 hover:scale-105 ${
                   isDarkMode 
                     ? 'bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10' 
@@ -276,7 +302,7 @@ const Live = ({ isDarkMode }) => {
                     <span className={`text-sm font-medium ${
                       isDarkMode ? 'text-gray-400' : 'text-gray-600'
                     }`}>
-                      {match.league}
+                      {match.matchType}
                     </span>
                   </div>
 
@@ -285,24 +311,24 @@ const Live = ({ isDarkMode }) => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <img 
-                          src={match.homeImage} 
-                          alt={match.homeTeam}
+                          src={match.clubA.logo} 
+                          alt={match.clubA.name}
                           className="w-12 h-12 rounded-full object-cover border-2 border-current/20"
                         />
-                        <span className="font-semibold text-lg">{match.homeTeam}</span>
+                        <span className="font-semibold text-lg">{match.clubA.name}</span>
                       </div>
-                      <span className="text-3xl font-bold">{match.homeScore}</span>
+                      <span className="text-3xl font-bold">{match.score.clubA}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <img 
-                          src={match.awayImage} 
-                          alt={match.awayTeam}
+                          src={match.clubB.logo} 
+                          alt={match.clubB.name}
                           className="w-12 h-12 rounded-full object-cover border-2 border-current/20"
                         />
-                        <span className="font-semibold text-lg">{match.awayTeam}</span>
+                        <span className="font-semibold text-lg">{match.clubB.name}</span>
                       </div>
-                      <span className="text-3xl font-bold">{match.awayScore}</span>
+                      <span className="text-3xl font-bold">{match.score.clubB}</span>
                     </div>
                   </div>
                 </div>
@@ -315,17 +341,17 @@ const Live = ({ isDarkMode }) => {
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center space-x-1">
                         <Clock className="w-4 h-4" />
-                        <span>{match.time}</span>
+                        <span>{match.startTime}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <MapPin className="w-4 h-4" />
-                        <span>{match.venue}</span>
+                        <span>{match.venueName}</span>
                       </div>
                     </div>
-                    {match.status === 'live' && match.viewers > 0 && (
+                    {match.status === 'live' && match.viewsCount > 0 && (
                       <div className="flex items-center space-x-1">
                         <Eye className="w-4 h-4" />
-                        <span>{match.viewers.toLocaleString()} watching</span>
+                        <span>{match.viewsCount.toLocaleString()} watching</span>
                       </div>
                     )}
                   </div>
