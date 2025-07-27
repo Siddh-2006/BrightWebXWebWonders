@@ -5,7 +5,7 @@ import {
   Radio, Users, MessageCircle, BarChart3, Clock, MapPin, Trophy, Search,
   Filter, Play, Eye, Star, Calendar, Target, Zap
 } from 'lucide-react';
-
+import Loader from '../helper/Loader';
 const Live = ({ isDarkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSport, setSelectedSport] = useState('all');
@@ -13,6 +13,7 @@ const Live = ({ isDarkMode }) => {
   const [liveMatches, setLiveMatches] = useState([]);
   const [upcomingMatches, setUpcomingMatches] = useState([]);
   const [finished, setfinishedMatches] = useState([]);
+  const [loading,setLoading] = useState(true);
   useEffect(()=>{
     const fetch_live=async ()=>{
       try{
@@ -31,109 +32,17 @@ const Live = ({ isDarkMode }) => {
         setfinishedMatches((prev)=>([...res3.data.matches]));
         console.log(res3.data.matches);
       }
-
+      setLoading(false);
     }catch(err){
       console.log(err)
     }
     }
     fetch_live()
   },[])
-  const all_matches = finished.concat(upcomingMatches).concat(liveMatches);
-  const matches = [
-    {
-      id: 1,
-      sport: 'Football',
-      homeTeam: 'Thunder FC',
-      awayTeam: 'Lightning United',
-      homeScore: 2,
-      awayScore: 1,
-      status: 'live',
-      time: '78\'',
-      venue: 'Thunder Stadium',
-      viewers: 15420,
-      league: 'Premier League',
-      homeImage: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=400&q=80',
-      awayImage: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=400&q=80'
-    },
-    {
-      id: 2,
-      sport: 'Basketball',
-      homeTeam: 'Court Kings',
-      awayTeam: 'Hoops Elite',
-      homeScore: 89,
-      awayScore: 92,
-      status: 'live',
-      time: 'Q4 2:45',
-      venue: 'Kings Arena',
-      viewers: 8750,
-      league: 'Championship',
-      homeImage: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=400&q=80',
-      awayImage: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=400&q=80'
-    },
-    {
-      id: 3,
-      sport: 'Tennis',
-      homeTeam: 'Emma Thompson',
-      awayTeam: 'Sarah Wilson',
-      homeScore: 2,
-      awayScore: 1,
-      status: 'live',
-      time: 'Set 3',
-      venue: 'Center Court',
-      viewers: 3420,
-      league: 'Grand Slam',
-      homeImage: 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=400&q=80',
-      awayImage: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?auto=format&fit=crop&w=400&q=80'
-    },
-    {
-      id: 4,
-      sport: 'Cricket',
-      homeTeam: 'Royal Cricketers',
-      awayTeam: 'Boundary Hunters',
-      homeScore: 245,
-      awayScore: 180,
-      status: 'upcoming',
-      time: '19:30',
-      venue: 'Cricket Ground',
-      viewers: 0,
-      league: 'T20 League',
-      homeImage: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=400&q=80',
-      awayImage: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=400&q=80'
-    },
-    {
-      id: 5,
-      sport: 'Swimming',
-      homeTeam: 'Aqua Sharks',
-      awayTeam: 'Wave Riders',
-      homeScore: 0,
-      awayScore: 0,
-      status: 'upcoming',
-      time: '20:00',
-      venue: 'Aquatic Center',
-      viewers: 0,
-      league: 'Championship',
-      homeImage: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=400&q=80',
-      awayImage: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=400&q=80'
-    },
-    {
-      id: 6,
-      sport: 'Football',
-      homeTeam: 'Storm City',
-      awayTeam: 'Phoenix United',
-      homeScore: 3,
-      awayScore: 2,
-      status: 'finished',
-      time: 'FT',
-      venue: 'Storm Arena',
-      viewers: 12340,
-      league: 'Premier League',
-      homeImage: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=400&q=80',
-      awayImage: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=400&q=80'
-    }
-  ];
-
-  const sports = ['all', 'Football', 'Basketball', 'Tennis', 'Cricket', 'Swimming'];
-  const statuses = ['all', 'live', 'Not Started', 'Ended'];
+  const all_matches = liveMatches.concat(upcomingMatches).concat(finished);
+ 
+  const sports = ['all', 'football', 'basketball', 'tennis', 'cricket', 'swimming'];
+  const statuses = ['all', 'Live', 'Not Started', 'Ended'];
 
   const filteredMatches = all_matches.filter(match => {
     const matchesSport = selectedSport === 'all' || match.sport === selectedSport;
@@ -151,7 +60,7 @@ const Live = ({ isDarkMode }) => {
   const getStatusColor = (status) => {
     try{
     switch (status) {
-      case 'live': return isDarkMode ? 'bg-red-500' : 'bg-red-500';
+      case 'Live': return isDarkMode ? 'bg-red-500' : 'bg-red-500';
       case 'Not Started': return isDarkMode ? 'bg-blue-500' : 'bg-blue-500';
       case 'ended': return isDarkMode ? 'bg-gray-500' : 'bg-gray-500';
       default: return isDarkMode ? 'bg-gray-500' : 'bg-gray-500';
@@ -166,7 +75,7 @@ const Live = ({ isDarkMode }) => {
     try{
     switch (status) {
       
-      case 'live': return 'LIVE';
+      case 'Live': return 'LIVE';
       case 'Not Started': return 'UPCOMING';
       case 'ended': return 'ENDED';
       default: return status.toUpperCase();
@@ -175,7 +84,7 @@ const Live = ({ isDarkMode }) => {
       console.log(err)
     }
   };
-
+  if(loading) return <Loader />
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -290,7 +199,7 @@ const Live = ({ isDarkMode }) => {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-3">
                       <span className={`${getStatusColor(match.status)} text-white px-3 py-1 rounded-full text-sm font-bold flex items-center space-x-1`}>
-                        {match.status === 'live' && <Radio className="w-3 h-3 animate-pulse" />}
+                        {match.status === 'Live' && <Radio className="w-3 h-3 animate-pulse" />}
                         <span>{getStatusText(match.status)}</span>
                       </span>
                       <span className={`text-sm font-medium ${
@@ -348,7 +257,7 @@ const Live = ({ isDarkMode }) => {
                         <span>{match.venueName}</span>
                       </div>
                     </div>
-                    {match.status === 'live' && match.viewsCount > 0 && (
+                    {match.status === 'Live' && match.viewsCount > 0 && (
                       <div className="flex items-center space-x-1">
                         <Eye className="w-4 h-4" />
                         <span>{match.viewsCount.toLocaleString()} watching</span>
@@ -358,7 +267,7 @@ const Live = ({ isDarkMode }) => {
 
                   {/* Action Buttons */}
                   <div className="flex space-x-3">
-                    {match.status === 'live' ? (
+                    {match.status === 'Live' ? (
                       <>
                         <button className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
                           isDarkMode
@@ -407,7 +316,7 @@ const Live = ({ isDarkMode }) => {
 
                 {/* Hover Effect */}
                 <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none ${
-                  match.status === 'live'
+                  match.status === 'Live'
                     ? 'bg-gradient-to-r from-red-500/5 to-pink-500/5'
                     : match.status === 'Not Started'
                       ? 'bg-gradient-to-r from-blue-500/5 to-cyan-400/5'
