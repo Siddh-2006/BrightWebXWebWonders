@@ -38,4 +38,5 @@ const verifyClubOwnershipSocket = async (socket) => {
   }
 };
 
-module.exports = { verifyClubOwnershipSocket };
+module.exports = verifyClubOwnershipSocket;
+

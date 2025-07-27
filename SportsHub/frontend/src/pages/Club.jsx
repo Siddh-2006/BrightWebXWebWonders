@@ -85,7 +85,7 @@ const Club = ({ isDarkMode }) => {
   }
 
   return (
-    <div className={` px-10 min-h-screen ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'} p-6 pt-24`}>
+    <div className={` px-10 min-h-screen ${isDarkMode ? 'bg-transparent text-white' : 'bg-white text-black'} p-6 pt-24`}>
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-10">
         <h1 className="text-4xl font-bold text-center text-orange-400 mb-8">Our Clubs</h1>

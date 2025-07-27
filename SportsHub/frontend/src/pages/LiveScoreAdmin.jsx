@@ -33,7 +33,9 @@ const LiveScoreAdmin = () => {
         teamAScore: score.split(' - ')[0],
         teamBScore: score.split(' - ')[1],
       }
-    }
+      socket.emit('adminUpdateScore', { matchId, streamUrl: null, sport, scoreData: matchData });
+      alert('Match data sent to viewers!');
+    } 
     else if (sport === "cricket") {
       const matchData = {
         teamA: { runs: cricket_data.teamA.runs, wickets: cricket_data.teamA.wickets, overs: cricket_data.teamA.overs },
@@ -41,11 +43,12 @@ const LiveScoreAdmin = () => {
         timeline,
         inning,
       }
+      socket.emit('adminUpdateScore', { matchId, streamUrl: null, sport, scoreData: matchData });
+      alert('Match data sent to viewers!');
     }
 
 
-    socket.emit('adminUpdateScore', { matchId, streamUrl: null, sport, scoreData: matchData });
-    alert('Match data sent to viewers!');
+    
   };
 
   const addEvent = () => {
@@ -65,7 +68,7 @@ const LiveScoreAdmin = () => {
   useEffect(() => {
     function connect_socket() {
       try {
-        const socket = io('http://localhost:5000');
+        const socket = io('http://localhost:5000',{withCredentials:true,transports:["websocket"],});
         setSocket(socket);
         socket.on('connect', () => {
           console.log('Connected to WebSocket server');
