@@ -24,7 +24,7 @@
   const { GoogleGenerativeAI } = require("@google/generative-ai");
   const runMatchStatusCron = require('./cron/matchStatusUpdater');
   const handleSocketConnection = require("./live_match_server/server");
-
+  const liveMatchRoomHandler = require("./socket/liveMatchRoomHandler");
   const initQuizCronJobs = require('./cron/quizCronJobs');
   
   const app = express();
@@ -38,10 +38,17 @@
   });
 
   //handel websocket server
-  handleSocketConnection(io)
-  server.listen(5000, () => {
-  console.log(`🚀[socketserver] Server running on http://localhost:5000`);
-  });
+  // handleSocketConnection(io)
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  liveMatchRoomHandler(io, socket);
+});
+  // start the server on port 5000
+  // server.listen(5000, () => {
+  // console.log(`🚀[socketserver] Server running on http://localhost:5000`);
+  // });
 
   // runMatchStatusCron();
   
