@@ -73,6 +73,7 @@ function buildScoreForSport(sport, data) {
         teamAScore: data.teamAScore || 0,
         teamBScore: data.teamBScore || 0,
         goalDetails: data.goalDetails || [],
+        timeline: data.timeline || [],
       };
     case "cricket":
       return {
@@ -87,6 +88,7 @@ function buildScoreForSport(sport, data) {
           wickets: data.teamB?.wickets || 0,
           overs: data.teamB?.overs || "0.0",
         },
+        timeline:data.timeline || [],
       };
     // Add more sports as needed
     default:

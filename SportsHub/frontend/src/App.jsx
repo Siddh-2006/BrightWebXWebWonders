@@ -17,7 +17,7 @@ import Logout from './pages/Logout';
 import axios from 'axios';
 import LivePage from './pages/LivePage';
 import LiveScoreAdmin from './pages/LiveScoreAdmin';
-
+import Club from './pages/Club';
 function App() {
   const [userType, setUserType] = useState('player');
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -71,6 +71,7 @@ function App() {
             <Route path="/profile" element={<Profile isDarkMode={isDarkMode} isLoggedIn={login_info.isLoggedIn} />} />
             <Route path="/login" element={<Login isDarkMode={isDarkMode} setIsLoggedIn={login_info.setIsLoggedIn} isLoggedIn={login_info.isLoggedIn} />} />
             <Route path="/logout" element={<Logout setIsLoggedIn={login_info.setIsLoggedIn}/>}/>
+            <Route path="/club" element={<Club isDarkMode={isDarkMode} />} />
             <Route path="/live_match/:sport/:match_id" element={<LivePage/>}></Route>
             <Route path="/live_match_admin/:sport/:match_id" element={<LiveScoreAdmin/>}></Route>
           </Routes>

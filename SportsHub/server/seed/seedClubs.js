@@ -6,7 +6,7 @@ const User = require("../models/user-model"); // adjust the path if needed
 dotenv.config();
 
 // Connect to MongoDB using your existing URI
-mongoose.connect(process.env.MONGODB_URI, {
+mongoose.connect("mongodb+srv://freny826:nrSPUbUDEZs1JctR@sportshub.pmpnhzh.mongodb.net/?retryWrites=true&w=majority&appName=SportsHub", {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => {
@@ -24,6 +24,7 @@ const seedClubs = async () => {
     const aditya = await User.findOne({ email: "aditya.verma@abcschool.org" });
     const neha = await User.findOne({ email: "neha.patel@sportsclub.in" });
     const imran = await User.findOne({ email: "imran.sheikh@collegesports.edu" });
+    const sharad = await User.findOne({ email: "sharadjhawar12345@gmail.com" });
 
     if (!fatima || !riya || !aditya || !neha || !imran) {
       throw new Error("One or more seed users not found in DB.");
@@ -37,6 +38,14 @@ const seedClubs = async () => {
         approved: true,
         createdBy: fatima._id,
         players: [fatima._id, imran._id]
+      },
+      {
+        name: "Pinky sports club",
+        logo: "https://res.cloudinary.com/dddwnvp4w/image/upload/v1753183000/svnit-falcons-logo.png",
+        description: "Pride of gandhinagar, known for dominance in chess.",
+        approved: true,
+        createdBy: sharad._id,
+        players: [neha._id, fatima._id]
       },
       {
         name: "Neon Blaze Sports Club",

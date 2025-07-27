@@ -3,7 +3,6 @@ import { useParams } from 'react-router';
 import io from 'socket.io-client';
 import { motion, AnimatePresence } from 'motion/react';
 
-const socket = io('http://localhost:5000'); // Your backend WebSocket server
 
 const Loader = () => (
   <div className="flex items-center justify-center h-64">
@@ -18,7 +17,8 @@ const LivePage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    socket.emit('joinMatch', { sport, matchId:match_id });
+    const socket = io('http://localhost:5000');
+    socket.emit('joinMatchRoom', { sport, matchId:match_id });
 
     socket.on('scoreUpdated', (data) => {
       setMatchData(data);

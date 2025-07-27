@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Users,
   Settings,
+  Contact,
   Shield,
   Heart,
   MessageCircle,
@@ -48,6 +49,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
         });
         if (res.status == 200) {
           setUserData(res.data);
+          console.log(res.data)
         } else {
           console.log(res);
         }
@@ -295,12 +297,12 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex space-x-1 mb-8">
+        <div className="flex space-x-1 flex-wrap mb-8">
           {[
             { id: "overview", label: "Overview", icon: User },
             { id: "stats", label: "Statistics", icon: BarChart3 },
             { id: "achievements", label: "Achievements", icon: Award },
-            { id: "settings", label: "Settings", icon: Settings },
+            { id: "settings", label: "contact", icon: Contact },
           ].map((tab) => (
             <button
               key={tab.id}

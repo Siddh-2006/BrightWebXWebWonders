@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
-
-const socket = io('http://localhost:5000'); // Change to your backend server
+import { showCustomToast } from '../helper/CustomToast';
+import { ToastContainer } from 'react-toastify';
+// Change to your backend server
 
 const LiveScoreAdmin = () => {
   const [sport, setSport] = useState('');
@@ -10,8 +11,14 @@ const LiveScoreAdmin = () => {
   const [clubB, setClubB] = useState({ name: '', logo: '' });
   const [timeline, setTimeline] = useState([]);
   const [score, setScore] = useState('0 - 0');
-
-  const [event, setEvent] = useState({
+  const [socket, setSocket] = useState(null);
+  const [goalDetails, setGoalDetails] = useState([]);
+  const [inning, setInning] = useState('1st');
+  const [cricket_data, setCricket_data] = useState({
+    teamA: { runs: 0, wickets: 0, overs: '0.0' },
+    teamB: { runs: 0, wickets: 0, overs: '0.0' },
+  }); // cricket data is for cricket
+  const [event, setEvent] = useState({ // event is for foot ball
     team: 'clubA',
     playerId: '',
     assistBy: '',
@@ -19,29 +26,60 @@ const LiveScoreAdmin = () => {
   });
 
   const updateMatch = () => {
-    const matchData = {
-      clubA,
-      clubB,
-      score,
-      timeline,
-    };
+    if (sport === "football") {
+      const matchData = {
+        timeline,
+        goalDetails,
+        teamAScore: score.split(' - ')[0],
+        teamBScore: score.split(' - ')[1],
+      }
+    }
+    else if (sport === "cricket") {
+      const matchData = {
+        teamA: { runs: cricket_data.teamA.runs, wickets: cricket_data.teamA.wickets, overs: cricket_data.teamA.overs },
+        teamB: { runs: cricket_data.teamB.runs, wickets: cricket_data.teamB.wickets, overs: cricket_data.teamB.overs },
+        timeline,
+        inning,
+      }
+    }
 
-    socket.emit('scoreUpdate', { sport, matchId, update: matchData });
+
+    socket.emit('adminUpdateScore', { matchId, streamUrl: null, sport, scoreData: matchData });
     alert('Match data sent to viewers!');
   };
 
   const addEvent = () => {
+
     const updatedTimeline = [...timeline, event];
     setTimeline(updatedTimeline);
-
-    const scoreParts = score.split(' - ').map(Number);
-    if (event.team === 'clubA') scoreParts[0]++;
-    else scoreParts[1]++;
-    setScore(`${scoreParts[0]} - ${scoreParts[1]}`);
+    if (sport === "football") {
+      const scoreParts = score.split(' - ').map(Number);
+      if (event.team === 'clubA') scoreParts[0]++;
+      else scoreParts[1]++;
+      setScore(`${scoreParts[0]} - ${scoreParts[1]}`);
+    }
 
     // Reset input
     setEvent({ team: 'clubA', playerId: '', assistBy: '', time: '' });
   };
+  useEffect(() => {
+    function connect_socket() {
+      try {
+        const socket = io('http://localhost:5000');
+        setSocket(socket);
+        socket.on('connect', () => {
+          console.log('Connected to WebSocket server');
+        })
+      }
+      catch (err) {
+        showCustomToast("error", err)
+      }
+    }
+    if(!socket) {
+      connect_socket();
+    }
+  },[]);
+
 
   return (
     <div className="min-h-screen pt-20 bg-transparent text-white p-6 space-y-6">

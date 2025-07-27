@@ -133,7 +133,7 @@ const Live = ({ isDarkMode }) => {
   ];
 
   const sports = ['all', 'Football', 'Basketball', 'Tennis', 'Cricket', 'Swimming'];
-  const statuses = ['all', 'live', 'upcoming', 'Ended'];
+  const statuses = ['all', 'live', 'Not Started', 'Ended'];
 
   const filteredMatches = all_matches.filter(match => {
     const matchesSport = selectedSport === 'all' || match.sport === selectedSport;
@@ -152,7 +152,7 @@ const Live = ({ isDarkMode }) => {
     try{
     switch (status) {
       case 'live': return isDarkMode ? 'bg-red-500' : 'bg-red-500';
-      case 'upcoming': return isDarkMode ? 'bg-blue-500' : 'bg-blue-500';
+      case 'Not Started': return isDarkMode ? 'bg-blue-500' : 'bg-blue-500';
       case 'ended': return isDarkMode ? 'bg-gray-500' : 'bg-gray-500';
       default: return isDarkMode ? 'bg-gray-500' : 'bg-gray-500';
     }}
@@ -167,7 +167,7 @@ const Live = ({ isDarkMode }) => {
     switch (status) {
       
       case 'live': return 'LIVE';
-      case 'upcoming': return 'UPCOMING';
+      case 'Not Started': return 'UPCOMING';
       case 'ended': return 'ENDED';
       default: return status.toUpperCase();
     }}
@@ -383,7 +383,7 @@ const Live = ({ isDarkMode }) => {
                           <BarChart3 className="w-5 h-5" />
                         </button>
                       </>
-                    ) : match.status === 'upcoming' ? (
+                    ) : match.status === 'Not Started' ? (
                       <button className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
                         isDarkMode
                           ? 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-400 hover:to-cyan-300'
@@ -409,7 +409,7 @@ const Live = ({ isDarkMode }) => {
                 <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none ${
                   match.status === 'live'
                     ? 'bg-gradient-to-r from-red-500/5 to-pink-500/5'
-                    : match.status === 'upcoming'
+                    : match.status === 'Not Started'
                       ? 'bg-gradient-to-r from-blue-500/5 to-cyan-400/5'
                       : 'bg-gradient-to-r from-gray-500/5 to-gray-600/5'
                 }`}></div>
