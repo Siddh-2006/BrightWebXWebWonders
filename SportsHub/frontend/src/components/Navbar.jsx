@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router';
 import {motion} from "motion/react"
 import { 
   Home, Trophy, Radio, Bell, Brain, Users, User, LogIn, LogOut, 
-  Menu, X, Sun, Moon, Zap, Target, Award
+  Menu, X, Sun, Moon, Zap, Target, Award,Club
 } from 'lucide-react';
 
 const Navbar = ({ userType, isLoggedIn, isDarkMode, toggleTheme }) => {
@@ -15,7 +15,7 @@ const Navbar = ({ userType, isLoggedIn, isDarkMode, toggleTheme }) => {
     { icon: Trophy, label: 'Sports', href: '/sports' },
     { icon: Radio, label: 'Live', href: '/live' },
     ...(userType === 'player' ? [
-      { icon: Bell, label: 'Notifications', href: '/notifications' },
+      { icon: Club, label: 'Clubs', href: '/club' },
       { icon: Brain, label: 'AI Guru', href: '/ai-guru' }
     ] : []),
     { icon: Users, label: 'About Us', href: '/about' },

@@ -20,7 +20,7 @@ const Loader = () => {
         {[...Array(3)].map((_, i) => (
           <motion.div
             key={i}
-            className="w-6 h-6 rounded-full bg-white"
+            className="w-6 h-6 rounded-full bg-orange-500"
             variants={circleVariants}
             animate="animate"
             transition={{ delay: i * 0.2 }}
