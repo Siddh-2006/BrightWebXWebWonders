@@ -13,14 +13,14 @@ const circleVariants = {
   },
 };
 
-const Loader = () => {
+const Loader = ({isDarkMode}) => {
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
+    <div className="flex flex-col items-center justify-center h-screen bg-transparent text-white">
       <div className="flex space-x-4 mb-6">
         {[...Array(3)].map((_, i) => (
           <motion.div
             key={i}
-            className="w-6 h-6 rounded-full bg-orange-500"
+            className={`w-6 h-6 rounded-full ${!isDarkMode ? 'bg-blue-500' : 'bg-orange-500'}`}
             variants={circleVariants}
             animate="animate"
             transition={{ delay: i * 0.2 }}

@@ -107,7 +107,7 @@ const Live = ({ isDarkMode }) => {
     }
   };
 
-  if(loading) return <Loader />
+  if(loading) return <Loader isDarkMode={isDarkMode} />
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -129,11 +129,10 @@ const Live = ({ isDarkMode }) => {
             transition={{ duration: 0.8 }}
           >
             <h1 className="text-5xl md:text-7xl font-bold mb-6">
-              <span className={`${
-                isDarkMode 
-                  ? 'bg-gradient-to-r from-red-400 to-pink-500' 
-                  : 'bg-gradient-to-r from-red-500 to-pink-600'
-              } bg-clip-text text-transparent`}>Live</span> Matches
+              Live <span className={`${isDarkMode
+            ? 'bg-gradient-to-r from-orange-400 to-red-500'
+            : 'bg-gradient-to-r from-blue-500 to-cyan-400'
+          } bg-clip-text text-transparent`}>Matches</span> 
             </h1>
             <p className={`text-xl md:text-2xl max-w-4xl mx-auto mb-12 ${
               isDarkMode ? 'text-gray-300' : 'text-gray-600'
@@ -201,7 +200,7 @@ const Live = ({ isDarkMode }) => {
       </section>
 
       {/* Live Matches Grid */}
-      <section className="py-20">
+      <section >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8">
             {filteredMatches.map((match, index) => (

@@ -5,33 +5,26 @@ import {
   Play, Video, Trophy, UserCheck
 } from 'lucide-react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const Club = ({ isDarkMode }) => {
-  const [clubData, setClubData] = useState([]);
-  const [filteredClubs, setFilteredClubs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('name');
+  // State hooks for storing data and UI behavior
+  const [clubData, setClubData] = useState([]); // all clubs
+  const [filteredClubs, setFilteredClubs] = useState([]); // filtered clubs
+  const [loading, setLoading] = useState(true); // loading state
+  const [searchTerm, setSearchTerm] = useState(''); // search input
+  const [sortBy, setSortBy] = useState('name'); // current sort option
 
-  const [joinFormData, setJoinFormData] = useState({
-    age: '',
-    skills: '',
-    experience: 'Beginner',
-    achievements: '',
-    certificate: null,
-    isPaid: false
-  });
-
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
+  // Fetch clubs from API on component mount
   useEffect(() => {
     const fetch_data = async () => {
       try {
         const res = await axios.get("http://localhost:3000/clubs", { withCredentials: true });
         if (res.status === 200) {
           setClubData(res.data);
+          console.log(res.data);
           setFilteredClubs(res.data);
-          console.log("Club data fetched:", res.data);
           setLoading(false);
         }
       } catch (err) {
@@ -42,14 +35,13 @@ const Club = ({ isDarkMode }) => {
     fetch_data();
   }, []);
 
-  // Search and filter functionality
+  // Handle filtering and sorting whenever search term, sort option or data changes
   useEffect(() => {
     let filtered = clubData.filter(club =>
       club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       club.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Sort functionality
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'name':
@@ -68,6 +60,7 @@ const Club = ({ isDarkMode }) => {
     setFilteredClubs(filtered);
   }, [searchTerm, sortBy, clubData]);
 
+  // Format date into a readable string
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -76,68 +69,88 @@ const Club = ({ isDarkMode }) => {
     });
   };
 
+  // Show loading spinner while data is being fetched
   if (loading) {
     return (
       <div className={`min-h-screen ${isDarkMode ? 'bg-black' : 'bg-white'} flex items-center justify-center`}>
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-400"></div>
+        <div className={`animate-spin rounded-full h-32 w-32 border-b-2 ${isDarkMode ? 'border-orange-600' : 'border-blue-600'}`}></div>
       </div>
     );
   }
 
   return (
-    <div className={` px-10 min-h-screen ${isDarkMode ? 'bg-transparent text-white' : 'bg-white text-black'} p-6 pt-24`}>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen"
+    >
+    <div className={`px-10 min-h-screen ${isDarkMode ? 'bg-transparent text-white' : 'bg-white text-black'} p-6 pt-24`}>
       {/* Header */}
-      <div className="max-w-7xl mx-auto mb-10">
-        <h1 className="text-4xl font-bold text-center text-orange-400 mb-8">Our Clubs</h1>
-        
-        {/* Search and Filter Bar */}
-        <div className={`${isDarkMode ? 'bg-white/5' : 'bg-black/5'} backdrop-blur-sm rounded-2xl p-6 border border-orange-500/30`}>
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
-            {/* Search Bar */}
-            <div className="relative flex-1 w-full">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search clubs by name or description..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full ${isDarkMode ? 'bg-white/10 text-white' : 'bg-black/10 text-black'} border ${isDarkMode ? 'border-white/20' : 'border-black/20'} rounded-xl pl-12 pr-4 py-3 placeholder-gray-400 focus:outline-none focus:ring-2 ${isDarkMode ? 'focus:ring-white' : 'focus:ring-black'} focus:border-transparent transition-all duration-300`}
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 ${isDarkMode ? 'hover:text-white' : 'hover:text-black'} transition-colors`}
+      <motion.div
+                  initial={{ y: 50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.1 }}
                 >
-                  <X className="w-5 h-5" />
-                </button>
-              )}
-            </div>
-
-            {/* Sort Dropdown */}
-            <div className="relative">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className={`${isDarkMode ? 'bg-white/10 text-white' : 'bg-black/10 text-black'} border border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent appearance-none pr-10 min-w-[160px]`}
+      <div className="max-w-7xl mx-auto mb-10">
+        <h1 className={`text-5xl md:text-7xl font-bold text-center mb-6 mt-15`}>Club <span className={`${isDarkMode
+          ? 'bg-gradient-to-r from-orange-400 to-red-500'
+          : 'bg-gradient-to-r from-blue-500 to-cyan-400'
+          } bg-clip-text text-transparent`}>Hub</span></h1>
+        <p className={`text-xl md:text-2xl max-w-4xl mx-auto mb-12 text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+          }`}>
+          Dive into the club’s story, stars, and unforgettable highlights.
+        </p>
+        {/* Search and Filter Controls */}
+        <div className="flex flex-col lg:flex-row gap-4 items-center mb-10">
+          {/* Search input */}
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search clubs by name or description..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={`w-full pl-12 pr-4 py-4 rounded-2xl font-medium transition-all duration-300 focus:outline-none ${isDarkMode
+                ? 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
+                : 'bg-black/10 backdrop-blur-md border border-black/20 text-gray-900 placeholder-gray-500 focus:border-blue-500'
+                }`}
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 ${isDarkMode ? 'hover:text-white' : 'hover:text-black'
+                  } transition-colors`}
               >
-                <option className={isDarkMode ? "bg-black text-white" : "bg-white text-black"} value="name">Sort by Name</option>
-                <option className={isDarkMode ? "bg-black text-white" : "bg-white text-black"} value="players">Most Players</option>
-                <option className={isDarkMode ? "bg-black text-white" : "bg-white text-black"} value="newest">Newest First</option>
-                <option className={isDarkMode ? "bg-black text-white" : "bg-white text-black"} value="oldest">Oldest First</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-            </div>
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
 
-            {/* Results Count */}
-            <div className="text-gray-400 text-sm">
-              {filteredClubs.length} of {clubData.length} clubs
-            </div>
+          {/* Sort dropdown (optional) */}
+          <div className="relative mt-4 lg:mt-0">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className={`pl-4 pr-10 py-4 rounded-2xl font-medium appearance-none focus:outline-none transition-all duration-300 ${isDarkMode
+                ? 'bg-white/10 text-white border border-white/20 backdrop-blur-md focus:border-orange-500'
+                : 'bg-black/10 text-gray-900 border border-black/20 backdrop-blur-md focus:border-blue-500'
+                }`}
+            >
+              <option className={isDarkMode ? "bg-black text-white" : "bg-white text-black"} value="name">Sort by Name</option>
+              <option className={isDarkMode ? "bg-black text-white" : "bg-white text-black"} value="players">Most Players</option>
+              <option className={isDarkMode ? "bg-black text-white" : "bg-white text-black"} value="newest">Newest First</option>
+              <option className={isDarkMode ? "bg-black text-white" : "bg-white text-black"} value="oldest">Oldest First</option>
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
           </div>
         </div>
-      </div>
 
-      {/* Club Grid */}
-      <div className="max-w-7xl mx-auto">
+      </div>
+</motion.div>
+      {/* Club Cards */}
+      <div className="max-w-7xl mx-auto py-14">
+        {/* No results fallback */}
         {filteredClubs.length === 0 ? (
           <div className="text-center py-20">
             <Search className="w-16 h-16 text-gray-500 mx-auto mb-4" />
@@ -147,27 +160,33 @@ const Club = ({ isDarkMode }) => {
         ) : (
           <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
             {filteredClubs.map((club) => (
+              <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+          >
               <div
                 key={club._id}
-                className={`group relative overflow-hidden rounded-3xl transition-all duration-300 hover:scale-105 ${
-                  isDarkMode
-                    ? 'bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10'
-                    : 'bg-black/5 backdrop-blur-md border border-black/10 hover:bg-black/10'
-                }`}
+                className={`group relative overflow-hidden rounded-3xl transition-all duration-300 hover:scale-105 ${isDarkMode
+                  ? 'bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10'
+                  : 'bg-black/5 backdrop-blur-md border border-black/10 hover:bg-black/10'
+                  }`}
               >
-                {/* Club Header */}
                 <div className="relative p-6 pb-4">
+                  {/* Club Header Info */}
                   <div className="flex items-start gap-4 mb-4">
+                    {/* Club Logo */}
                     {club.logo && (
                       <div className="relative">
                         <img
                           src={club.logo}
                           alt={club.name}
-                          className="w-16 h-16 object-cover rounded-xl border-2 border-orange-400/50 shadow-lg"
+                          className={`w-16 h-16 object-cover rounded-xl border-2 ${isDarkMode ? 'border-orange-400/50' : 'border-blue-400/50'} shadow-lg`}
                           onError={(e) => {
-                            e.target.src ="";
+                            e.target.src = "";
                           }}
                         />
+                        {/* Approved Badge */}
                         {club.approved && (
                           <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-1">
                             <Check className="w-3 h-3 text-white" />
@@ -176,7 +195,7 @@ const Club = ({ isDarkMode }) => {
                       </div>
                     )}
                     <div className="flex-1">
-                      <h2 className="text-xl font-bold text-orange-400 mb-1 group-hover:text-orange-300 transition-colors">
+                      <h2 className={`text-xl font-bold mb-1 transition-colors ${isDarkMode ? 'text-orange-400 group-hover:text-orange-300' : 'text-blue-400 group-hover:text-blue-300'}`}>
                         {club.name}
                       </h2>
                       <p className="text-xs text-gray-400">
@@ -184,28 +203,31 @@ const Club = ({ isDarkMode }) => {
                       </p>
                     </div>
                   </div>
-                  
+
+                  {/* Description */}
                   <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-4 line-clamp-2`}>
                     {club.description}
                   </p>
                 </div>
 
-                {/* Club Stats */}
+                {/* Stats */}
                 <div className="px-6 pb-4">
                   <div className="grid grid-cols-2 gap-3 mb-4">
+                    {/* Player Count */}
                     <div className={`${isDarkMode ? 'bg-white/10' : 'bg-black/10'} rounded-lg p-3 text-center`}>
-                      <Users className="w-5 h-5 text-orange-400 mx-auto mb-1" />
+                      <Users className={`${isDarkMode ? 'text-orange-400' : 'text-blue-400'} w-5 h-5 mx-auto mb-1`} />
                       <p className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>{club.players?.length || 0}</p>
                       <p className="text-xs text-gray-400">Players</p>
                     </div>
+                    {/* Match Count */}
                     <div className={`${isDarkMode ? 'bg-white/10' : 'bg-black/10'} rounded-lg p-3 text-center`}>
-                      <Trophy className="w-5 h-5 text-orange-400 mx-auto mb-1" />
+                      <Trophy className={`${isDarkMode ? 'text-orange-400' : 'text-blue-400'} w-5 h-5 mx-auto mb-1`} />
                       <p className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>{club.matchHistory?.length || 0}</p>
                       <p className="text-xs text-gray-400">Matches</p>
                     </div>
                   </div>
 
-                  {/* Activity Indicators */}
+                  {/* Tags: Live, Reels, Vlogs */}
                   <div className="flex justify-center gap-4 mb-4">
                     {club.liveMatches?.length > 0 && (
                       <div className="flex items-center gap-1 bg-red-500/20 text-red-400 px-2 py-1 rounded-full text-xs">
@@ -227,24 +249,28 @@ const Club = ({ isDarkMode }) => {
                     )}
                   </div>
 
-                  {/* Action Button */}
-                  <button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:ring-offset-gray-800">
+                  {/* View Button */}
+
+                  <Link to={`/club/${encodeURIComponent(club.name)}`}><button className={`w-full cursor-pointer bg-gradient-to-r ${isDarkMode ? 'from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 focus:ring-orange-400' : 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:ring-blue-400'} text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800`}>
                     View Club Details
-                  </button>
+                  </button></Link>
+
                 </div>
 
-                {/* Highlights Badge */}
+                {/* Highlight Badge */}
                 {club.highlights?.length > 0 && (
                   <div className="absolute top-4 right-4 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full text-xs font-medium">
                     ⭐ {club.highlights.length} Highlights
                   </div>
                 )}
               </div>
+              </motion.div>
             ))}
           </div>
         )}
       </div>
     </div>
+    </motion.div>
   );
 };
 
