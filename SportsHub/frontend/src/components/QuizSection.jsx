@@ -9,9 +9,9 @@ import { quizService } from '../services/quizService.jsx';
 import loginContext from '../context/loginContext.js';
 import CustomToast from '../helper/CustomToast.jsx';
 
-const QuizSection = ({ isDarkMode }) => {
+const QuizSection = ({ isDarkMode, preSelectedSport }) => {
   const { isLoggedIn, userType, checkAuthStatus } = useContext(loginContext);
-  const [selectedSport, setSelectedSport] = useState('');
+  const [selectedSport, setSelectedSport] = useState(preSelectedSport || '');
   const [quizState, setQuizState] = useState('selection'); // selection, loading, quiz, results, nameInput
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);

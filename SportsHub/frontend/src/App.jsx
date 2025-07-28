@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Sports from './pages/Sports';
+import SportSpecific from './pages/SportSpecific';
+import Quiz from './pages/Quiz';
 import Live from './pages/Live';
 import Notifications from './pages/Notifications';
 import AIGuru from './components/AIGuru';
@@ -64,6 +66,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Home isDarkMode={isDarkMode} />} />
             <Route path="/sports" element={<Sports isDarkMode={isDarkMode} />} />
+            <Route path="/sports/:sport" element={<SportSpecific isDarkMode={isDarkMode} />} />
+            <Route path="/quiz" element={<Quiz isDarkMode={isDarkMode} />} />
             <Route path="/live" element={<Live isDarkMode={isDarkMode} />} />
             <Route path="/notifications" element={<Notifications isDarkMode={isDarkMode} userType={userType} />} />
             <Route path="/ai-guru" element={<AIGuru isDarkMode={isDarkMode} />} />

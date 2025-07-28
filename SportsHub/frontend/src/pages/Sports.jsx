@@ -295,7 +295,7 @@ const Sports = ({ isDarkMode }) => {
 
                   {/* CTA Button */}
                   <Link
-                    to={`/sports/${sport.name.toLowerCase()}`}
+                    to={`/sports/${sport.name.toLowerCase().replace(/\s+/g, '-').replace('&', '')}`}
                     className={`w-full flex items-center justify-center space-x-2 py-4 rounded-2xl font-semibold transition-all duration-300 group/btn ${
                       isDarkMode
                         ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
