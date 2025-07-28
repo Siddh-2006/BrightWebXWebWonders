@@ -57,6 +57,12 @@ const matchSchema = new mongoose.Schema({
   default: {},
 },
 
+    predictions: {
+    clubA: { type: Number, default: 0 },
+    clubB: { type: Number, default: 0 },
+  },
+
+
   // 💰 Monetization
   isPaid: { type: Boolean, default: false },
   viewerFee: { type: Number, default: 0 },

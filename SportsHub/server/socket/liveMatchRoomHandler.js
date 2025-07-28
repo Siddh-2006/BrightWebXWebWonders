@@ -10,11 +10,21 @@ module.exports = (io, socket) => {
 
       socket.join(matchId.toString());
 
-      // Send initial data (stream + score)
+       // Calculate prediction percentages
+    const total =
+      (match.predictions?.clubA || 0) + (match.predictions?.clubB || 0);
+    const percentA = total ? ((match.predictions.clubA / total) * 100).toFixed(1) : 0;
+    const percentB = total ? ((match.predictions.clubB / total) * 100).toFixed(1) : 0;
+
+      // Send initial data (stream + score + predictions)
       socket.emit("initialLiveData", {
         liveStreamUrl: match.liveStreamUrl || null,
         sport: match.sport,
         liveScore: match.liveScore || null,
+        predictions: {
+        clubA: percentA,
+        clubB: percentB,
+      },
       });
     } catch (err) {
       console.error("joinMatchRoom error:", err);
@@ -72,6 +82,34 @@ module.exports = (io, socket) => {
       message,
       timestamp: new Date(),
     });
+  });
+
+  //Prediction
+  socket.on("submitPrediction", async ({ matchId, predictedClub }) => {
+    if (!["clubA", "clubB"].includes(predictedClub)) {
+      return socket.emit("error", "Invalid prediction");
+    }
+
+    try {
+      const match = await Match.findById(matchId);
+      if (!match) return socket.emit("error", "Match not found");
+
+      match.predictions[predictedClub] += 1;
+      await match.save();
+
+      const total =
+        match.predictions.clubA + match.predictions.clubB;
+      const percentA = ((match.predictions.clubA / total) * 100).toFixed(1);
+      const percentB = ((match.predictions.clubB / total) * 100).toFixed(1);
+
+      io.to(matchId.toString()).emit("predictionUpdate", {
+        clubA: percentA,
+        clubB: percentB,
+      });
+    } catch (err) {
+      console.error("submitPrediction error:", err);
+      socket.emit("error", "Prediction failed");
+    }
   });
 
   socket.on("disconnect", () => {
