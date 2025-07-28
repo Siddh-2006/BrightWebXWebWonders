@@ -9,9 +9,12 @@ const clubSchema = new mongoose.Schema({
     logo:{ 
         type: String
     },
-    description:{ 
+    description:{
         type: String
     },
+    sports: [
+        { type: String }
+    ],
     approved: { 
         type: Boolean, 
         default: false

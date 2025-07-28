@@ -1,4 +1,4 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router";
 import { useNavigate } from "react-router";
@@ -21,9 +21,11 @@ import axios from "axios";
 // custom toasts
 import { ToastContainer, toast } from "react-toastify";
 import { showCustomToast } from "../helper/CustomToast";
+import LoginContext from "../context/loginContext";
 
-const Login = ({ isDarkMode, setIsLoggedIn,isLoggedIn }) => {
+const Login = ({ isDarkMode,isLoggedIn }) => {
   const navigate=useNavigate();
+  const { setIsLoggedIn, setUserType } = useContext(LoginContext);
 
   // quick check is user is already logged in
   useEffect(()=>{
@@ -68,8 +70,9 @@ const Login = ({ isDarkMode, setIsLoggedIn,isLoggedIn }) => {
           },
         });
         if (res.status == 200) {
-          showCustomToast("success",res.data+"redirecting...")
+          showCustomToast("success",res.data.msg+"redirecting...")
           setIsLoggedIn(true);
+          setUserType(res.data.userType);
           setTimeout(()=>{navigate("/")},1000)
           
         }

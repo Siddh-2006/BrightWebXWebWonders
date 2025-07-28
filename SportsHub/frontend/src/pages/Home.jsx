@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { 
   Play, ArrowRight, Zap, Target, Users, Heart, MessageCircle, 
   Share2, Eye, Trophy, Star, TrendingUp, Award, Calendar
@@ -8,6 +8,7 @@ import {
 
 const Home = ({ isDarkMode }) => {
   const canvasRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -202,11 +203,13 @@ const Home = ({ isDarkMode }) => {
               transition={{ duration: 0.8, delay: 0.8 }}
               className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto"
             >
-              <div className={`${
-                isDarkMode 
-                  ? 'bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10' 
+              <div
+                onClick={() => navigate('/ai-guru')}
+                className={`${
+                isDarkMode
+                  ? 'bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10'
                   : 'bg-black/5 backdrop-blur-sm border-black/10 hover:bg-black/10'
-              } rounded-2xl p-8 border transition-all duration-300 group`}>
+              } rounded-2xl p-8 border transition-all duration-300 group cursor-pointer`}>
                 <Zap className={`w-16 h-16 mx-auto mb-6 group-hover:scale-110 transition-transform ${
                   isDarkMode ? 'text-orange-400' : 'text-blue-500'
                 }`} />
@@ -215,11 +218,13 @@ const Home = ({ isDarkMode }) => {
                   Personalized coaching and posture correction with advanced AI technology
                 </p>
               </div>
-              <div className={`${
-                isDarkMode 
-                  ? 'bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10' 
+              <div
+                onClick={() => navigate('/profile')}
+                className={`${
+                isDarkMode
+                  ? 'bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10'
                   : 'bg-black/5 backdrop-blur-sm border-black/10 hover:bg-black/10'
-              } rounded-2xl p-8 border transition-all duration-300 group`}>
+              } rounded-2xl p-8 border transition-all duration-300 group cursor-pointer`}>
                 <Target className={`w-16 h-16 mx-auto mb-6 group-hover:scale-110 transition-transform ${
                   isDarkMode ? 'text-green-400' : 'text-green-500'
                 }`} />
@@ -228,11 +233,13 @@ const Home = ({ isDarkMode }) => {
                   Build your sports profile and connect with clubs worldwide
                 </p>
               </div>
-              <div className={`${
-                isDarkMode 
-                  ? 'bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10' 
+              <div
+                onClick={() => navigate('/live')}
+                className={`${
+                isDarkMode
+                  ? 'bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10'
                   : 'bg-black/5 backdrop-blur-sm border-black/10 hover:bg-black/10'
-              } rounded-2xl p-8 border transition-all duration-300 group`}>
+              } rounded-2xl p-8 border transition-all duration-300 group cursor-pointer`}>
                 <Users className={`w-16 h-16 mx-auto mb-6 group-hover:scale-110 transition-transform ${
                   isDarkMode ? 'text-purple-400' : 'text-purple-500'
                 }`} />
@@ -250,8 +257,8 @@ const Home = ({ isDarkMode }) => {
               transition={{ duration: 0.8, delay: 1.0 }}
               className="flex flex-col sm:flex-row gap-6 justify-center items-center"
             >
-              <Link
-                to="/sports"
+              <button
+                onClick={() => navigate('/sports')}
                 className={`${
                   isDarkMode
                     ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
@@ -260,9 +267,9 @@ const Home = ({ isDarkMode }) => {
               >
                 <span>Explore Sports</span>
                 <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                to="/ai-guru"
+              </button>
+              <button
+                onClick={() => navigate('/ai-guru')}
                 className={`border-2 px-10 py-5 rounded-2xl font-semibold text-lg transition-all duration-300 flex items-center space-x-3 group ${
                   isDarkMode
                     ? 'border-orange-500/50 text-orange-400 hover:bg-orange-500/10'
@@ -271,7 +278,7 @@ const Home = ({ isDarkMode }) => {
               >
                 <Play className="w-6 h-6" />
                 <span>Try AI Guru</span>
-              </Link>
+              </button>
             </motion.div>
           </motion.div>
         </div>
@@ -413,8 +420,8 @@ const Home = ({ isDarkMode }) => {
             viewport={{ once: true }}
             className="text-center mt-12"
           >
-            <Link
-              to="/sports"
+            <button
+              onClick={() => navigate('/sports')}
               className={`inline-flex items-center space-x-2 px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
                 isDarkMode
                   ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
@@ -423,7 +430,7 @@ const Home = ({ isDarkMode }) => {
             >
               <span>Explore All Content</span>
               <ArrowRight className="w-5 h-5" />
-            </Link>
+            </button>
           </motion.div>
         </div>
       </section>

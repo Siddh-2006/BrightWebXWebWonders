@@ -52,6 +52,9 @@ const AIGuru = ({ isDarkMode = true }) => {
   const [detectorLoading, setDetectorLoading] = useState(true);
   const videoRef = useRef(null);
   const fileInputRef = useRef(null);
+  const chatRef = useRef(null);
+  const postureRef = useRef(null);
+  const trainingRef = useRef(null);
 
   // Training Plan Modal State
   const [showTrainingPlanModal, setShowTrainingPlanModal] = useState(false);
@@ -181,19 +184,25 @@ const AIGuru = ({ isDarkMode = true }) => {
       icon: MessageCircle,
       title: 'AI Sports Coach',
       description: 'Ask about techniques, strategies, or training methods',
-      color: isDarkMode ? 'from-orange-500 to-red-400' : 'from-orange-600 to-red-500'
+      color: isDarkMode ? 'from-orange-500 to-red-400' : 'from-orange-600 to-red-500',
+      ref: chatRef,
+      tab: 'chat'
     },
     {
       icon: Camera,
       title: 'Posture Analysis',
       description: 'Upload videos for AI-powered technique correction',
-      color: isDarkMode ? 'from-red-500 to-orange-400' : 'from-red-600 to-orange-500'
+      color: isDarkMode ? 'from-red-500 to-orange-400' : 'from-red-600 to-orange-500',
+      ref: postureRef,
+      tab: 'posture'
     },
     {
       icon: TrendingUp,
       title: 'Training Plans',
       description: 'Get personalized training plans based on your sport and goals',
-      color: isDarkMode ? 'from-amber-500 to-yellow-400' : 'from-amber-600 to-yellow-500'
+      color: isDarkMode ? 'from-amber-500 to-yellow-400' : 'from-amber-600 to-yellow-500',
+      ref: trainingRef,
+      tab: 'training'
     }
   ];
 
@@ -626,7 +635,7 @@ const AIGuru = ({ isDarkMode = true }) => {
   };
 
   return (
-    <div className={`min-h-screen pt-20 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+    <div className={`min-h-screen pt-20 ${isDarkMode ? 'bg-transparent text-white' : 'bg-gray-50 text-gray-900'}`}>
 
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
@@ -666,10 +675,13 @@ const AIGuru = ({ isDarkMode = true }) => {
           {/* Feature Cards */}
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             {features.map((feature, index) => (
-              <div key={index} className="group relative">
-                <div className={`overflow-hidden rounded-3xl p-8 border transition-all duration-300 h-full ${
-                  isDarkMode 
-                    ? 'bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10' 
+              <div key={index} className="group relative" onClick={() => {
+                setActiveTab(feature.tab);
+                feature.ref.current?.scrollIntoView({ behavior: 'smooth' });
+              }}>
+                <div className={`overflow-hidden rounded-3xl p-8 border transition-all duration-300 h-full cursor-pointer ${
+                  isDarkMode
+                    ? 'bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10'
                     : 'bg-black/5 backdrop-blur-md border-black/10 hover:bg-black/10'
                 }`}>
                   <div className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
@@ -687,7 +699,7 @@ const AIGuru = ({ isDarkMode = true }) => {
       </section>
 
       {/* Interactive AI Interface */}
-      <section className="py-20">
+      <section className="py-20" ref={chatRef}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`overflow-hidden rounded-3xl border ${
             isDarkMode 
@@ -996,7 +1008,7 @@ const AIGuru = ({ isDarkMode = true }) => {
               )}
 
               {activeTab === 'posture' && (
-                <div className="space-y-8 min-h-[600px]">
+                <div className="space-y-8 min-h-[600px]" ref={postureRef}>
                   {/* Custom Alert Message */}
                   {customAlertMessage && (
                     <motion.div
@@ -1538,7 +1550,7 @@ const AIGuru = ({ isDarkMode = true }) => {
               )}
 
               {activeTab === 'training' && !showCustomPlanCreator && (
-                <div className="space-y-6 min-h-[600px]">
+                <div className="space-y-6 min-h-[600px]" ref={trainingRef}>
                   <div className={`backdrop-blur-md rounded-2xl p-6 border ${isDarkMode ? 'bg-white/5 border-orange-500/20' : 'bg-black/5 border-orange-500/20'}`}>
                     <div className="flex items-center justify-between mb-6">
                       <h2 className={`text-2xl font-bold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -1653,7 +1665,12 @@ const AIGuru = ({ isDarkMode = true }) => {
             <p className={`text-xl mb-8 max-w-2xl mx-auto ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
               Join athletes using AI Guru to enhance performance and achieve goals.
             </p>
-            <button className={`px-12 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl ${
+            <button
+              onClick={() => {
+                setActiveTab('chat');
+                chatRef.current?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className={`px-12 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl ${
               isDarkMode
                 ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700'
                 : 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700'

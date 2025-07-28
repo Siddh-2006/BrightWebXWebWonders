@@ -68,7 +68,7 @@ module.exports.loginUser=async (req,res)=>{
                 sameSite: "Lax",
                 secure: process.env.NODE_ENV === "production",
             });
-            res.send("You can login..");
+            res.status(200).json({ msg: "You can login..", userType: user.userType });
         }else{
             res.status(401).send("Email or password incorrect..");
         }

@@ -6,7 +6,7 @@ const uploadToCloudinary = require('../utils/uploadToCloudinary'); // Cloudinary
 // @desc Register a club with logo upload
 const registerClub = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, sports } = req.body;
 
     const existing = await Club.findOne({ name });
     if (existing) return res.status(400).json({ msg: 'Club already exists' });
@@ -21,7 +21,8 @@ const registerClub = async (req, res) => {
       description,
       logo: logoUrl,
       createdBy: req.user._id,
-      approved: false // default: admin has to approve
+      approved: false, // default: admin has to approve
+      sports: sports || []
     });
 
     res.status(201).json({
@@ -87,6 +88,18 @@ const approveJoinRequest = async (req, res) => {
   res.json({ msg: 'Request approved and player added' });
 };
 
+const getMyClub = async (req, res) => {
+  try {
+    const club = await Club.findOne({ createdBy: req.user._id }).populate('players', 'fullName');
+    if (!club) {
+      return res.status(404).json({ msg: 'Club not found' });
+    }
+    res.json(club);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 module.exports = {
   registerClub,
   approveClub,
@@ -94,5 +107,6 @@ module.exports = {
   getPendingClubs,
   clubSendRequest,
   userSendRequest,
-  approveJoinRequest
+  approveJoinRequest,
+  getMyClub
 };

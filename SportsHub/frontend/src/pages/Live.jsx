@@ -1,4 +1,4 @@
-import React, { useState ,useEffect} from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from "axios"
 import { motion } from 'framer-motion';
 import { 
@@ -6,6 +6,8 @@ import {
   Filter, Play, Eye, Star, Calendar, Target, Zap
 } from 'lucide-react';
 import Loader from '../helper/Loader';
+import BroadcastModal from '../components/BroadcastModal';
+import LoginContext from '../context/loginContext';
 const Live = ({ isDarkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSport, setSelectedSport] = useState('all');
@@ -13,7 +15,10 @@ const Live = ({ isDarkMode }) => {
   const [liveMatches, setLiveMatches] = useState([]);
   const [upcomingMatches, setUpcomingMatches] = useState([]);
   const [finished, setfinishedMatches] = useState([]);
-  const [loading,setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentClub, setCurrentClub] = useState(null);
+  const { isLoggedIn, userType } = useContext(LoginContext);
   useEffect(()=>{
     const fetch_live=async ()=>{
       try{
@@ -84,6 +89,24 @@ const Live = ({ isDarkMode }) => {
       console.log(err)
     }
   };
+
+  const handleBroadcastClick = async () => {
+    if (isLoggedIn && userType === 'club') {
+      try {
+        const res = await axios.get("http://localhost:3000/api/club/my-club", { withCredentials: true });
+        if (res.status === 200) {
+          setCurrentClub(res.data);
+          setIsModalOpen(true);
+        }
+      } catch (err) {
+        console.error("Error fetching club data:", err);
+      }
+    } else {
+      // Handle case where user is not a logged-in club
+      alert("You must be logged in as a club to start a broadcast.");
+    }
+  };
+
   if(loading) return <Loader />
   return (
     <motion.div
@@ -370,7 +393,9 @@ const Live = ({ isDarkMode }) => {
             }`}>
               Connect with our streaming platform and share your games with the world
             </p>
-            <button className={`px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ${
+            <button
+              onClick={handleBroadcastClick}
+              className={`px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ${
               isDarkMode
                 ? 'bg-white text-red-600 hover:bg-gray-100'
                 : 'bg-black text-red-400 hover:bg-gray-900'
@@ -380,6 +405,12 @@ const Live = ({ isDarkMode }) => {
           </motion.div>
         </div>
       </section>
+      <BroadcastModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        club={currentClub}
+        isDarkMode={isDarkMode}
+      />
     </motion.div>
   );
 };

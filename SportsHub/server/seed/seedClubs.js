@@ -48,6 +48,14 @@ const seedClubs = async () => {
         players: [neha._id, fatima._id]
       },
       {
+        name: "Pappu pellu sports club",
+        logo: "https://res.cloudinary.com/dddwnvp4w/image/upload/v1753183000/svnit-falcons-logo.png",
+        description: "Pride of gandhinagar, known for dominance in chess.",
+        approved: true,
+        createdBy: sharad._id,
+        players: [neha._id, fatima._id]
+      },
+      {
         name: "Neon Blaze Sports Club",
         logo: "https://res.cloudinary.com/dddwnvp4w/image/upload/v1753183050/neon-blaze-logo.png",
         description: "Elite private club grooming national-level athletes.",

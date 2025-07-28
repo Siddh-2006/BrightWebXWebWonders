@@ -149,7 +149,11 @@ const Club = ({ isDarkMode }) => {
             {filteredClubs.map((club) => (
               <div
                 key={club._id}
-                className={`group ${isDarkMode ? 'bg-white/5' : 'bg-black/5'} bg-gradient-to-r from-red-500/20 to-pink-500/20 backdrop-blur-sm rounded-2xl shadow-2xl border border-orange-500/30 overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-orange-400/20 hover:border-orange-400/50`}
+                className={`group relative overflow-hidden rounded-3xl transition-all duration-300 hover:scale-105 ${
+                  isDarkMode
+                    ? 'bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10'
+                    : 'bg-black/5 backdrop-blur-md border border-black/10 hover:bg-black/10'
+                }`}
               >
                 {/* Club Header */}
                 <div className="relative p-6 pb-4">
