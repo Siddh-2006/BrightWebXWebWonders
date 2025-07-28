@@ -8,6 +8,7 @@ import {
 import Loader from '../helper/Loader';
 import BroadcastModal from '../components/BroadcastModal';
 import LoginContext from '../context/loginContext';
+import { useNavigate } from 'react-router';
 const Live = ({ isDarkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSport, setSelectedSport] = useState('all');
@@ -19,6 +20,7 @@ const Live = ({ isDarkMode }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentClub, setCurrentClub] = useState(null);
   const { isLoggedIn, userType } = useContext(LoginContext);
+  const navigate=useNavigate();
   useEffect(()=>{
     const fetch_live=async ()=>{
       try{
@@ -295,7 +297,11 @@ const Live = ({ isDarkMode }) => {
                           isDarkMode
                             ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-400 hover:to-pink-500'
                             : 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
-                        } text-white shadow-lg hover:shadow-xl`}>
+                        } text-white shadow-lg hover:shadow-xl`}
+                        onclick={()=>{
+                          navigate(`/live_match/:${match.sport}/:${match._id}`)
+                        }}
+                        >
                           <Radio className="w-5 h-5" />
                           <span>Watch Live</span>
                         </button>
