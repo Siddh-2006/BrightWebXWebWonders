@@ -17,7 +17,7 @@ const LivePage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const socket = io('http://localhost:5000');
+    const socket = io('http://localhost:5000',{withCredentials:true,transports:["websocket"]});
     socket.emit('joinMatchRoom', { sport, matchId:match_id });
 
     socket.on('scoreUpdated', (data) => {

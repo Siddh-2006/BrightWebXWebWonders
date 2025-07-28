@@ -298,7 +298,7 @@ const Live = ({ isDarkMode }) => {
                             ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-400 hover:to-pink-500'
                             : 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
                         } text-white shadow-lg hover:shadow-xl`}
-                        onclick={()=>{
+                        onClick={()=>{
                           navigate(`/live_match/:${match.sport}/:${match._id}`)
                         }}
                         >

@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import { showCustomToast } from '../helper/CustomToast';
 import { ToastContainer } from 'react-toastify';
+import { useParams } from 'react-router';
 // Change to your backend server
 
 const LiveScoreAdmin = () => {
-  const [sport, setSport] = useState('');
-  const [matchId, setMatchId] = useState('');
+  const [sport , matchId] = useParams();
   const [clubA, setClubA] = useState({ name: '', logo: '' });
   const [clubB, setClubB] = useState({ name: '', logo: '' });
   const [timeline, setTimeline] = useState([]);
@@ -101,7 +101,7 @@ const LiveScoreAdmin = () => {
           type="text"
           className="p-2 rounded bg-gray-700"
           placeholder="Match ID"
-          value={matchId}
+          value={match}
           onChange={(e) => setMatchId(e.target.value)}
         />
 
