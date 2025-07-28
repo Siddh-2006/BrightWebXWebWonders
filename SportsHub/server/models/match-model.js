@@ -52,6 +52,10 @@ const matchSchema = new mongoose.Schema({
     clubA: { type: Number, default: 0 },
     clubB: { type: Number, default: 0 },
   },
+  liveScore: {
+  type: mongoose.Schema.Types.Mixed,
+  default: {},
+},
 
   // 💰 Monetization
   isPaid: { type: Boolean, default: false },

@@ -1,23 +1,29 @@
 {
   "AIzaSyD3T_6r6Zhe1ZjcZyVkS4uTs7NaEtd8lyQ": {
-    "requestsToday": 0,
+    "requestsToday": 5,
     "lastResetDate": "2025-07-28",
-    "lastMinuteCalls": [],
+    "lastMinuteCalls": [
+      1753728616869
+    ],
     "disabledUntil": 0,
-    "lastGenerationRun": 0
+    "lastGenerationRun": 1753728616869
   },
   "AIzaSyChDRdHLPBXsXkEa8USwxdEtaF88Zl3Km0": {
-    "requestsToday": 0,
+    "requestsToday": 5,
     "lastResetDate": "2025-07-28",
-    "lastMinuteCalls": [],
+    "lastMinuteCalls": [
+      1753728636137
+    ],
     "disabledUntil": 0,
-    "lastGenerationRun": 0
+    "lastGenerationRun": 1753728636137
   },
   "AIzaSyDIT90XMN9-oJdDt3X8X1F3G5rZuuXQN7w": {
-    "requestsToday": 0,
+    "requestsToday": 3,
     "lastResetDate": "2025-07-28",
-    "lastMinuteCalls": [],
+    "lastMinuteCalls": [
+      1753728660593
+    ],
     "disabledUntil": 0,
-    "lastGenerationRun": 0
+    "lastGenerationRun": 1753728660593
   }
 }

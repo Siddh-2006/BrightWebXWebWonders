@@ -38,6 +38,7 @@ function App() {
         const res = await axios.get("http://localhost:3000/users/profile", { withCredentials: true });
         if (res.status == 200) {
           login_info.setIsLoggedIn(true);
+          localStorage.setItem("username", res.data.fullname);
         }
         else {
           login_info.setIsLoggedIn(false);
@@ -52,8 +53,8 @@ function App() {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode
-        ? 'bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white'
-        : 'bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900'
+      ? 'bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white'
+      : 'bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900'
       }`}>
       <Router>
         <Navbar
@@ -78,8 +79,8 @@ function App() {
             <Route path="/logout" element={<Logout setIsLoggedIn={login_info.setIsLoggedIn} />} />
             <Route path="/club" element={<Club isDarkMode={isDarkMode} />} />
             <Route path="/club/:clubName" element={<ClubDetails isDarkMode={isDarkMode} />} />
-            <Route path="/live_match/:sport/:match_id" element={<LivePage />}></Route>
-            <Route path="/live_match_admin/:sport/:match_id" element={<LiveScoreAdmin />}></Route>
+            <Route path="/live_match/:sport/:matchId" element={<LivePage />}></Route>
+            <Route path="/live_match_admin/:sport/:matchId" element={<LiveScoreAdmin />}></Route>
           </Routes>
         </AnimatePresence>
 

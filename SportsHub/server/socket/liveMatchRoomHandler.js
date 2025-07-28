@@ -30,11 +30,24 @@ module.exports = (io, socket) => {
 
     try {
       // Update the match in DB
+      let final_score=buildScoreForSport(sport, scoreData)
+      let clubA = 0;
+      let clubB = 0;
+      if(sport==="football"){
+        clubA=Number(final_score.teamAScore);
+        clubB=Number(final_score.teamBScore);
+      }
+      else if(sport==="cricket"){
+        clubA=Number(final_score.teamA.runs); 
+        clubB=Number(final_score.teamB.runs);
+      }
       const updatedMatch = await Match.findByIdAndUpdate(
         matchId,
         {
           liveStreamUrl: streamUrl,
-          liveScore: buildScoreForSport(sport, scoreData),
+          liveScore: final_score,
+          score:{clubA:clubA,clubB:clubB},
+          
         },
         { new: true }
       );
@@ -45,6 +58,7 @@ module.exports = (io, socket) => {
         liveScore: updatedMatch.liveScore,
         liveStreamUrl: updatedMatch.liveStreamUrl,
       });
+      console.log("Score updated successfully for match:",sport, updatedMatch.liveScore);
     } catch (err) {
       console.error("adminUpdateScore error:", err);
       socket.emit("error", "Update failed");
@@ -69,6 +83,7 @@ module.exports = (io, socket) => {
 function buildScoreForSport(sport, data) {
   switch (sport) {
     case "football":
+      console.log(data)
       return {
         teamAScore: data.teamAScore || 0,
         teamBScore: data.teamBScore || 0,

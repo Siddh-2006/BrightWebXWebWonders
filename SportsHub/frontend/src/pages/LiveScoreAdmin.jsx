@@ -1,195 +1,162 @@
-import React, { useState, useEffect } from 'react';
-import io from 'socket.io-client';
-import { showCustomToast } from '../helper/CustomToast';
-import { ToastContainer } from 'react-toastify';
-import { useParams } from 'react-router';
-// Change to your backend server
-
-const LiveScoreAdmin = () => {
-  const [sport , matchId] = useParams();
-  const [clubA, setClubA] = useState({ name: '', logo: '' });
-  const [clubB, setClubB] = useState({ name: '', logo: '' });
-  const [timeline, setTimeline] = useState([]);
-  const [score, setScore] = useState('0 - 0');
-  const [socket, setSocket] = useState(null);
-  const [goalDetails, setGoalDetails] = useState([]);
-  const [inning, setInning] = useState('1st');
-  const [cricket_data, setCricket_data] = useState({
-    teamA: { runs: 0, wickets: 0, overs: '0.0' },
-    teamB: { runs: 0, wickets: 0, overs: '0.0' },
-  }); // cricket data is for cricket
-  const [event, setEvent] = useState({ // event is for foot ball
-    team: 'clubA',
-    playerId: '',
-    assistBy: '',
-    time: '',
-  });
-
-  const updateMatch = () => {
-    if (sport === "football") {
-      const matchData = {
-        timeline,
-        goalDetails,
-        teamAScore: score.split(' - ')[0],
-        teamBScore: score.split(' - ')[1],
-      }
-      socket.emit('adminUpdateScore', { matchId, streamUrl: null, sport, scoreData: matchData });
-      alert('Match data sent to viewers!');
-    } 
-    else if (sport === "cricket") {
-      const matchData = {
-        teamA: { runs: cricket_data.teamA.runs, wickets: cricket_data.teamA.wickets, overs: cricket_data.teamA.overs },
-        teamB: { runs: cricket_data.teamB.runs, wickets: cricket_data.teamB.wickets, overs: cricket_data.teamB.overs },
-        timeline,
-        inning,
-      }
-      socket.emit('adminUpdateScore', { matchId, streamUrl: null, sport, scoreData: matchData });
-      alert('Match data sent to viewers!');
-    }
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router";
+import { io } from "socket.io-client";
 
 
-    
-  };
 
-  const addEvent = () => {
+const AdminLivePage = () => {
+  const { sport, matchId } = useParams();
+  const [streamUrl, setStreamUrl] = useState("");
+  const [scoreData, setScoreData] = useState({});
+  const [statusMsg, setStatusMsg] = useState("");
+  const [socket ,setSocket] = useState(null);
 
-    const updatedTimeline = [...timeline, event];
-    setTimeline(updatedTimeline);
-    if (sport === "football") {
-      const scoreParts = score.split(' - ').map(Number);
-      if (event.team === 'clubA') scoreParts[0]++;
-      else scoreParts[1]++;
-      setScore(`${scoreParts[0]} - ${scoreParts[1]}`);
-    }
-
-    // Reset input
-    setEvent({ team: 'clubA', playerId: '', assistBy: '', time: '' });
-  };
   useEffect(() => {
-    function connect_socket() {
-      try {
-        const socket = io('http://localhost:5000',{withCredentials:true,transports:["websocket"],});
-        setSocket(socket);
-        socket.on('connect', () => {
-          console.log('Connected to WebSocket server');
-        })
-      }
-      catch (err) {
-        showCustomToast("error", err)
-      }
-    }
-    if(!socket) {
-      connect_socket();
-    }
-  },[]);
+    console.log(matchId)
+    const socket = io("http://localhost:5000", {
+      withCredentials: true,
+      transports: ["websocket"],
+    });
+    setSocket(socket);
+    
+    socket.on("error", (msg) => {
+      setStatusMsg(`Error: ${msg}`);
+    });
 
+    return () => {
+      socket.off("error");
+    };
+  }, [matchId]);
+
+  const updateScore = () => {
+    console.log("Sending:", { matchId, streamUrl, sport, scoreData });
+    socket.emit("adminUpdateScore", {
+      matchId,
+      streamUrl,
+      sport,
+      scoreData,
+    });
+
+    setStatusMsg("Update sent!");
+    setTimeout(() => setStatusMsg(""), 3000);
+  };
+
+  const handleScoreChange = (field, value, team = null) => {
+    if (sport === "football") {
+      setScoreData((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    } else if (sport === "cricket" && team) {
+      setScoreData((prev) => ({
+        ...prev,
+        [team]: {
+          ...prev[team],
+          [field]: value,
+        },
+      }));
+    }
+  };
 
   return (
-    <div className="min-h-screen pt-20 bg-transparent text-white p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-center mb-4">Admin Match Dashboard</h1>
+    <div className="p-4 max-w-xl mx-auto pt-50">
+      <h1 className="text-white">{matchId}</h1>
+      <h1 className="text-2xl font-bold mb-4">Admin Live Panel</h1>
 
-      {/* Match metadata */}
-      <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto bg-gray-800 p-4 rounded-lg">
+      <div className="mb-4">
+        <label className="block font-semibold mb-1">Stream URL:</label>
         <input
-          type="text"
-          className="p-2 rounded bg-gray-700"
-          placeholder="Sport (e.g., football)"
-          value={sport}
-          onChange={(e) => setSport(e.target.value)}
-        />
-        <input
-          type="text"
-          className="p-2 rounded bg-gray-700"
-          placeholder="Match ID"
-          value={match}
-          onChange={(e) => setMatchId(e.target.value)}
-        />
-
-        {/* Club A */}
-        <input
-          type="text"
-          className="p-2 rounded bg-gray-700"
-          placeholder="Club A Name"
-          value={clubA.name}
-          onChange={(e) => setClubA({ ...clubA, name: e.target.value })}
-        />
-        <input
-          type="text"
-          className="p-2 rounded bg-gray-700"
-          placeholder="Club A Logo URL"
-          value={clubA.logo}
-          onChange={(e) => setClubA({ ...clubA, logo: e.target.value })}
-        />
-
-        {/* Club B */}
-        <input
-          type="text"
-          className="p-2 rounded bg-gray-700"
-          placeholder="Club B Name"
-          value={clubB.name}
-          onChange={(e) => setClubB({ ...clubB, name: e.target.value })}
-        />
-        <input
-          type="text"
-          className="p-2 rounded bg-gray-700"
-          placeholder="Club B Logo URL"
-          value={clubB.logo}
-          onChange={(e) => setClubB({ ...clubB, logo: e.target.value })}
+          className="border p-2 w-full"
+          value={streamUrl}
+          onChange={(e) => setStreamUrl(e.target.value)}
         />
       </div>
 
-      {/* Add goal/event */}
-      <div className="max-w-3xl mx-auto bg-gray-800 p-4 rounded-lg space-y-3">
-        <h2 className="text-xl font-semibold">Add Goal/Event</h2>
-        <select
-          className="w-full p-2 bg-gray-700 rounded"
-          value={event.team}
-          onChange={(e) => setEvent({ ...event, team: e.target.value })}
-        >
-          <option value="clubA">{clubA.name || 'Club A'}</option>
-          <option value="clubB">{clubB.name || 'Club B'}</option>
+      <div className="mb-4">
+        <label className="font-semibold">Sport:</label>
+        <select value={sport} disabled className="ml-2 p-1 border">
+          <option value="football">Football</option>
+          <option value="cricket">Cricket</option>
         </select>
-        <input
-          type="text"
-          placeholder="Player Name"
-          className="w-full p-2 bg-gray-700 rounded"
-          value={event.playerId}
-          onChange={(e) => setEvent({ ...event, playerId: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Assist By (optional)"
-          className="w-full p-2 bg-gray-700 rounded"
-          value={event.assistBy}
-          onChange={(e) => setEvent({ ...event, assistBy: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Time (e.g., 45+2)"
-          className="w-full p-2 bg-gray-700 rounded"
-          value={event.time}
-          onChange={(e) => setEvent({ ...event, time: e.target.value })}
-        />
-        <button
-          onClick={addEvent}
-          className="w-full py-2 bg-blue-600 rounded hover:bg-blue-700"
-        >
-          ➕ Add Event
-        </button>
       </div>
 
-      {/* Preview + Submit */}
-      <div className="max-w-3xl mx-auto text-center">
-        <h3 className="text-xl mb-2">Current Score: {score}</h3>
-        <button
-          onClick={updateMatch}
-          className="px-6 py-3 bg-green-600 rounded hover:bg-green-700 font-bold"
-        >
-          🚀 Send Live Update
-        </button>
-      </div>
+      {sport === "football" && (
+        <div className="space-y-2">
+          <input
+            placeholder="Team A Score"
+            type="number"
+            value={scoreData.teamAScore || ""}
+            onChange={(e) => handleScoreChange("teamAScore", parseInt(e.target.value))}
+            className="border p-2 w-full"
+          />
+          <input
+            placeholder="Team B Score"
+            type="number"
+            value={scoreData.teamBScore || ""}
+            onChange={(e) => handleScoreChange("teamBScore", parseInt(e.target.value))}
+            className="border p-2 w-full"
+          />
+        </div>
+      )}
+
+      {sport === "cricket" && (
+        <div className="space-y-2">
+          <label className="block font-semibold mt-2">Team A</label>
+          <input
+            placeholder="Runs"
+            type="number"
+            value={scoreData.teamA?.runs || ""}
+            onChange={(e) => handleScoreChange("runs", parseInt(e.target.value), "teamA")}
+            className="border p-2 w-full"
+          />
+          <input
+            placeholder="Wickets"
+            type="number"
+            value={scoreData.teamA?.wickets || ""}
+            onChange={(e) => handleScoreChange("wickets", parseInt(e.target.value), "teamA")}
+            className="border p-2 w-full"
+          />
+          <input
+            placeholder="Overs"
+            value={scoreData.teamA?.overs || ""}
+            onChange={(e) => handleScoreChange("overs", e.target.value, "teamA")}
+            className="border p-2 w-full"
+          />
+
+          <label className="block font-semibold mt-2">Team B</label>
+          <input
+            placeholder="Runs"
+            type="number"
+            value={scoreData.teamB?.runs || ""}
+            onChange={(e) => handleScoreChange("runs", parseInt(e.target.value), "teamB")}
+            className="border p-2 w-full"
+          />
+          <input
+            placeholder="Wickets"
+            type="number"
+            value={scoreData.teamB?.wickets || ""}
+            onChange={(e) => handleScoreChange("wickets", parseInt(e.target.value), "teamB")}
+            className="border p-2 w-full"
+          />
+          <input
+            placeholder="Overs"
+            value={scoreData.teamB?.overs || ""}
+            onChange={(e) => handleScoreChange("overs", e.target.value, "teamB")}
+            className="border p-2 w-full"
+          />
+        </div>
+      )}
+
+      <button
+        onClick={updateScore}
+        className="mt-4 px-4 py-2 bg-green-600 text-white rounded"
+      >
+        Update
+      </button>
+
+      {statusMsg && <div className="mt-2 text-green-600">{statusMsg}</div>}
     </div>
   );
 };
 
-export default LiveScoreAdmin;
+export default AdminLivePage;

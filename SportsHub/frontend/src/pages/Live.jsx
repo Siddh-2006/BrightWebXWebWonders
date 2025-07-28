@@ -20,8 +20,24 @@ const Live = ({ isDarkMode }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentClub, setCurrentClub] = useState(null);
   const { isLoggedIn, userType } = useContext(LoginContext);
+  const[userData,setUserData]=useState(null);
   const navigate=useNavigate();
   useEffect(()=>{
+
+    // check if the user is admin
+    const checkAdmin = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/users/profile", { withCredentials: true });
+        if (res.status === 200) {
+          setUserData(res.data);
+          console.log(res.data)
+        }
+      } catch (err) {
+        console.error("user is not logged in");
+      }
+    }
+
+
     const fetch_live=async ()=>{
       try{
       const res =await axios.get("http://localhost:3000/match/live",{withCredentials:true});
@@ -45,6 +61,7 @@ const Live = ({ isDarkMode }) => {
     }
     }
     fetch_live()
+    checkAdmin();
   },[])
   const all_matches = liveMatches.concat(upcomingMatches).concat(finished);
  
@@ -299,7 +316,7 @@ const Live = ({ isDarkMode }) => {
                             : 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
                         } text-white shadow-lg hover:shadow-xl`}
                         onClick={()=>{
-                          navigate(`/live_match/:${match.sport}/:${match._id}`)
+                          navigate(`/live_match/${match.sport}/${match._id}`)
                         }}
                         >
                           <Radio className="w-5 h-5" />
@@ -320,6 +337,7 @@ const Live = ({ isDarkMode }) => {
                           <BarChart3 className="w-5 h-5" />
                         </button>
                       </>
+                      
                     ) : match.status === 'Not Started' ? (
                       <button className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
                         isDarkMode
@@ -340,6 +358,13 @@ const Live = ({ isDarkMode }) => {
                       </button>
                     )}
                   </div>
+                  {(match.status === 'Live')?(
+                    <button className="w-full p-2 my-2 rounded-4xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white"
+                     onClick={()=>{
+                      navigate(`/live_match_admin/${match.sport}/${match._id}`)}}>
+                    Admin Panel
+                    </button>
+                  ):(null)}
                 </div>
 
                 {/* Hover Effect */}
