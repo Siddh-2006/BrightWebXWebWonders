@@ -73,6 +73,12 @@ const Login = ({ isDarkMode,isLoggedIn }) => {
           showCustomToast("success",res.data.msg+"redirecting...")
           setIsLoggedIn(true);
           setUserType(res.data.userType);
+          
+          // Store token in localStorage for API calls
+          if (res.data.token) {
+            localStorage.setItem('token', res.data.token);
+          }
+          
           setTimeout(()=>{navigate("/")},1000)
           
         }

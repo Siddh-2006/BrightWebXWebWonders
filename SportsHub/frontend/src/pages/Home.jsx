@@ -1,10 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Play, ArrowRight, Zap, Target, Users, Heart, MessageCircle, 
+import {
+  Play, ArrowRight, Zap, Target, Users, Heart, MessageCircle,
   Share2, Eye, Trophy, Star, TrendingUp, Award, Calendar
 } from 'lucide-react';
+import QuizSection from '../components/QuizSection.jsx';
 
 const Home = ({ isDarkMode }) => {
   const canvasRef = useRef(null);
@@ -434,6 +435,9 @@ const Home = ({ isDarkMode }) => {
           </motion.div>
         </div>
       </section>
+
+      {/* Quiz Section */}
+      <QuizSection isDarkMode={isDarkMode} />
     </motion.div>
   );
 };

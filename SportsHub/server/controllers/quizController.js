@@ -1,6 +1,6 @@
 // controllers/quizController.js
 const Question = require('../models/Question');
-const UserQuizHistory = require('../models/UserQuizHistory');
+const QuizResult = require('../models/QuizResult');
 const {
     getAvailableApiKey,
     recordApiCall,
@@ -170,45 +170,32 @@ async function generateAndStoreDailyQuestions() {
 
 // --- API Endpoints ---
 const generateQuizForUser = async (req, res) => {
-    const { sports } = req.body;
-    const userId = req.user.id; // Assuming user auth middleware populates req.user.id
-
-    const QUIZ_PATTERN = { easy: 3, medium: 4, hard: 3 }; // Example: 10 questions total for user quiz
-
-    if (!sports || !Array.isArray(sports) || sports.length === 0 || !userId) {
-        return res.status(400).json({ message: "User ID and an array of sports are required." });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(userId)) { // Validate userId if it's an ObjectId
-        return res.status(400).json({ message: "Invalid User ID format." });
-    }
-
     try {
-        let userHistory = await UserQuizHistory.findOne({ userId });
-        if (!userHistory) {
-            userHistory = new UserQuizHistory({ userId, seenQuestionIds: [] });
+        const { sports } = req.body;
+        const QUIZ_PATTERN = { easy: 3, medium: 4, hard: 3 }; // 10 questions total for user quiz
+
+        if (!sports || !Array.isArray(sports) || sports.length === 0) {
+            return res.status(400).json({ message: "An array of sports is required." });
         }
 
-        const seenIds = userHistory.seenQuestionIds;
         let selectedQuestions = [];
 
         for (const sport of sports) {
             for (const [level, count] of Object.entries(QUIZ_PATTERN)) {
-                // Find questions that the user has NOT seen yet AND are not due for archiving
-                const questions = await Question.find({
+                // Find questions that are not due for archiving
+                const queryConditions = {
                     sport: sport,
                     difficulty: level,
-                    _id: { $nin: seenIds },
                     archiveAfter: { $gt: new Date() } // Question must not be older than 2 days
-                }).limit(count);
+                };
 
+                const questions = await Question.find(queryConditions).limit(count);
                 selectedQuestions = selectedQuestions.concat(questions);
             }
         }
 
-        // Fallback: If not enough *unseen* questions, try to find any available (not yet archived)
+        // Fallback: If not enough questions, try to find any available (not yet archived)
         if (selectedQuestions.length < (Object.values(QUIZ_PATTERN).reduce((a, b) => a + b, 0) * sports.length)) {
-             console.log("[Quiz] Not enough unseen questions. Attempting to fetch any unarchived questions as fallback.");
              for (const sport of sports) {
                  for (const [level, count] of Object.entries(QUIZ_PATTERN)) {
                       // How many more do we need for this sport/level?
@@ -228,13 +215,13 @@ const generateQuizForUser = async (req, res) => {
         }
 
         if (selectedQuestions.length === 0) {
-            return res.status(404).json({ message: "Could not find any available questions for the selected sports and difficulties." });
+            console.log('[Quiz] Not enough questions. Attempting to fetch any unarchived questions as fallback.');
+            return res.status(202).json({
+                message: "Questions are being generated and will be available soon. Please try again in a few minutes!",
+                status: "generating",
+                info: "Our AI is currently creating fresh questions for this sport. This process ensures high-quality, varied content."
+            });
         }
-
-        // Add the new questions to the user's seen list and save
-        const newSeenIds = selectedQuestions.map(q => q._id);
-        userHistory.seenQuestionIds.push(...newSeenIds);
-        await userHistory.save();
 
         res.status(200).json({ questions: selectedQuestions });
 
@@ -244,29 +231,99 @@ const generateQuizForUser = async (req, res) => {
     }
 };
 
-const getUserQuizHistory = async (req, res) => {
+
+const submitQuizResult = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const { sport, questions, totalTimeTaken } = req.body;
+        const userId = req.user._id;
+
+        if (!sport || !questions || !Array.isArray(questions) || questions.length === 0) {
+            return res.status(400).json({ message: "Sport and questions array are required." });
+        }
 
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).json({ message: "Invalid User ID format." });
         }
 
-        const userHistory = await UserQuizHistory.findOne({ userId }).populate('seenQuestionIds');
+        // Calculate results
+        const correctAnswers = questions.filter(q => q.isCorrect).length;
+        const totalQuestions = questions.length;
+        const score = Math.round((correctAnswers / totalQuestions) * 100);
 
-        if (!userHistory) {
-            return res.status(404).json({ message: "No quiz history found for this user." });
+        // Create quiz result
+        const quizResult = new QuizResult({
+            userId,
+            sport,
+            questions: questions.map(q => ({
+                questionId: q.questionId,
+                selectedAnswer: q.selectedAnswer,
+                correctAnswer: q.correctAnswer,
+                isCorrect: q.isCorrect,
+                timeTaken: q.timeTaken
+            })),
+            totalQuestions,
+            correctAnswers,
+            score,
+            timeTaken: totalTimeTaken
+        });
+
+        await quizResult.save();
+
+        res.status(200).json({
+            message: "Quiz result submitted successfully",
+            result: {
+                score,
+                correctAnswers,
+                totalQuestions,
+                percentage: score
+            }
+        });
+
+    } catch (error) {
+        console.error('Error submitting quiz result:', error);
+        res.status(500).json({ message: "Server error while submitting quiz result." });
+    }
+};
+
+const getUserQuizResults = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { limit = 10, page = 1 } = req.query;
+
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: "Invalid User ID format." });
         }
 
-        res.status(200).json(userHistory);
+        const skip = (page - 1) * limit;
+        
+        const results = await QuizResult.find({ userId })
+            .sort({ completedAt: -1 })
+            .limit(parseInt(limit))
+            .skip(skip)
+            .populate('questions.questionId', 'question_text difficulty');
+
+        const totalResults = await QuizResult.countDocuments({ userId });
+
+        res.status(200).json({
+            results,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(totalResults / limit),
+                totalResults,
+                hasNext: skip + results.length < totalResults,
+                hasPrev: page > 1
+            }
+        });
+
     } catch (error) {
-        console.error('Error fetching user quiz history:', error);
-        res.status(500).json({ message: "Server error while fetching history." });
+        console.error('Error fetching user quiz results:', error);
+        res.status(500).json({ message: "Server error while fetching quiz results." });
     }
 };
 
 module.exports = {
     generateAndStoreDailyQuestions,
     generateQuizForUser,
-    getUserQuizHistory
+    submitQuizResult,
+    getUserQuizResults
 };

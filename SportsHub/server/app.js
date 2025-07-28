@@ -81,7 +81,7 @@ app.use('/challenges', challengeRouter);
 
 
 
-// initQuizCronJobs();
+initQuizCronJobs();
 runMatchStatusCron();
 
 // Error handling middleware (should be last middleware)
