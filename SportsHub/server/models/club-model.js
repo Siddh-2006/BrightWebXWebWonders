@@ -40,7 +40,33 @@ const clubSchema = new mongoose.Schema({
     ],
     liveMatches: [
         { type: mongoose.Schema.Types.ObjectId, ref: 'Match' }
-    ]
+    ],
+    // 🆕 New Fields
+    officialEmail: { type: String, required: true },
+    location: {
+        city: { type: String, required: true },
+        state: { type: String, required: true },
+        country: { type: String, default: "India" }
+    },
+    foundedYear: { type: Number },
+    socialLinks: {
+        instagram: { type: String },
+        twitter: { type: String },
+        youtube: { type: String },
+        email: { type: String }
+    },
+    achievements: [{ type: String }],
+    contactNumber: { type: String },
+    website: { type: String },
+    followersCount: { type: Number, default: 0 },
+    performance: {
+        totalMatches: { type: Number, default: 0 },
+        wins: { type: Number, default: 0 },
+        losses: { type: Number, default: 0 },
+        draws: { type: Number, default: 0 },
+        points: { type: Number, default: 0 } // typically: win = 3 pts, draw = 1 pt
+    },
+
     }, { timestamps: true });
 
 module.exports = mongoose.model('Club', clubSchema);
