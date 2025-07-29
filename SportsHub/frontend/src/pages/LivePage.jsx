@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { io } from "socket.io-client";
+import { Bell } from "lucide-react";
+import ReminderModal from "../components/ReminderModal";
+import useReminder from "../hooks/useReminder";
+import reminderService from "../services/reminderService";
+import ActiveReminders from "../components/ActiveReminders";
 
 const LivePage = ({ isDarkMode }) => {
   const { sport, matchId } = useParams();
@@ -8,6 +13,27 @@ const LivePage = ({ isDarkMode }) => {
   const [messages, setMessages] = useState([]);
   const [chatMsg, setChatMsg] = useState("");
   const [socket, setSocket] = useState(null);
+
+  // Mock match data for reminder functionality
+  const mockMatch = {
+    homeTeam: "Team A",
+    awayTeam: "Team B",
+    date: new Date().toISOString().split('T')[0],
+    time: "20:00"
+  };
+
+  const { reminder, setReminder, isModalOpen, openModal, closeModal } = useReminder(mockMatch);
+
+  const handleReminderSet = (minutes) => {
+    const result = reminderService.scheduleReminder(mockMatch, minutes);
+
+    if (result.success) {
+      alert(`✅ ${result.message}\nScheduled for: ${result.scheduledFor.toLocaleString()}`);
+      setReminder(minutes);
+    } else {
+      alert(`❌ Failed to set reminder: ${result.message}`);
+    }
+  };
 
   const theme = {
     primary: isDarkMode ? "orange" : "blue",
@@ -272,7 +298,13 @@ const LivePage = ({ isDarkMode }) => {
                 LIVE SPORTS
               </div> */}
             </div>
-
+            <button
+              onClick={openModal}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 backdrop-blur-sm"
+            >
+              <Bell className="w-5 h-5" />
+              Set Reminder
+            </button>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <div className={`px-8 py-4 ${theme.bgCard} ${theme.border} border rounded-2xl ${theme.shadow} flex items-center gap-4`}>
                 <div className="relative">
@@ -387,7 +419,17 @@ const LivePage = ({ isDarkMode }) => {
         </div>
       </div>
 
+      {/* Reminder Modal */}
+      {isModalOpen && (
+        <ReminderModal
+          match={mockMatch}
+          onClose={closeModal}
+          onSetReminder={handleReminderSet}
+        />
+      )}
 
+      {/* Active Reminders */}
+      <ActiveReminders isDarkMode={false} />
     </div>
   );
 };

@@ -13,6 +13,8 @@ import About from './pages/About';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Footer from './components/Footer';
+import ReminderToast from './components/ReminderToast';
+import NotificationToast from './components/NotificationToast';
 import { useContext } from 'react';
 import loginContext from './context/loginContext';
 import Logout from './pages/Logout';
@@ -23,6 +25,8 @@ import Club from './pages/Club';
 import ClubDetails from './pages/ClubDetails';
 import EndedPage from './pages/EndedPage';
 import ScrollToTop from './components/ScrollToTop'; 
+import ChallengeDetails from './pages/ChallengeDetails';
+
 function App() {
   const [userType, setUserType] = useState('player');
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -83,11 +87,16 @@ function App() {
             <Route path="/match_ended/:sport/:matchId" element={<EndedPage isDarkMode={isDarkMode}/>}></Route>
             <Route path="/club/:clubName" element={<ClubDetails isDarkMode={isDarkMode} />} />
             <Route path="/live_match/:sport/:matchId" element={<LivePage isDarkMode={isDarkMode}/>}></Route>
+            <Route path="/challenges/:challengeId" element={<ChallengeDetails isDarkMode={isDarkMode} />} />
             <Route path="/live_match_admin/:sport/:matchId" element={<LiveScoreAdmin />}></Route>
           </Routes>
         </AnimatePresence>
 
         <Footer isDarkMode={isDarkMode} />
+        
+        {/* Global Toast Systems */}
+        <ReminderToast />
+        <NotificationToast />
       </Router>
     </div>
   );

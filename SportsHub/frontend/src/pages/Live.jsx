@@ -10,6 +10,11 @@ import LoginContext from '../context/loginContext';
 import { useNavigate } from 'react-router';
 import PredictionModal from '../components/PredictionModal';
 import { ToastContainer } from 'react-toastify';
+import ReminderModal from '../components/ReminderModal';
+import useReminder from '../hooks/useReminder';
+import reminderService from '../services/reminderService';
+import ActiveReminders from '../components/ActiveReminders';
+
 const Live = ({ isDarkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSport, setSelectedSport] = useState('all');
@@ -22,8 +27,10 @@ const Live = ({ isDarkMode }) => {
   const [currentClub, setCurrentClub] = useState(null);
   const { isLoggedIn, userType } = useContext(LoginContext);
   const [userData, setUserData] = useState(null);
-  const [pollMatchId, setPollMatchId] = useState(null); // Changed from poll to pollMatchId
+  const [pollMatchId, setPollMatchId] = useState(null);
   const navigate = useNavigate();
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [reminderModalOpen, setReminderModalOpen] = useState(false);
 
   useEffect(() => {
     // check if the user is admin
@@ -137,6 +144,40 @@ const Live = ({ isDarkMode }) => {
   // Function to close poll modal
   const closePollModal = () => {
     setPollMatchId(null);
+  };
+
+  const handleSetReminder = (match) => {
+    // Convert match data to the format expected by ReminderModal
+    const reminderMatch = {
+      homeTeam: match.clubA.name,
+      awayTeam: match.clubB.name,
+      date: match.date,
+      time: match.startTime
+    };
+    setSelectedMatch(reminderMatch);
+    setReminderModalOpen(true);
+  };
+
+  const handleReminderSet = (minutes) => {
+    if (!selectedMatch) return;
+    
+    const result = reminderService.scheduleReminder(selectedMatch, minutes);
+    
+    if (result.success) {
+      // Show success message
+      alert(`✅ ${result.message}\nScheduled for: ${result.scheduledFor.toLocaleString()}`);
+    } else {
+      // Show error message
+      alert(`❌ Failed to set reminder: ${result.message}`);
+    }
+    
+    setReminderModalOpen(false);
+    setSelectedMatch(null);
+  };
+
+  const closeReminderModal = () => {
+    setReminderModalOpen(false);
+    setSelectedMatch(null);
   };
 
   if (loading) return <Loader isDarkMode={isDarkMode} />
@@ -355,11 +396,13 @@ const Live = ({ isDarkMode }) => {
                       </>
 
                     ) : match.status === 'Not Started' ? (
-                      <button className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${isDarkMode
-                        ? 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-400 hover:to-cyan-300'
-                        : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
-                        } text-white shadow-lg hover:shadow-xl`}
-                      >
+                      <button
+                        onClick={() => handleSetReminder(match)}
+                        className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
+                        isDarkMode
+                          ? 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-400 hover:to-cyan-300'
+                          : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
+                      } text-white shadow-lg hover:shadow-xl`}>
                         <Calendar className="w-5 h-5" />
                         <span>Set Reminder</span>
                       </button>
@@ -418,6 +461,18 @@ const Live = ({ isDarkMode }) => {
           )}
         </div>
       </section>
+      
+      {/* Reminder Modal */}
+      {reminderModalOpen && selectedMatch && (
+        <ReminderModal
+          match={selectedMatch}
+          onClose={closeReminderModal}
+          onSetReminder={handleReminderSet}
+        />
+      )}
+      
+      {/* Active Reminders */}
+      <ActiveReminders isDarkMode={isDarkMode} />
     </motion.div>
   );
 };
