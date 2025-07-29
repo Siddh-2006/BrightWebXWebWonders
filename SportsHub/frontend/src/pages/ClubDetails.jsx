@@ -1,7 +1,11 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
-import { Check, Users, Trophy, Video, Play, Star } from 'lucide-react';
+import { Check, Users, Trophy, Video, Play, Star, Zap, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import loginContext from '../context/loginContext';
+import { challengeService } from '../services/challengeService';
+import ChallengeModal from '../components/ChallengeModal';
 
 const ClubDetails = ({ isDarkMode }) => {
     const { clubName } = useParams();
@@ -9,6 +13,11 @@ const ClubDetails = ({ isDarkMode }) => {
 
     const [club, setClub] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [userClub, setUserClub] = useState(null);
+    const [isClubOwner, setIsClubOwner] = useState(false);
+    const [challengeModalOpen, setChallengeModalOpen] = useState(false);
+    
+    const login_info = useContext(loginContext);
 
     useEffect(() => {
         const fetchClub = async () => {
@@ -47,6 +56,19 @@ const ClubDetails = ({ isDarkMode }) => {
                 }
 
                 setClub(match);
+
+                // Check if user owns a club (only if logged in)
+                if (login_info.isLoggedIn) {
+                    try {
+                        const myClubRes = await challengeService.getMyClub();
+                        setUserClub(myClubRes);
+                        setIsClubOwner(true);
+                    } catch (err) {
+                        // User doesn't own a club
+                        setIsClubOwner(false);
+                    }
+                }
+
                 setLoading(false);
             } catch (err) {
                 console.error("Error fetching club:", err);
@@ -54,7 +76,20 @@ const ClubDetails = ({ isDarkMode }) => {
             }
         };
         fetchClub();
-    }, [decodedClubName]);
+    }, [decodedClubName, login_info.isLoggedIn]);
+
+    // Handle challenge club
+    const handleChallengeClub = () => {
+        if (!isClubOwner) {
+            alert('You need to own a club to challenge other clubs!');
+            return;
+        }
+        if (userClub && club._id === userClub._id) {
+            alert('You cannot challenge your own club!');
+            return;
+        }
+        setChallengeModalOpen(true);
+    };
 
 
     if (loading) return <div className="p-10">Loading...</div>;
@@ -65,24 +100,68 @@ const ClubDetails = ({ isDarkMode }) => {
 
     return (
         <div className={`pt-28 px-6 md:px-12 lg:px-24 min-h-screen ${isDarkMode ? 'text-white' : 'text-black'}`}>
+            {/* Back Button */}
+            <div className="mb-6">
+                <Link
+                    to="/club"
+                    className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                        isDarkMode
+                            ? 'bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white'
+                            : 'bg-black/10 hover:bg-black/20 text-gray-700 hover:text-black'
+                    }`}
+                >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Back to Clubs</span>
+                </Link>
+            </div>
+
             {/* Header */}
-            <div className="flex flex-col md:flex-row items-center gap-6 mb-10">
-                <img
-                    src={club.logo}
-                    alt={club.name}
-                    className="w-28 h-28 rounded-2xl object-cover border-2 shadow-md"
-                />
-                <div>
-                    <h1 className={`text-4xl font-bold ${accentColor} mb-2`}>
-                        {club.name}
-                        {club.approved && (
-                            <Check className="inline w-5 h-5 ml-2 text-green-400" />
-                        )}
-                    </h1>
-                    <p className="text-sm text-gray-400">
-                        Founded on {new Date(club.createdAt).toLocaleDateString()}
-                    </p>
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                    <img
+                        src={club.logo}
+                        alt={club.name}
+                        className="w-28 h-28 rounded-2xl object-cover border-2 shadow-md"
+                    />
+                    <div>
+                        <h1 className={`text-4xl font-bold ${accentColor} mb-2`}>
+                            {club.name}
+                            {club.approved && (
+                                <Check className="inline w-5 h-5 ml-2 text-green-400" />
+                            )}
+                        </h1>
+                        <p className="text-sm text-gray-400">
+                            Founded on {new Date(club.createdAt).toLocaleDateString()}
+                        </p>
+                    </div>
                 </div>
+
+                {/* Challenge Button - Only show for club owners */}
+                {isClubOwner && userClub && club._id !== userClub._id && (
+                    <button
+                        onClick={handleChallengeClub}
+                        className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-[1.02] ${
+                            isDarkMode
+                                ? 'bg-orange-500/20 hover:bg-orange-500/30 backdrop-blur-sm border border-orange-500/30 hover:border-orange-500/50 text-orange-300 hover:text-orange-200'
+                                : 'bg-blue-500/20 hover:bg-blue-500/30 backdrop-blur-sm border border-blue-500/30 hover:border-blue-500/50 text-blue-600 hover:text-blue-700'
+                        } flex items-center space-x-2 focus:outline-none`}
+                    >
+                        <Zap className="w-5 h-5" />
+                        <span>Challenge Club</span>
+                    </button>
+                )}
+
+                {/* Show "Your Club" indicator */}
+                {isClubOwner && userClub && club._id === userClub._id && (
+                    <div className={`px-6 py-3 rounded-xl ${
+                        isDarkMode
+                            ? 'bg-green-500/20 border border-green-500/30 text-green-400'
+                            : 'bg-green-500/20 border border-green-500/30 text-green-600'
+                    } font-medium flex items-center space-x-2 backdrop-blur-sm`}>
+                        <Check className="w-5 h-5" />
+                        <span>Your Club</span>
+                    </div>
+                )}
             </div>
 
             {/* Description */}
@@ -182,6 +261,13 @@ const ClubDetails = ({ isDarkMode }) => {
                 </div>
             )}
 
+            {/* Challenge Modal */}
+            <ChallengeModal
+                isOpen={challengeModalOpen}
+                onClose={() => setChallengeModalOpen(false)}
+                targetClub={club}
+                isDarkMode={isDarkMode}
+            />
         </div>
     );
 };

@@ -1,124 +1,195 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Bell, Users, Briefcase, Trophy, MessageCircle, Calendar, 
-  CheckCircle, X, Filter, Search, Star, Award, Target
+import {
+  Bell, Users, Briefcase, Trophy, MessageCircle, Calendar,
+  CheckCircle, X, Filter, Search, Star, Award, Target, Zap
 } from 'lucide-react';
+import loginContext from '../context/loginContext';
+import { challengeService } from '../services/challengeService';
 
 const Notifications = ({ isDarkMode, userType }) => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isClubOwner, setIsClubOwner] = useState(false);
+  
+  const login_info = useContext(loginContext);
 
-  const playerNotifications = [
-    {
-      id: 1,
-      type: 'clubs',
-      title: 'Thunder FC wants you to join!',
-      message: 'Thunder FC has reviewed your profile and would like to invite you to join their team. They have excellent facilities and professional coaching staff.',
-      time: '2 hours ago',
-      read: false,
-      icon: Users,
-      color: 'text-blue-400',
-      action: 'View Club',
-      clubInfo: {
-        name: 'Thunder FC',
-        rating: 4.8,
-        members: 45,
-        location: 'Los Angeles, CA'
+  // Fetch notifications and check if user is club owner
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!login_info.isLoggedIn) {
+        setLoading(false);
+        return;
       }
-    },
-    {
-      id: 2,
-      type: 'jobs',
-      title: 'New Coaching Position Available',
-      message: 'Elite Sports Academy is looking for a football coach. Your profile matches their requirements perfectly.',
-      time: '5 hours ago',
-      read: false,
-      icon: Briefcase,
-      color: 'text-green-400',
-      action: 'Apply Now'
-    },
-    {
-      id: 3,
-      type: 'achievements',
-      title: 'Achievement Unlocked: AI Guru Master!',
-      message: 'Congratulations! You\'ve used AI Guru for 30 consecutive days and improved your skills significantly.',
-      time: '1 day ago',
-      read: true,
-      icon: Award,
-      color: 'text-yellow-400',
-      action: 'View Achievement'
-    },
-    {
-      id: 4,
-      type: 'clubs',
-      title: 'Lightning United Match Invitation',
-      message: 'Lightning United has invited you to participate in their upcoming friendly match this weekend.',
-      time: '2 days ago',
-      read: true,
-      icon: Trophy,
-      color: 'text-purple-400',
-      action: 'Respond'
-    }
-  ];
 
-  const facultyNotifications = [
-    {
-      id: 1,
-      type: 'challenges',
-      title: 'Challenge Request from Storm City FC',
-      message: 'Storm City FC has challenged your team to a match with a $5,000 prize pool. Review their team stats and decide.',
-      time: '1 hour ago',
-      read: false,
-      icon: Trophy,
-      color: 'text-red-400',
-      action: 'Review Challenge',
-      challengeInfo: {
-        club: 'Storm City FC',
-        prizePool: '$5,000',
-        winRate: '78%',
-        matchesPlayed: 45,
-        location: 'Storm Arena',
-        date: '2024-02-15'
+      try {
+        // Check if user owns a club
+        try {
+          await challengeService.getMyClub();
+          setIsClubOwner(true);
+        } catch (err) {
+          setIsClubOwner(false);
+        }
+
+        // Fetch notifications
+        const notificationsData = await challengeService.getNotifications();
+        
+        // Transform backend notifications to match frontend format
+        const transformedNotifications = notificationsData.map(notification => ({
+          id: notification._id,
+          type: notification.type,
+          title: notification.title,
+          message: notification.message,
+          time: formatTimeAgo(notification.createdAt),
+          read: notification.read,
+          icon: getNotificationIcon(notification.type),
+          color: getNotificationColor(notification.type),
+          action: getNotificationAction(notification.type),
+          challengeInfo: notification.data ? {
+            club: notification.data.challengerClub?.name || notification.data.opponentClub?.name,
+            prizePool: notification.data.prizePool,
+            location: notification.data.location,
+            date: notification.data.date,
+            sport: notification.data.sport
+          } : null,
+          challengeId: notification.data?.challengeId
+        }));
+
+        setNotifications(transformedNotifications);
+      } catch (err) {
+        console.error('Error fetching notifications:', err);
+      } finally {
+        setLoading(false);
       }
-    },
-    {
-      id: 2,
-      type: 'clubs',
-      title: 'New Player Application',
-      message: 'Alex Rodriguez has applied to join your club. His profile shows excellent skills in midfield position.',
-      time: '3 hours ago',
-      read: false,
-      icon: Users,
-      color: 'text-blue-400',
-      action: 'Review Application'
-    },
-    {
-      id: 3,
-      type: 'challenges',
-      title: 'Challenge Accepted by Phoenix United',
-      message: 'Phoenix United has accepted your challenge for the championship match. Match details have been confirmed.',
-      time: '6 hours ago',
-      read: true,
-      icon: CheckCircle,
-      color: 'text-green-400',
-      action: 'View Details'
+    };
+
+    fetchData();
+  }, [login_info.isLoggedIn]);
+
+  // Helper functions
+  const formatTimeAgo = (dateString) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  };
+
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case 'challenge_request':
+      case 'challenge_accepted':
+      case 'challenge_declined':
+        return Trophy;
+      case 'club_invitation':
+      case 'join_request':
+        return Users;
+      default:
+        return Bell;
     }
-  ];
+  };
 
-  const notifications = userType === 'faculty' ? facultyNotifications : playerNotifications;
+  const getNotificationColor = (type) => {
+    switch (type) {
+      case 'challenge_request':
+        return 'text-red-400';
+      case 'challenge_accepted':
+        return 'text-green-400';
+      case 'challenge_declined':
+        return 'text-orange-400';
+      case 'club_invitation':
+      case 'join_request':
+        return 'text-blue-400';
+      default:
+        return 'text-gray-400';
+    }
+  };
 
-  const filters = userType === 'faculty' 
+  const getNotificationAction = (type) => {
+    switch (type) {
+      case 'challenge_request':
+        return 'Review Challenge';
+      case 'challenge_accepted':
+      case 'challenge_declined':
+        return 'View Details';
+      case 'club_invitation':
+        return 'View Club';
+      case 'join_request':
+        return 'Review Application';
+      default:
+        return 'View';
+    }
+  };
+
+  // Handle challenge actions
+  const handleChallengeAction = async (notification, action) => {
+    if (!notification.challengeId) return;
+
+    try {
+      if (action === 'accept') {
+        await challengeService.acceptChallenge(notification.challengeId);
+        alert('Challenge accepted successfully!');
+      } else if (action === 'decline') {
+        await challengeService.declineChallenge(notification.challengeId);
+        alert('Challenge declined successfully!');
+      }
+      
+      // Refresh notifications
+      const notificationsData = await challengeService.getNotifications();
+      const transformedNotifications = notificationsData.map(notification => ({
+        id: notification._id,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        time: formatTimeAgo(notification.createdAt),
+        read: notification.read,
+        icon: getNotificationIcon(notification.type),
+        color: getNotificationColor(notification.type),
+        action: getNotificationAction(notification.type),
+        challengeInfo: notification.data ? {
+          club: notification.data.challengerClub?.name || notification.data.opponentClub?.name,
+          prizePool: notification.data.prizePool,
+          location: notification.data.location,
+          date: notification.data.date,
+          sport: notification.data.sport
+        } : null,
+        challengeId: notification.data?.challengeId
+      }));
+      setNotifications(transformedNotifications);
+    } catch (err) {
+      alert('Error processing challenge: ' + (err.msg || err.message));
+    }
+  };
+
+  // Mark notification as read
+  const markAsRead = async (notificationId) => {
+    try {
+      await challengeService.markNotificationAsRead(notificationId);
+      setNotifications(prev =>
+        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+      );
+    } catch (err) {
+      console.error('Error marking notification as read:', err);
+    }
+  };
+
+  const filters = isClubOwner
     ? [
         { id: 'all', label: 'All', icon: Bell },
-        { id: 'challenges', label: 'Challenges', icon: Trophy },
-        { id: 'clubs', label: 'Club Management', icon: Users }
+        { id: 'challenge_request', label: 'Challenge Requests', icon: Trophy },
+        { id: 'challenge_accepted', label: 'Accepted', icon: CheckCircle },
+        { id: 'challenge_declined', label: 'Declined', icon: X }
       ]
     : [
         { id: 'all', label: 'All', icon: Bell },
-        { id: 'clubs', label: 'Clubs', icon: Users },
-        { id: 'jobs', label: 'Jobs', icon: Briefcase },
-        { id: 'achievements', label: 'Achievements', icon: Award }
+        { id: 'club_invitation', label: 'Club Invitations', icon: Users },
+        { id: 'join_request', label: 'Join Requests', icon: Award }
       ];
 
   const filteredNotifications = notifications.filter(notification => {
@@ -131,6 +202,26 @@ const Notifications = ({ isDarkMode, userType }) => {
   });
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  if (loading) {
+    return (
+      <div className={`min-h-screen pt-20 flex items-center justify-center ${isDarkMode ? 'bg-black' : 'bg-white'}`}>
+        <div className={`animate-spin rounded-full h-32 w-32 border-b-2 ${isDarkMode ? 'border-orange-600' : 'border-blue-600'}`}></div>
+      </div>
+    );
+  }
+
+  if (!login_info.isLoggedIn) {
+    return (
+      <div className={`min-h-screen pt-20 flex items-center justify-center ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
+        <div className="text-center">
+          <Bell className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+          <h2 className="text-2xl font-bold mb-2">Please Log In</h2>
+          <p className="text-gray-500">You need to be logged in to view notifications.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -168,7 +259,7 @@ const Notifications = ({ isDarkMode, userType }) => {
             <p className={`text-xl max-w-3xl mx-auto ${
               isDarkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
-              Stay updated with the latest {userType === 'faculty' ? 'club management and challenge' : 'club invitations, job opportunities, and achievement'} notifications
+              Stay updated with the latest {isClubOwner ? 'club management and challenge' : 'club invitations and join request'} notifications
             </p>
           </motion.div>
 
@@ -263,87 +354,91 @@ const Notifications = ({ isDarkMode, userType }) => {
                       </p>
 
                       {/* Additional Info for Challenges */}
-                      {notification.type === 'challenges' && 'challengeInfo' in notification && (
+                      {(notification.type.includes('challenge') && notification.challengeInfo) && (
                         <div className={`p-4 rounded-xl mb-4 ${
                           isDarkMode ? 'bg-white/5' : 'bg-black/5'
                         }`}>
                           <h4 className="font-semibold mb-3">Challenge Details</h4>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                            <div>
-                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Prize Pool:</span>
-                              <p className="font-semibold text-green-400">{notification.challengeInfo.prizePool}</p>
-                            </div>
-                            <div>
-                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Win Rate:</span>
-                              <p className="font-semibold">{notification.challengeInfo.winRate}</p>
-                            </div>
-                            <div>
-                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Matches:</span>
-                              <p className="font-semibold">{notification.challengeInfo.matchesPlayed}</p>
-                            </div>
-                            <div>
-                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Location:</span>
-                              <p className="font-semibold">{notification.challengeInfo.location}</p>
-                            </div>
-                            <div>
-                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Date:</span>
-                              <p className="font-semibold">{notification.challengeInfo.date}</p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Additional Info for Club Invitations */}
-                      {notification.type === 'clubs' && 'clubInfo' in notification && (
-                        <div className={`p-4 rounded-xl mb-4 ${
-                          isDarkMode ? 'bg-white/5' : 'bg-black/5'
-                        }`}>
-                          <h4 className="font-semibold mb-3">Club Information</h4>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                            <div>
-                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Rating:</span>
-                              <div className="flex items-center space-x-1">
-                                <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                                <span className="font-semibold">{notification.clubInfo.rating}</span>
+                            {notification.challengeInfo.club && (
+                              <div>
+                                <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Club:</span>
+                                <p className="font-semibold">{notification.challengeInfo.club}</p>
                               </div>
-                            </div>
-                            <div>
-                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Members:</span>
-                              <p className="font-semibold">{notification.clubInfo.members}</p>
-                            </div>
-                            <div>
-                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Location:</span>
-                              <p className="font-semibold">{notification.clubInfo.location}</p>
-                            </div>
+                            )}
+                            {notification.challengeInfo.sport && (
+                              <div>
+                                <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Sport:</span>
+                                <p className="font-semibold">{notification.challengeInfo.sport}</p>
+                              </div>
+                            )}
+                            {notification.challengeInfo.prizePool && (
+                              <div>
+                                <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Prize Pool:</span>
+                                <p className="font-semibold text-green-400">{notification.challengeInfo.prizePool}</p>
+                              </div>
+                            )}
+                            {notification.challengeInfo.location && (
+                              <div>
+                                <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Location:</span>
+                                <p className="font-semibold">{notification.challengeInfo.location}</p>
+                              </div>
+                            )}
+                            {notification.challengeInfo.date && (
+                              <div>
+                                <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Date:</span>
+                                <p className="font-semibold">{notification.challengeInfo.date}</p>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}
 
                       {/* Action Buttons */}
                       <div className="flex items-center space-x-3">
-                        <button className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                          isDarkMode
-                            ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
-                            : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
-                        } text-white shadow-lg hover:shadow-xl`}>
-                          {notification.action}
-                        </button>
+                        {/* Challenge-specific actions */}
+                        {notification.type === 'challenge_request' && (
+                          <>
+                            <button
+                              onClick={() => handleChallengeAction(notification, 'accept')}
+                              className="px-6 py-3 rounded-xl font-semibold transition-all duration-300 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-lg hover:shadow-xl"
+                            >
+                              Accept Challenge
+                            </button>
+                            <button
+                              onClick={() => handleChallengeAction(notification, 'decline')}
+                              className="px-6 py-3 rounded-xl font-semibold transition-all duration-300 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-400 hover:to-pink-500 text-white shadow-lg hover:shadow-xl"
+                            >
+                              Decline
+                            </button>
+                          </>
+                        )}
+                        
+                        {/* Default action button for other notifications */}
+                        {notification.type !== 'challenge_request' && (
+                          <button className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                            isDarkMode
+                              ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
+                              : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
+                          } text-white shadow-lg hover:shadow-xl`}>
+                            {notification.action}
+                          </button>
+                        )}
+                        
+                        {/* Mark as read button */}
                         {!notification.read && (
-                          <button className={`px-4 py-3 rounded-xl transition-all duration-300 ${
-                            isDarkMode 
-                              ? 'bg-white/10 hover:bg-white/20' 
-                              : 'bg-black/10 hover:bg-black/20'
-                          }`}>
+                          <button
+                            onClick={() => markAsRead(notification.id)}
+                            className={`px-4 py-3 rounded-xl transition-all duration-300 ${
+                              isDarkMode
+                                ? 'bg-white/10 hover:bg-white/20'
+                                : 'bg-black/10 hover:bg-black/20'
+                            }`}
+                            title="Mark as read"
+                          >
                             <CheckCircle className="w-5 h-5" />
                           </button>
                         )}
-                        <button className={`px-4 py-3 rounded-xl transition-all duration-300 ${
-                          isDarkMode 
-                            ? 'bg-white/10 hover:bg-white/20' 
-                            : 'bg-black/10 hover:bg-black/20'
-                        }`}>
-                          <X className="w-5 h-5" />
-                        </button>
                       </div>
                     </div>
                   </div>

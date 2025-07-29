@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Search, MapPin, Filter, Calendar, Users,
   Star, Clock, ChevronDown, X, ArrowLeft, Upload, Check,
-  Play, Video, Trophy, UserCheck
+  Play, Video, Trophy, UserCheck, Zap, Eye
 } from 'lucide-react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import loginContext from '../context/loginContext';
+import { challengeService } from '../services/challengeService';
+import ChallengeModal from '../components/ChallengeModal';
 
 const Club = ({ isDarkMode }) => {
   // State hooks for storing data and UI behavior
@@ -15,25 +18,44 @@ const Club = ({ isDarkMode }) => {
   const [loading, setLoading] = useState(true); // loading state
   const [searchTerm, setSearchTerm] = useState(''); // search input
   const [sortBy, setSortBy] = useState('name'); // current sort option
+  const [userClub, setUserClub] = useState(null); // user's own club
+  const [isClubOwner, setIsClubOwner] = useState(false); // whether user owns a club
+  const [challengeModalOpen, setChallengeModalOpen] = useState(false);
+  const [selectedClubToChallenge, setSelectedClubToChallenge] = useState(null);
+  
+  const login_info = useContext(loginContext);
 
-  // Fetch clubs from API on component mount
+  // Fetch clubs and user's club data from API on component mount
   useEffect(() => {
     const fetch_data = async () => {
       try {
+        // Fetch all clubs
         const res = await axios.get("http://localhost:3000/clubs", { withCredentials: true });
         if (res.status === 200) {
           setClubData(res.data);
-          console.log(res.data);
           setFilteredClubs(res.data);
-          setLoading(false);
         }
+
+        // Check if user owns a club (only if logged in)
+        if (login_info.isLoggedIn) {
+          try {
+            const myClubRes = await challengeService.getMyClub();
+            setUserClub(myClubRes);
+            setIsClubOwner(true);
+          } catch (err) {
+            // User doesn't own a club
+            setIsClubOwner(false);
+          }
+        }
+        
+        setLoading(false);
       } catch (err) {
         console.error("Error fetching club data:", err);
         setLoading(false);
       }
     };
     fetch_data();
-  }, []);
+  }, [login_info.isLoggedIn]);
 
   // Handle filtering and sorting whenever search term, sort option or data changes
   useEffect(() => {
@@ -67,6 +89,20 @@ const Club = ({ isDarkMode }) => {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  // Handle challenge club
+  const handleChallengeClub = (club) => {
+    if (!isClubOwner) {
+      alert('You need to own a club to challenge other clubs!');
+      return;
+    }
+    if (userClub && club._id === userClub._id) {
+      alert('You cannot challenge your own club!');
+      return;
+    }
+    setSelectedClubToChallenge(club);
+    setChallengeModalOpen(true);
   };
 
   // Show loading spinner while data is being fetched
@@ -249,11 +285,43 @@ const Club = ({ isDarkMode }) => {
                     )}
                   </div>
 
-                  {/* View Button */}
+                  {/* Action Buttons */}
+                  <div className="space-y-2">
+                    {/* View Details Button */}
+                    <Link to={`/club/${encodeURIComponent(club.name)}`}>
+                      <button className={`w-full cursor-pointer ${isDarkMode
+                        ? 'bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 hover:border-white/30'
+                        : 'bg-black/10 hover:bg-black/20 backdrop-blur-sm border border-black/20 hover:border-black/30'
+                      } text-white font-medium py-2.5 rounded-lg transition-all duration-300 hover:scale-[1.02] focus:outline-none flex items-center justify-center space-x-2`}>
+                        <Eye className="w-4 h-4" />
+                        <span>View Details</span>
+                      </button>
+                    </Link>
 
-                  <Link to={`/club/${encodeURIComponent(club.name)}`}><button className={`w-full cursor-pointer bg-gradient-to-r ${isDarkMode ? 'from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 focus:ring-orange-400' : 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:ring-blue-400'} text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800`}>
-                    View Club Details
-                  </button></Link>
+                    {/* Challenge Button - Only show for club owners */}
+                    {isClubOwner && userClub && club._id !== userClub._id && (
+                      <button
+                        onClick={() => handleChallengeClub(club)}
+                        className={`w-full cursor-pointer ${isDarkMode
+                          ? 'bg-orange-500/20 hover:bg-orange-500/30 backdrop-blur-sm border border-orange-500/30 hover:border-orange-500/50 text-orange-300 hover:text-orange-200'
+                          : 'bg-blue-500/20 hover:bg-blue-500/30 backdrop-blur-sm border border-blue-500/30 hover:border-blue-500/50 text-blue-600 hover:text-blue-700'
+                        } font-medium py-2.5 rounded-lg transition-all duration-300 hover:scale-[1.02] focus:outline-none flex items-center justify-center space-x-2`}>
+                        <Zap className="w-4 h-4" />
+                        <span>Challenge</span>
+                      </button>
+                    )}
+
+                    {/* Show "Your Club" indicator */}
+                    {isClubOwner && userClub && club._id === userClub._id && (
+                      <div className={`w-full text-center py-2.5 rounded-lg ${isDarkMode
+                        ? 'bg-green-500/20 border border-green-500/30 text-green-400'
+                        : 'bg-green-500/20 border border-green-500/30 text-green-600'
+                      } font-medium flex items-center justify-center space-x-2 backdrop-blur-sm`}>
+                        <Check className="w-4 h-4" />
+                        <span>Your Club</span>
+                      </div>
+                    )}
+                  </div>
 
                 </div>
 
@@ -269,6 +337,14 @@ const Club = ({ isDarkMode }) => {
           </div>
         )}
       </div>
+
+      {/* Challenge Modal */}
+      <ChallengeModal
+        isOpen={challengeModalOpen}
+        onClose={() => setChallengeModalOpen(false)}
+        targetClub={selectedClubToChallenge}
+        isDarkMode={isDarkMode}
+      />
     </div>
     </motion.div>
   );

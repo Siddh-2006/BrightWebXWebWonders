@@ -240,21 +240,7 @@ const LiveSection = () => {
             <p className="text-gray-500">Try adjusting your search or filter criteria</p>
           </div>
         )}
-
-        {/* Bottom CTA */}
-        <div className="text-center mt-12">
-          <div className="bg-gradient-to-r from-red-500 to-pink-500 rounded-2xl p-8">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">
-              Want to broadcast your match?
-            </h3>
-            <p className="text-lg mb-6 opacity-90">
-              Connect with our streaming platform and share your games with the world
-            </p>
-            <button className="bg-white text-red-600 px-8 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors">
-              Start Broadcasting
-            </button>
-          </div>
-        </div>
+        
       </div>
     </section>
   );

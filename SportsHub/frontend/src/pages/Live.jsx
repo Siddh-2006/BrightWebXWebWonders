@@ -6,7 +6,6 @@ import {
   Filter, Play, Eye, Star, Calendar, Target, Zap
 } from 'lucide-react';
 import Loader from '../helper/Loader';
-import BroadcastModal from '../components/BroadcastModal';
 import LoginContext from '../context/loginContext';
 import { useNavigate } from 'react-router';
 const Live = ({ isDarkMode }) => {
@@ -401,46 +400,6 @@ const Live = ({ isDarkMode }) => {
           )}
         </div>
       </section>
-
-      {/* Bottom CTA */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ y: 50, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true }}
-            className={`rounded-3xl p-12 text-center ${
-              isDarkMode
-                ? 'bg-gradient-to-r from-red-500/20 to-pink-500/20 border border-red-500/30'
-                : 'bg-gradient-to-r from-red-500/20 to-pink-500/20 border border-red-500/30'
-            }`}
-          >
-            <h3 className="text-3xl md:text-4xl font-bold mb-6">
-              Want to broadcast your match?
-            </h3>
-            <p className={`text-xl mb-8 max-w-2xl mx-auto ${
-              isDarkMode ? 'text-gray-300' : 'text-gray-600'
-            }`}>
-              Connect with our streaming platform and share your games with the world
-            </p>
-            <button
-              onClick={handleBroadcastClick}
-              className={`px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ${
-              isDarkMode
-                ? 'bg-white text-red-600 hover:bg-gray-100'
-                : 'bg-black text-red-400 hover:bg-gray-900'
-            }`}>
-              Start Broadcasting
-            </button>
-          </motion.div>
-        </div>
-      </section>
-      <BroadcastModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        club={currentClub}
-        isDarkMode={isDarkMode}
-      />
     </motion.div>
   );
 };
