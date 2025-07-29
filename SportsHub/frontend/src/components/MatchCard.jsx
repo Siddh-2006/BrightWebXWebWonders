@@ -6,6 +6,19 @@ import useReminder from '../hooks/useReminder';
 const MatchCard = ({ match }) => {
   const { reminder, setReminder, isModalOpen, openModal, closeModal } = useReminder(match);
 
+  const handleReminderSet = (minutes) => {
+    const result = setReminder(minutes);
+    
+    if (result.success) {
+      // Show success message
+      console.log(`✅ ${result.message}`);
+    } else {
+      // Show error message
+      console.error(`❌ ${result.message}`);
+      alert(`Failed to set reminder: ${result.message}`);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'live': return 'bg-red-500';
@@ -112,7 +125,7 @@ const MatchCard = ({ match }) => {
               <ReminderModal
                 match={match}
                 onClose={closeModal}
-                onSetReminder={setReminder}
+                onSetReminder={handleReminderSet}
               />
             )}
           </>

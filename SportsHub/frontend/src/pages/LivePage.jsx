@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { io } from "socket.io-client";
+import { Bell } from "lucide-react";
+import ReminderModal from "../components/ReminderModal";
+import useReminder from "../hooks/useReminder";
+import reminderService from "../services/reminderService";
+import ActiveReminders from "../components/ActiveReminders";
 
 const LivePage = () => {
   const { sport, matchId } = useParams();
@@ -8,6 +13,27 @@ const LivePage = () => {
   const [messages, setMessages] = useState([]);
   const [chatMsg, setChatMsg] = useState("");
   const [socket, setSocket] = useState(null);
+  
+  // Mock match data for reminder functionality
+  const mockMatch = {
+    homeTeam: "Team A",
+    awayTeam: "Team B",
+    date: new Date().toISOString().split('T')[0],
+    time: "20:00"
+  };
+  
+  const { reminder, setReminder, isModalOpen, openModal, closeModal } = useReminder(mockMatch);
+
+  const handleReminderSet = (minutes) => {
+    const result = reminderService.scheduleReminder(mockMatch, minutes);
+    
+    if (result.success) {
+      alert(`✅ ${result.message}\nScheduled for: ${result.scheduledFor.toLocaleString()}`);
+      setReminder(minutes);
+    } else {
+      alert(`❌ Failed to set reminder: ${result.message}`);
+    }
+  };
 
   useEffect(() => {
     const socketInstance = io("http://localhost:5000", {
@@ -161,13 +187,26 @@ const LivePage = () => {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 mb-6 shadow-lg">
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-              <div className="w-4 h-4 bg-white rounded-full animate-pulse"></div>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                  <div className="w-4 h-4 bg-white rounded-full animate-pulse"></div>
+                </div>
+                Live Match: {sport?.toUpperCase()}
+              </h1>
+              <div className="text-orange-100 mt-2">Match ID: {matchId}</div>
             </div>
-            Live Match: {sport?.toUpperCase()}
-          </h1>
-          <div className="text-orange-100 mt-2">Match ID: {matchId}</div>
+            
+            {/* Reminder Button */}
+            <button
+              onClick={openModal}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 backdrop-blur-sm"
+            >
+              <Bell className="w-5 h-5" />
+              Set Reminder
+            </button>
+          </div>
         </div>
 
         {/* Live Stream */}
@@ -244,6 +283,18 @@ const LivePage = () => {
           </div>
         </div>
       </div>
+      
+      {/* Reminder Modal */}
+      {isModalOpen && (
+        <ReminderModal
+          match={mockMatch}
+          onClose={closeModal}
+          onSetReminder={handleReminderSet}
+        />
+      )}
+      
+      {/* Active Reminders */}
+      <ActiveReminders isDarkMode={false} />
     </div>
   );
 };

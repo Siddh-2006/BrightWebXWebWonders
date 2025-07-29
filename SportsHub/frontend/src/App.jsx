@@ -13,6 +13,8 @@ import About from './pages/About';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Footer from './components/Footer';
+import ReminderToast from './components/ReminderToast';
+import NotificationToast from './components/NotificationToast';
 import { useContext } from 'react';
 import loginContext from './context/loginContext';
 import Logout from './pages/Logout';
@@ -87,6 +89,10 @@ function App() {
         </AnimatePresence>
 
         <Footer isDarkMode={isDarkMode} />
+        
+        {/* Global Toast Systems */}
+        <ReminderToast />
+        <NotificationToast />
       </Router>
     </div>
   );

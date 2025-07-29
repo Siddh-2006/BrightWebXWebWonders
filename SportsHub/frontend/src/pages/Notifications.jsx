@@ -2,23 +2,53 @@ import React, { useState, useEffect, useContext } from 'react';
 import { motion } from 'framer-motion';
 import {
   Bell, Users, Briefcase, Trophy, MessageCircle, Calendar,
-  CheckCircle, X, Filter, Search, Star, Award, Target, Zap
+  CheckCircle, X, Filter, Search, Star, Award, Target, Zap, Clock
 } from 'lucide-react';
 import loginContext from '../context/loginContext';
 import { challengeService } from '../services/challengeService';
+import reminderService from '../services/reminderService';
+import { showNotificationToast } from '../components/NotificationToast';
 
 const Notifications = ({ isDarkMode, userType }) => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [notifications, setNotifications] = useState([]);
+  const [reminderNotifications, setReminderNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isClubOwner, setIsClubOwner] = useState(false);
   
   const login_info = useContext(loginContext);
 
+  // Load reminder notifications (for all users)
+  const loadReminderNotifications = () => {
+    const reminders = reminderService.getAllReminders();
+    const reminderNotifs = reminders.map(reminder => ({
+      id: `reminder-${reminder.matchKey}`,
+      type: 'reminder',
+      title: `Match Reminder: ${reminder.match.homeTeam} vs ${reminder.match.awayTeam}`,
+      message: `You'll be notified ${reminder.minutes} minutes before the match starts`,
+      time: formatTimeAgo(reminder.createdAt),
+      read: true, // Reminders are always considered "read" since they're user-created
+      icon: Bell,
+      color: 'text-orange-400',
+      action: 'View Match',
+      actionUrl: null,
+      reminderInfo: {
+        match: reminder.match,
+        minutes: reminder.minutes,
+        scheduledFor: reminder.scheduledFor,
+        matchKey: reminder.matchKey
+      }
+    }));
+    setReminderNotifications(reminderNotifs);
+  };
+
   // Fetch notifications and check if user is club owner
   useEffect(() => {
     const fetchData = async () => {
+      // Always load reminder notifications (for both logged-in and non-logged-in users)
+      loadReminderNotifications();
+
       if (!login_info.isLoggedIn) {
         setLoading(false);
         return;
@@ -33,7 +63,7 @@ const Notifications = ({ isDarkMode, userType }) => {
           setIsClubOwner(false);
         }
 
-        // Fetch notifications
+        // Fetch club notifications
         const notificationsData = await challengeService.getNotifications();
         
         // Transform backend notifications to match frontend format
@@ -59,6 +89,22 @@ const Notifications = ({ isDarkMode, userType }) => {
         }));
 
         setNotifications(transformedNotifications);
+        
+        // Show toast for new unread notifications (only if this isn't the initial load)
+        if (notifications.length > 0) {
+          const newUnreadCount = transformedNotifications.filter(n => !n.read).length;
+          const oldUnreadCount = notifications.filter(n => !n.read).length;
+          
+          if (newUnreadCount > oldUnreadCount) {
+            const newNotificationsCount = newUnreadCount - oldUnreadCount;
+            showNotificationToast(
+              'info',
+              'New Notifications',
+              `You have ${newNotificationsCount} new notification${newNotificationsCount > 1 ? 's' : ''}!`,
+              5000
+            );
+          }
+        }
       } catch (err) {
         console.error('Error fetching notifications:', err);
       } finally {
@@ -67,6 +113,10 @@ const Notifications = ({ isDarkMode, userType }) => {
     };
 
     fetchData();
+
+    // Set up interval to refresh reminders every minute
+    const interval = setInterval(loadReminderNotifications, 60000);
+    return () => clearInterval(interval);
   }, [login_info.isLoggedIn]);
 
   // Helper functions
@@ -135,10 +185,20 @@ const Notifications = ({ isDarkMode, userType }) => {
     try {
       if (action === 'accept') {
         await challengeService.acceptChallenge(notification.challengeId);
-        alert('Challenge accepted successfully!');
+        showNotificationToast(
+          'challenge_accepted',
+          'Challenge Accepted!',
+          `You have successfully accepted the challenge from ${notification.challengeInfo?.club || 'the club'}.`,
+          6000
+        );
       } else if (action === 'decline') {
         await challengeService.declineChallenge(notification.challengeId);
-        alert('Challenge declined successfully!');
+        showNotificationToast(
+          'challenge_declined',
+          'Challenge Declined',
+          `You have declined the challenge from ${notification.challengeInfo?.club || 'the club'}.`,
+          6000
+        );
       }
       
       // Refresh notifications
@@ -165,7 +225,67 @@ const Notifications = ({ isDarkMode, userType }) => {
       }));
       setNotifications(transformedNotifications);
     } catch (err) {
-      alert('Error processing challenge: ' + (err.msg || err.message));
+      showNotificationToast(
+        'error',
+        'Error Processing Challenge',
+        err.msg || err.message || 'An unexpected error occurred while processing the challenge.',
+        8000
+      );
+    }
+  };
+
+  // Handle reminder deletion
+  const handleReminderDelete = (matchKey) => {
+    reminderService.clearReminder(matchKey);
+    loadReminderNotifications();
+    showNotificationToast(
+      'success',
+      'Reminder Cancelled',
+      'Your match reminder has been successfully cancelled.',
+      4000
+    );
+  };
+
+  // Mark all notifications as read
+  const markAllAsRead = async () => {
+    try {
+      const unreadNotifications = notifications.filter(n => !n.read);
+      
+      if (unreadNotifications.length === 0) {
+        showNotificationToast(
+          'info',
+          'No Unread Notifications',
+          'All notifications are already marked as read.',
+          3000
+        );
+        return;
+      }
+
+      // Mark all unread notifications as read
+      await Promise.all(
+        unreadNotifications.map(notification =>
+          challengeService.markNotificationAsRead(notification.id)
+        )
+      );
+
+      setNotifications(prev =>
+        prev.map(n => ({ ...n, read: true }))
+      );
+
+      showNotificationToast(
+        'success',
+        'All Marked as Read',
+        `Successfully marked ${unreadNotifications.length} notification${unreadNotifications.length > 1 ? 's' : ''} as read.`,
+        4000
+      );
+    } catch (err) {
+      console.error('Error marking all notifications as read:', err);
+      showNotificationToast(
+        'error',
+        'Error',
+        'Failed to mark all notifications as read.',
+        4000
+      );
     }
   };
 
@@ -176,34 +296,58 @@ const Notifications = ({ isDarkMode, userType }) => {
       setNotifications(prev =>
         prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
       );
+      showNotificationToast(
+        'success',
+        'Marked as Read',
+        'Notification has been marked as read.',
+        3000
+      );
     } catch (err) {
       console.error('Error marking notification as read:', err);
+      showNotificationToast(
+        'error',
+        'Error',
+        'Failed to mark notification as read.',
+        4000
+      );
     }
   };
 
-  const filters = isClubOwner
-    ? [
-        { id: 'all', label: 'All', icon: Bell },
-        { id: 'challenge_request', label: 'Challenge Requests', icon: Trophy },
-        { id: 'challenge_accepted', label: 'Accepted', icon: CheckCircle },
-        { id: 'challenge_declined', label: 'Declined', icon: X }
-      ]
+  // Combine all notifications (club + reminders)
+  const allNotifications = login_info.isLoggedIn
+    ? [...notifications, ...reminderNotifications]
+    : reminderNotifications;
+
+  const filters = login_info.isLoggedIn
+    ? (isClubOwner
+        ? [
+            { id: 'all', label: 'All', icon: Bell },
+            { id: 'reminder', label: 'Reminders', icon: Clock },
+            { id: 'challenge_request', label: 'Challenge Requests', icon: Trophy },
+            { id: 'challenge_accepted', label: 'Accepted', icon: CheckCircle },
+            { id: 'challenge_declined', label: 'Declined', icon: X }
+          ]
+        : [
+            { id: 'all', label: 'All', icon: Bell },
+            { id: 'reminder', label: 'Reminders', icon: Clock },
+            { id: 'club_invitation', label: 'Club Invitations', icon: Users },
+            { id: 'join_request', label: 'Join Requests', icon: Award }
+          ])
     : [
         { id: 'all', label: 'All', icon: Bell },
-        { id: 'club_invitation', label: 'Club Invitations', icon: Users },
-        { id: 'join_request', label: 'Join Requests', icon: Award }
+        { id: 'reminder', label: 'Reminders', icon: Clock }
       ];
 
-  const filteredNotifications = notifications.filter(notification => {
+  const filteredNotifications = allNotifications.filter(notification => {
     const matchesFilter = activeFilter === 'all' || notification.type === activeFilter;
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = searchTerm === '' ||
       notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       notification.message.toLowerCase().includes(searchTerm.toLowerCase());
     
     return matchesFilter && matchesSearch;
   });
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = allNotifications.filter(n => !n.read).length;
 
   if (loading) {
     return (
@@ -213,17 +357,6 @@ const Notifications = ({ isDarkMode, userType }) => {
     );
   }
 
-  if (!login_info.isLoggedIn) {
-    return (
-      <div className={`min-h-screen pt-20 flex items-center justify-center ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
-        <div className="text-center">
-          <Bell className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-          <h2 className="text-2xl font-bold mb-2">Please Log In</h2>
-          <p className="text-gray-500">You need to be logged in to view notifications.</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <motion.div
@@ -261,7 +394,10 @@ const Notifications = ({ isDarkMode, userType }) => {
             <p className={`text-xl max-w-3xl mx-auto ${
               isDarkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
-              Stay updated with the latest {isClubOwner ? 'club management and challenge' : 'club invitations and join request'} notifications
+              {login_info.isLoggedIn
+                ? `Stay updated with match reminders and ${isClubOwner ? 'club management and challenge' : 'club invitations and join request'} notifications`
+                : 'Stay updated with your match reminders'
+              }
             </p>
           </motion.div>
 
@@ -396,6 +532,44 @@ const Notifications = ({ isDarkMode, userType }) => {
                         </div>
                       )}
 
+                      {/* Additional Info for Reminders */}
+                      {(notification.type === 'reminder' && notification.reminderInfo) && (
+                        <div className={`p-4 rounded-xl mb-4 ${
+                          isDarkMode ? 'bg-orange-500/10' : 'bg-orange-50'
+                        }`}>
+                          <h4 className="font-semibold mb-3 flex items-center">
+                            <Clock className="w-4 h-4 mr-2 text-orange-500" />
+                            Reminder Details
+                          </h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Match:</span>
+                              <p className="font-semibold">{notification.reminderInfo.match.homeTeam} vs {notification.reminderInfo.match.awayTeam}</p>
+                            </div>
+                            <div>
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Reminder Time:</span>
+                              <p className="font-semibold text-orange-500">{notification.reminderInfo.minutes} minutes before</p>
+                            </div>
+                            <div>
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Scheduled For:</span>
+                              <p className="font-semibold">{new Date(notification.reminderInfo.scheduledFor).toLocaleString()}</p>
+                            </div>
+                            {notification.reminderInfo.match.venue && (
+                              <div>
+                                <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Venue:</span>
+                                <p className="font-semibold">{notification.reminderInfo.match.venue}</p>
+                              </div>
+                            )}
+                            {notification.reminderInfo.match.sport && (
+                              <div>
+                                <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>Sport:</span>
+                                <p className="font-semibold">{notification.reminderInfo.match.sport}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Action Buttons */}
                       <div className="flex items-center space-x-3">
                         {/* Challenge-specific actions */}
@@ -416,8 +590,18 @@ const Notifications = ({ isDarkMode, userType }) => {
                           </>
                         )}
                         
+                        {/* Reminder-specific actions */}
+                        {notification.type === 'reminder' && (
+                          <button
+                            onClick={() => handleReminderDelete(notification.reminderInfo.matchKey)}
+                            className="px-6 py-3 rounded-xl font-semibold transition-all duration-300 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-400 hover:to-pink-500 text-white shadow-lg hover:shadow-xl"
+                          >
+                            Cancel Reminder
+                          </button>
+                        )}
+                        
                         {/* Default action button for other notifications */}
-                        {notification.type !== 'challenge_request' && (
+                        {notification.type !== 'challenge_request' && notification.type !== 'reminder' && (
                           <button
                             onClick={() => {
                               if (notification.actionUrl) {
@@ -492,7 +676,9 @@ const Notifications = ({ isDarkMode, userType }) => {
               viewport={{ once: true }}
               className="text-center mt-12"
             >
-              <button className={`px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ${
+              <button
+                onClick={markAllAsRead}
+                className={`px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ${
                 isDarkMode
                   ? 'bg-white/10 hover:bg-white/20 text-white'
                   : 'bg-black/10 hover:bg-black/20 text-gray-900'
