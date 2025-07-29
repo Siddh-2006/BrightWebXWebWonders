@@ -1,0 +1,31 @@
+{
+  "AIzaSyD3T_6r6Zhe1ZjcZyVkS4uTs7NaEtd8lyQ": {
+    "requestsToday": 6,
+    "lastResetDate": "2025-07-29",
+    "lastMinuteCalls": [
+      1753814893444,
+      1753814968278
+    ],
+    "disabledUntil": 0,
+    "lastGenerationRun": 1753814968278
+  },
+  "AIzaSyChDRdHLPBXsXkEa8USwxdEtaF88Zl3Km0": {
+    "requestsToday": 5,
+    "lastResetDate": "2025-07-29",
+    "lastMinuteCalls": [
+      1753814914496,
+      1753814929141
+    ],
+    "disabledUntil": 0,
+    "lastGenerationRun": 1753814929141
+  },
+  "AIzaSyDIT90XMN9-oJdDt3X8X1F3G5rZuuXQN7w": {
+    "requestsToday": 3,
+    "lastResetDate": "2025-07-29",
+    "lastMinuteCalls": [
+      1753814946117
+    ],
+    "disabledUntil": 0,
+    "lastGenerationRun": 1753814946117
+  }
+}

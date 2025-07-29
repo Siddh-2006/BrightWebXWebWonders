@@ -18,7 +18,7 @@ module.exports = (io, socket) => {
 
       // Send initial data (stream + score + predictions)
       socket.emit("initialLiveData", {
-        liveStreamUrl: match.liveStreamUrl || null,
+        liveStreamUrl: match.streamURL || null,
         sport: match.sport,
         liveScore: match.liveScore || null,
         predictions: {
@@ -54,7 +54,7 @@ module.exports = (io, socket) => {
       const updatedMatch = await Match.findByIdAndUpdate(
         matchId,
         {
-          liveStreamUrl: streamUrl,
+          streamURL: streamUrl,
           liveScore: final_score,
           score:{clubA:clubA,clubB:clubB},
           
@@ -66,7 +66,7 @@ module.exports = (io, socket) => {
       io.to(matchId.toString()).emit("liveScoreUpdated", {
         sport,
         liveScore: updatedMatch.liveScore,
-        liveStreamUrl: updatedMatch.liveStreamUrl,
+        liveStreamUrl: updatedMatch.streamURL,
       });
       console.log("Score updated successfully for match:",sport, updatedMatch.liveScore);
     } catch (err) {
@@ -106,6 +106,7 @@ module.exports = (io, socket) => {
         clubA: percentA,
         clubB: percentB,
       });
+      
     } catch (err) {
       console.error("submitPrediction error:", err);
       socket.emit("error", "Prediction failed");

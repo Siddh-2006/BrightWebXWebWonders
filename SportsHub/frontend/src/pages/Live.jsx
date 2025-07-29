@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useContext } from 'react';
-import axios from "axios"
+import axios from "axios";
 import { motion } from 'framer-motion';
-import { 
+import {
   Radio, Users, MessageCircle, BarChart3, Clock, MapPin, Trophy, Search,
   Filter, Play, Eye, Star, Calendar, Target, Zap
 } from 'lucide-react';
 import Loader from '../helper/Loader';
 import LoginContext from '../context/loginContext';
 import { useNavigate } from 'react-router';
+import PredictionModal from '../components/PredictionModal';
+import { ToastContainer } from 'react-toastify';
 const Live = ({ isDarkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSport, setSelectedSport] = useState('all');
@@ -19,10 +21,11 @@ const Live = ({ isDarkMode }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentClub, setCurrentClub] = useState(null);
   const { isLoggedIn, userType } = useContext(LoginContext);
-  const[userData,setUserData]=useState(null);
-  const navigate=useNavigate();
-  useEffect(()=>{
+  const [userData, setUserData] = useState(null);
+  const [pollMatchId, setPollMatchId] = useState(null); // Changed from poll to pollMatchId
+  const navigate = useNavigate();
 
+  useEffect(() => {
     // check if the user is admin
     const checkAdmin = async () => {
       try {
@@ -36,74 +39,75 @@ const Live = ({ isDarkMode }) => {
       }
     }
 
+    const fetch_live = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/match/live", { withCredentials: true });
+        if (res.status == 200) {
+          setLiveMatches((prev) => ([...res.data.matches]));
+          console.log(res.data.matches);
+        }
+        const res2 = await axios.get("http://localhost:3000/match/upcoming", { withCredentials: true });
+        if (res2.status == 200) {
+          setUpcomingMatches((prev) => ([...res2.data.matches]));
+          console.log(res2.data.matches);
+        }
+        const res3 = await axios.get("http://localhost:3000/match/past", { withCredentials: true });
+        if (res3.status == 200) {
+          setfinishedMatches((prev) => ([...res3.data.matches]));
+          console.log(res3.data.matches);
+        }
 
-    const fetch_live=async ()=>{
-      try{
-      const res =await axios.get("http://localhost:3000/match/live",{withCredentials:true});
-      if(res.status==200){
-        setLiveMatches((prev)=>([...res.data.matches]));
-        console.log(res.data.matches);
-      }
-      const res2 =await axios.get("http://localhost:3000/match/upcoming",{withCredentials:true});
-      if(res2.status==200){
-        setUpcomingMatches((prev)=>([...res2.data.matches]));
-        console.log(res2.data.matches);
-      }
-      const res3 =await axios.get("http://localhost:3000/match/past",{withCredentials:true});
-      if(res3.status==200){
-        setfinishedMatches((prev)=>([...res3.data.matches]));
-        console.log(res3.data.matches);
+      } catch (err) {
+        console.log(err)
       }
       setLoading(false);
-    }catch(err){
-      console.log(err)
     }
-    }
-    fetch_live()
+    fetch_live();
     checkAdmin();
-  },[])
+  }, [])
+
   const all_matches = liveMatches.concat(upcomingMatches).concat(finished);
- 
+
   const sports = ['all', 'football', 'basketball', 'tennis', 'cricket', 'swimming'];
   const statuses = ['all', 'Live', 'Not Started', 'Ended'];
 
   const filteredMatches = all_matches.filter(match => {
     const matchesSport = selectedSport === 'all' || match.sport === selectedSport;
     const matchesStatus = selectedStatus === 'all' || match.status === selectedStatus;
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = searchTerm === '' ||
       match.clubA.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       match.clubB.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       match.matchType.toLowerCase().includes(searchTerm.toLowerCase()) ||
       match.location.city.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     return matchesSport && matchesStatus && matchesSearch;
   });
   console.log(filteredMatches)
 
   const getStatusColor = (status) => {
-    try{
-    switch (status) {
-      case 'Live': return isDarkMode ? 'bg-red-500' : 'bg-red-500';
-      case 'Not Started': return isDarkMode ? 'bg-blue-500' : 'bg-blue-500';
-      case 'ended': return isDarkMode ? 'bg-gray-500' : 'bg-gray-500';
-      default: return isDarkMode ? 'bg-gray-500' : 'bg-gray-500';
-    }}
-    catch(err){
+    try {
+      switch (status) {
+        case 'Live': return isDarkMode ? 'bg-red-500' : 'bg-red-500';
+        case 'Not Started': return isDarkMode ? 'bg-blue-500' : 'bg-blue-500';
+        case 'ended': return isDarkMode ? 'bg-gray-500' : 'bg-gray-500';
+        default: return isDarkMode ? 'bg-gray-500' : 'bg-gray-500';
+      }
+    }
+    catch (err) {
       console.log(err)
-      
     }
   };
 
   const getStatusText = (status) => {
-    try{
-    switch (status) {
-      
-      case 'Live': return 'LIVE';
-      case 'Not Started': return 'UPCOMING';
-      case 'ended': return 'ENDED';
-      default: return status.toUpperCase();
-    }}
-    catch(err){
+    try {
+      switch (status) {
+        case 'Live': return 'LIVE';
+        case 'Not Started': return 'UPCOMING';
+        case 'ended': return 'ENDED';
+        default: return status.toUpperCase();
+      }
+    }
+    catch (err) {
       console.log(err)
     }
   };
@@ -125,7 +129,18 @@ const Live = ({ isDarkMode }) => {
     }
   };
 
-  if(loading) return <Loader isDarkMode={isDarkMode} />
+  // Function to handle poll button click
+  const handlePollClick = (matchId) => {
+    setPollMatchId(matchId);
+  };
+
+  // Function to close poll modal
+  const closePollModal = () => {
+    setPollMatchId(null);
+  };
+
+  if (loading) return <Loader isDarkMode={isDarkMode} />
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -139,7 +154,7 @@ const Live = ({ isDarkMode }) => {
           <div className="absolute top-20 left-20 w-64 h-64 border-2 border-current rounded-full animate-pulse"></div>
           <div className="absolute bottom-20 right-20 w-48 h-48 border-2 border-current rounded-lg rotate-45 animate-bounce"></div>
         </div>
-
+        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover draggable/>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -148,13 +163,12 @@ const Live = ({ isDarkMode }) => {
           >
             <h1 className="text-5xl md:text-7xl font-bold mb-6">
               Live <span className={`${isDarkMode
-            ? 'bg-gradient-to-r from-orange-400 to-red-500'
-            : 'bg-gradient-to-r from-blue-500 to-cyan-400'
-          } bg-clip-text text-transparent`}>Matches</span> 
+                ? 'bg-gradient-to-r from-orange-400 to-red-500'
+                : 'bg-gradient-to-r from-blue-500 to-cyan-400'
+                } bg-clip-text text-transparent`}>Matches</span>
             </h1>
-            <p className={`text-xl md:text-2xl max-w-4xl mx-auto mb-12 ${
-              isDarkMode ? 'text-gray-300' : 'text-gray-600'
-            }`}>
+            <p className={`text-xl md:text-2xl max-w-4xl mx-auto mb-12 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}>
               Watch live matches, engage with community, and never miss the action
             </p>
 
@@ -168,24 +182,22 @@ const Live = ({ isDarkMode }) => {
                     placeholder="Search matches, teams, leagues, or venues..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`w-full pl-12 pr-4 py-4 rounded-2xl font-medium transition-all duration-300 ${
-                      isDarkMode
-                        ? 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-400 focus:border-red-500'
-                        : 'bg-black/10 backdrop-blur-md border border-black/20 text-gray-900 placeholder-gray-500 focus:border-red-500'
-                    } focus:outline-none`}
+                    className={`w-full pl-12 pr-4 py-4 rounded-2xl font-medium transition-all duration-300 ${isDarkMode
+                      ? 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-400 focus:border-red-500'
+                      : 'bg-black/10 backdrop-blur-md border border-black/20 text-gray-900 placeholder-gray-500 focus:border-red-500'
+                      } focus:outline-none`}
                   />
                 </div>
-                
+
                 <div className="flex flex-wrap gap-2">
                   {/* Sport Filter */}
                   <select
                     value={selectedSport}
                     onChange={(e) => setSelectedSport(e.target.value)}
-                    className={`px-4 py-4 rounded-2xl font-medium transition-all duration-300 ${
-                      isDarkMode
-                        ? 'bg-white/10 backdrop-blur-md border border-white/20 text-white focus:border-red-500'
-                        : 'bg-black/10 backdrop-blur-md border border-black/20 text-gray-900 focus:border-red-500'
-                    } focus:outline-none`}
+                    className={`px-4 py-4 rounded-2xl font-medium transition-all duration-300 ${isDarkMode
+                      ? 'bg-white/10 backdrop-blur-md border border-white/20 text-white focus:border-red-500'
+                      : 'bg-black/10 backdrop-blur-md border border-black/20 text-gray-900 focus:border-red-500'
+                      } focus:outline-none`}
                   >
                     {sports.map((sport) => (
                       <option key={sport} value={sport} className={isDarkMode ? 'bg-gray-800' : 'bg-white'}>
@@ -198,11 +210,10 @@ const Live = ({ isDarkMode }) => {
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
-                    className={`px-4 py-4 rounded-2xl font-medium transition-all duration-300 ${
-                      isDarkMode
-                        ? 'bg-white/10 backdrop-blur-md border border-white/20 text-white focus:border-red-500'
-                        : 'bg-black/10 backdrop-blur-md border border-black/20 text-gray-900 focus:border-red-500'
-                    } focus:outline-none`}
+                    className={`px-4 py-4 rounded-2xl font-medium transition-all duration-300 ${isDarkMode
+                      ? 'bg-white/10 backdrop-blur-md border border-white/20 text-white focus:border-red-500'
+                      : 'bg-black/10 backdrop-blur-md border border-black/20 text-gray-900 focus:border-red-500'
+                      } focus:outline-none`}
                   >
                     {statuses.map((status) => (
                       <option key={status} value={status} className={isDarkMode ? 'bg-gray-800' : 'bg-white'}>
@@ -218,7 +229,7 @@ const Live = ({ isDarkMode }) => {
       </section>
 
       {/* Live Matches Grid */}
-      <section >
+      <section>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8">
             {filteredMatches.map((match, index) => (
@@ -228,11 +239,10 @@ const Live = ({ isDarkMode }) => {
                 whileInView={{ y: 0, opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.01 }}
-                className={`group relative overflow-hidden rounded-3xl transition-all duration-300 hover:scale-105 ${
-                  isDarkMode 
-                    ? 'bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10' 
-                    : 'bg-black/5 backdrop-blur-md border border-black/10 hover:bg-black/10'
-                }`}
+                className={`group relative overflow-hidden rounded-3xl transition-all duration-300 hover:scale-105 ${isDarkMode
+                  ? 'bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10'
+                  : 'bg-black/5 backdrop-blur-md border border-black/10 hover:bg-black/10'
+                  }`}
               >
                 {/* Match Header */}
                 <div className="p-6 border-b border-current/10">
@@ -242,15 +252,13 @@ const Live = ({ isDarkMode }) => {
                         {match.status === 'Live' && <Radio className="w-3 h-3 animate-pulse" />}
                         <span>{getStatusText(match.status)}</span>
                       </span>
-                      <span className={`text-sm font-medium ${
-                        isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                      }`}>
+                      <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                        }`}>
                         {match.sport}
                       </span>
                     </div>
-                    <span className={`text-sm font-medium ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                    }`}>
+                    <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
                       {match.matchType}
                     </span>
                   </div>
@@ -259,8 +267,8 @@ const Live = ({ isDarkMode }) => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
-                        <img 
-                          src={match.clubA.logo} 
+                        <img
+                          src={match.clubA.logo}
                           alt={match.clubA.name}
                           className="w-12 h-12 rounded-full object-cover border-2 border-current/20"
                         />
@@ -270,8 +278,8 @@ const Live = ({ isDarkMode }) => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
-                        <img 
-                          src={match.clubB.logo} 
+                        <img
+                          src={match.clubB.logo}
                           alt={match.clubB.name}
                           className="w-12 h-12 rounded-full object-cover border-2 border-current/20"
                         />
@@ -284,9 +292,8 @@ const Live = ({ isDarkMode }) => {
 
                 {/* Match Info */}
                 <div className="p-6">
-                  <div className={`flex items-center justify-between text-sm mb-6 ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
+                  <div className={`flex items-center justify-between text-sm mb-6 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center space-x-1">
                         <Clock className="w-4 h-4" />
@@ -305,75 +312,88 @@ const Live = ({ isDarkMode }) => {
                     )}
                   </div>
 
+                  {/* Poll modal for this specific match */}
+                  <PredictionModal
+                    isOpen={pollMatchId === match._id}
+                    onClose={closePollModal}
+                    matchId={match._id}
+                    clubAName={match.clubA.name}
+                    clubBName={match.clubB.name}
+                    isDarkMode={isDarkMode}
+                  />
+
                   {/* Action Buttons */}
                   <div className="flex space-x-3">
                     {match.status === 'Live' ? (
                       <>
-                        <button className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
-                          isDarkMode
-                            ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-400 hover:to-pink-500'
-                            : 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
-                        } text-white shadow-lg hover:shadow-xl`}
-                        onClick={()=>{
-                          navigate(`/live_match/${match.sport}/${match._id}`)
-                        }}
+                        <button className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${isDarkMode
+                          ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-400 hover:to-pink-500'
+                          : 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
+                          } text-white shadow-lg hover:shadow-xl`}
+                          onClick={() => {
+                            navigate(`/live_match/${match.sport}/${match._id}`)
+                          }}
                         >
                           <Radio className="w-5 h-5" />
                           <span>Watch Live</span>
                         </button>
-                        <button className={`px-4 py-3 rounded-2xl transition-all duration-300 ${
-                          isDarkMode 
-                            ? 'bg-white/10 hover:bg-white/20' 
-                            : 'bg-black/10 hover:bg-black/20'
-                        }`}>
+                        <button className={`px-4 py-3 rounded-2xl transition-all duration-300 ${isDarkMode
+                          ? 'bg-white/10 hover:bg-white/20'
+                          : 'bg-black/10 hover:bg-black/20'
+                          }`}>
                           <MessageCircle className="w-5 h-5" />
                         </button>
-                        <button className={`px-4 py-3 rounded-2xl transition-all duration-300 ${
-                          isDarkMode 
-                            ? 'bg-white/10 hover:bg-white/20' 
-                            : 'bg-black/10 hover:bg-black/20'
-                        }`}>
+
+                        <button className={`px-4 py-3 rounded-2xl transition-all duration-300 ${isDarkMode
+                          ? 'bg-white/10 hover:bg-white/20'
+                          : 'bg-black/10 hover:bg-black/20'
+                          }`}
+                          onClick={() => handlePollClick(match._id)}
+                        >
                           <BarChart3 className="w-5 h-5" />
                         </button>
                       </>
-                      
+
                     ) : match.status === 'Not Started' ? (
-                      <button className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
-                        isDarkMode
-                          ? 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-400 hover:to-cyan-300'
-                          : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
-                      } text-white shadow-lg hover:shadow-xl`}>
+                      <button className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${isDarkMode
+                        ? 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-400 hover:to-cyan-300'
+                        : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
+                        } text-white shadow-lg hover:shadow-xl`}
+                      >
                         <Calendar className="w-5 h-5" />
                         <span>Set Reminder</span>
                       </button>
                     ) : (
-                      <button className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
-                        isDarkMode
-                          ? 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600'
-                          : 'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700'
-                      } text-white shadow-lg hover:shadow-xl`}>
+                      <button className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${isDarkMode
+                        ? 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600'
+                        : 'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700'
+                        } text-white shadow-lg hover:shadow-xl`}
+                        onClick={() => {
+                          navigate(`/match_ended/${match.sport}/${match._id}`);
+                          console.log('Hello')
+                        }}>
                         <Play className="w-5 h-5" />
                         <span>Watch Highlights</span>
                       </button>
                     )}
                   </div>
-                  {(match.status === 'Live')?(
+                  {(match.status === 'Live') ? (
                     <button className="w-full p-2 my-2 rounded-4xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white"
-                     onClick={()=>{
-                      navigate(`/live_match_admin/${match.sport}/${match._id}`)}}>
-                    Admin Panel
+                      onClick={() => {
+                        navigate(`/live_match_admin/${match.sport}/${match._id}`)
+                      }}>
+                      Admin Panel
                     </button>
-                  ):(null)}
+                  ) : (null)}
                 </div>
 
                 {/* Hover Effect */}
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none ${
-                  match.status === 'Live'
-                    ? 'bg-gradient-to-r from-red-500/5 to-pink-500/5'
-                    : match.status === 'Not Started'
-                      ? 'bg-gradient-to-r from-blue-500/5 to-cyan-400/5'
-                      : 'bg-gradient-to-r from-gray-500/5 to-gray-600/5'
-                }`}></div>
+                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none ${match.status === 'Live'
+                  ? 'bg-gradient-to-r from-red-500/5 to-pink-500/5'
+                  : match.status === 'Not Started'
+                    ? 'bg-gradient-to-r from-blue-500/5 to-cyan-400/5'
+                    : 'bg-gradient-to-r from-gray-500/5 to-gray-600/5'
+                  }`}></div>
               </motion.div>
             ))}
           </div>
@@ -385,12 +405,10 @@ const Live = ({ isDarkMode }) => {
               animate={{ opacity: 1 }}
               className="text-center py-20"
             >
-              <Trophy className={`w-20 h-20 mx-auto mb-6 ${
-                isDarkMode ? 'text-gray-600' : 'text-gray-400'
-              }`} />
-              <h3 className={`text-2xl font-bold mb-4 ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-600'
-              }`}>
+              <Trophy className={`w-20 h-20 mx-auto mb-6 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'
+                }`} />
+              <h3 className={`text-2xl font-bold mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                 No matches found
               </h3>
               <p className={isDarkMode ? 'text-gray-500' : 'text-gray-500'}>

@@ -21,7 +21,8 @@ import LivePage from './pages/LivePage';
 import LiveScoreAdmin from './pages/LiveScoreAdmin';
 import Club from './pages/Club';
 import ClubDetails from './pages/ClubDetails';
-
+import EndedPage from './pages/EndedPage';
+import ScrollToTop from './components/ScrollToTop'; 
 function App() {
   const [userType, setUserType] = useState('player');
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -49,7 +50,7 @@ function App() {
       }
     }
     fetch_user()
-  }, [])
+  }, [login_info])
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode
@@ -65,6 +66,7 @@ function App() {
         />
 
         <AnimatePresence mode="wait">
+        
           <Routes>
             <Route path="/" element={<Home isDarkMode={isDarkMode} />} />
             <Route path="/sports" element={<Sports isDarkMode={isDarkMode} />} />
@@ -78,8 +80,9 @@ function App() {
             <Route path="/login" element={<Login isDarkMode={isDarkMode} setIsLoggedIn={login_info.setIsLoggedIn} isLoggedIn={login_info.isLoggedIn} />} />
             <Route path="/logout" element={<Logout setIsLoggedIn={login_info.setIsLoggedIn} />} />
             <Route path="/club" element={<Club isDarkMode={isDarkMode} />} />
+            <Route path="/match_ended/:sport/:matchId" element={<EndedPage isDarkMode={isDarkMode}/>}></Route>
             <Route path="/club/:clubName" element={<ClubDetails isDarkMode={isDarkMode} />} />
-            <Route path="/live_match/:sport/:matchId" element={<LivePage />}></Route>
+            <Route path="/live_match/:sport/:matchId" element={<LivePage isDarkMode={isDarkMode}/>}></Route>
             <Route path="/live_match_admin/:sport/:matchId" element={<LiveScoreAdmin />}></Route>
           </Routes>
         </AnimatePresence>
