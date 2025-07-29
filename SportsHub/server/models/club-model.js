@@ -19,6 +19,11 @@ const clubSchema = new mongoose.Schema({
         type: Boolean, 
         default: false
     },
+    posts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post',
+    }],
+
     createdBy: { 
         type: mongoose.Schema.Types.ObjectId,
         ref: 'user'

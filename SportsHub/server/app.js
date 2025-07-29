@@ -12,6 +12,7 @@ const customErrorHandler = require('./utils/customErrorHandler');
 const aiGuruChatRouter = require("./routes/aiGuruChatRouter");
 const quizRoutes = require('./routes/quizRoutes');
 const challengeRouter = require('./routes/challengeRouter');
+const postRouter=require("./routes/postRouter")
 const usersRouter = require("./routes/usersRouter");
 const clubsRouter = require("./routes/clubsRouter");
 const trainingPlanRouter = require('./routes/trainingPlanRouter');
@@ -73,6 +74,7 @@ app.use('/api/quiz', quizRoutes);
 app.use("/match", matchRouter);
 app.use("/api/training-plans", trainingPlanRouter);
 app.use("/api/custom-training-plans", customTrainingPlanRouter);
+app.use("/posts",postRouter);
 app.use("/users", usersRouter);
 app.use("/clubs", clubsRouter);
 app.use('/challenges', challengeRouter);
@@ -81,7 +83,7 @@ app.use('/challenges', challengeRouter);
 
 
 
-initQuizCronJobs();
+// initQuizCronJobs();
 runMatchStatusCron();
 
 // Error handling middleware (should be last middleware)
