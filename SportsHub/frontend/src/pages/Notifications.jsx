@@ -47,6 +47,7 @@ const Notifications = ({ isDarkMode, userType }) => {
           icon: getNotificationIcon(notification.type),
           color: getNotificationColor(notification.type),
           action: getNotificationAction(notification.type),
+          actionUrl: notification.actionUrl,
           challengeInfo: notification.data ? {
             club: notification.data.challengerClub?.name || notification.data.opponentClub?.name,
             prizePool: notification.data.prizePool,
@@ -152,6 +153,7 @@ const Notifications = ({ isDarkMode, userType }) => {
         icon: getNotificationIcon(notification.type),
         color: getNotificationColor(notification.type),
         action: getNotificationAction(notification.type),
+        actionUrl: notification.actionUrl,
         challengeInfo: notification.data ? {
           club: notification.data.challengerClub?.name || notification.data.opponentClub?.name,
           prizePool: notification.data.prizePool,
@@ -416,11 +418,18 @@ const Notifications = ({ isDarkMode, userType }) => {
                         
                         {/* Default action button for other notifications */}
                         {notification.type !== 'challenge_request' && (
-                          <button className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                          <button
+                            onClick={() => {
+                              if (notification.actionUrl) {
+                                window.location.href = notification.actionUrl;
+                              }
+                            }}
+                            className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                             isDarkMode
-                              ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
-                              : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
-                          } text-white shadow-lg hover:shadow-xl`}>
+                                ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
+                                : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
+                            } text-white shadow-lg hover:shadow-xl`}
+                          >
                             {notification.action}
                           </button>
                         )}

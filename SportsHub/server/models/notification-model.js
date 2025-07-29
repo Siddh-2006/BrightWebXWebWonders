@@ -39,7 +39,9 @@ const notificationSchema = new mongoose.Schema({
     sport: String,
     prizePool: String,
     location: String,
-    date: String
+    date: String,
+    time: String,
+    liveStream: Boolean
   },
   read: {
     type: Boolean,

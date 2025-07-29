@@ -9,6 +9,8 @@ const ChallengeModal = ({ isOpen, onClose, targetClub, isDarkMode }) => {
     prizePool: '',
     location: '',
     date: '',
+    time: '',
+    liveStream: false,
     message: ''
   });
   const [loading, setLoading] = useState(false);
@@ -27,7 +29,9 @@ const ChallengeModal = ({ isOpen, onClose, targetClub, isDarkMode }) => {
         sport: formData.sport,
         prizePool: formData.prizePool,
         location: formData.location,
-        date: formData.date
+        date: formData.date,
+        time: formData.time,
+        liveStream: formData.liveStream
       });
 
       // Reset form and close modal
@@ -36,6 +40,8 @@ const ChallengeModal = ({ isOpen, onClose, targetClub, isDarkMode }) => {
         prizePool: '',
         location: '',
         date: '',
+        time: '',
+        liveStream: false,
         message: ''
       });
       onClose();
@@ -52,7 +58,7 @@ const ChallengeModal = ({ isOpen, onClose, targetClub, isDarkMode }) => {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.type === 'checkbox' ? e.target.checked : e.target.value
     });
   };
 
@@ -224,6 +230,43 @@ const ChallengeModal = ({ isOpen, onClose, targetClub, isDarkMode }) => {
                   : 'bg-black/5 border-black/20 text-gray-900 focus:border-blue-500'
               } focus:outline-none`}
             />
+          </div>
+
+          {/* Time */}
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              <Calendar className="w-4 h-4 inline mr-1" />
+              Preferred Time (Optional)
+            </label>
+            <input
+              type="time"
+              name="time"
+              value={formData.time}
+              onChange={handleChange}
+              className={`w-full p-3 rounded-xl border transition-colors ${
+                isDarkMode
+                  ? 'bg-white/10 border-white/20 text-white focus:border-orange-500'
+                  : 'bg-black/5 border-black/20 text-gray-900 focus:border-blue-500'
+              } focus:outline-none`}
+            />
+          </div>
+
+          {/* Live Stream */}
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              name="liveStream"
+              checked={formData.liveStream}
+              onChange={handleChange}
+              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <label className={`ml-2 block text-sm ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              Request to live stream the match?
+            </label>
           </div>
 
           {/* Error Message */}

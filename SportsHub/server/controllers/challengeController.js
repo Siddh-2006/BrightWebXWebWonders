@@ -1,10 +1,11 @@
 const MatchChallenge = require('../models/match-challenge-model');
 const Club = require('../models/club-model');
 const Notification = require('../models/notification-model');
+const Match = require('../models/match-model');
 
 const createChallenge = async (req, res) => {
   try {
-    const { opponentId, sport, prizePool, location, date } = req.body;
+    const { opponentId, sport, prizePool, location, date, time, liveStream } = req.body;
     const club = await Club.findOne({ createdBy: req.user._id });
     if (!club) {
       return res.status(404).json({ msg: 'Club not found' });
@@ -37,7 +38,9 @@ const createChallenge = async (req, res) => {
         sport,
         prizePool: prizePool || '',
         location: location || '',
-        date: date || ''
+        date: date || '',
+        time: time || '',
+        liveStream: liveStream || false
       },
       actionUrl: `/challenges/${challenge._id}`
     });
@@ -73,15 +76,15 @@ const acceptChallenge = async (req, res) => {
     // Get challenger club details
     const challengerClub = await Club.findById(challenge.challenger);
     
-    // Remove the original challenge request notification for the opponent (admin notification removal)
-    await Notification.findOneAndDelete({
-      recipient: req.user._id,
+    // Get the original challenge notification to extract all details
+    const originalNotification = await Notification.findOne({
       'data.challengeId': challengeId,
       type: 'challenge_request'
     });
 
-    // Get the original challenge notification to extract all details
-    const originalNotification = await Notification.findOne({
+    // Remove the original challenge request notification for the opponent (admin notification removal)
+    await Notification.findOneAndDelete({
+      recipient: req.user._id,
       'data.challengeId': challengeId,
       type: 'challenge_request'
     });
@@ -101,10 +104,26 @@ const acceptChallenge = async (req, res) => {
         prizePool: originalNotification?.data?.prizePool || '',
         location: originalNotification?.data?.location || '',
         date: originalNotification?.data?.date || '',
+        time: originalNotification?.data?.time || '',
+        liveStream: originalNotification?.data?.liveStream || false,
         acceptedBy: club.name,
         acceptedAt: new Date()
       },
       actionUrl: `/challenges/${challenge._id}`
+    });
+
+    // Create a new match
+    const match = await Match.create({
+      challengeId: challenge._id,
+      sport: challenge.sport.toLowerCase(),
+      matchType: 'friendly',
+      startTime: new Date(originalNotification.data.date + ' ' + originalNotification.data.time),
+      status: 'Not Started',
+      isLive: originalNotification.data.liveStream,
+      clubA: challenge.challenger,
+      clubB: challenge.opponent,
+      venueName: originalNotification.data.location,
+      createdBy: club._id
     });
 
     res.json({
@@ -113,7 +132,8 @@ const acceptChallenge = async (req, res) => {
         ...challenge.toObject(),
         challenger: challengerClub,
         opponent: club
-      }
+      },
+      match
     });
   } catch (err) {
     console.error(err);
@@ -170,6 +190,7 @@ const declineChallenge = async (req, res) => {
         prizePool: originalNotification?.data?.prizePool || '',
         location: originalNotification?.data?.location || '',
         date: originalNotification?.data?.date || '',
+        time: originalNotification?.data?.time || '',
         declinedBy: club.name,
         declinedAt: new Date()
       },
@@ -190,6 +211,24 @@ const declineChallenge = async (req, res) => {
   }
 };
 
+const getChallenge = async (req, res) => {
+  try {
+    const { challengeId } = req.params;
+    const challenge = await MatchChallenge.findById(challengeId)
+      .populate('challenger', 'name logo')
+      .populate('opponent', 'name logo');
+
+    if (!challenge) {
+      return res.status(404).json({ msg: 'Challenge not found' });
+    }
+
+    res.json(challenge);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 const getChallenges = async (req, res) => {
   try {
     const club = await Club.findOne({ createdBy: req.user._id });
@@ -197,16 +236,12 @@ const getChallenges = async (req, res) => {
       return res.status(404).json({ msg: 'Club not found' });
     }
 
-    // Get challenges where this club is either challenger or opponent
     const challenges = await MatchChallenge.find({
-      $or: [
-        { challenger: club._id },
-        { opponent: club._id }
-      ]
+      $or: [{ challenger: club._id }, { opponent: club._id }]
     })
-    .populate('challenger', 'name logo')
-    .populate('opponent', 'name logo')
-    .sort({ createdAt: -1 });
+      .populate('challenger', 'name logo')
+      .populate('opponent', 'name logo')
+      .sort({ createdAt: -1 });
 
     res.json(challenges);
   } catch (err) {
@@ -220,7 +255,8 @@ const getNotifications = async (req, res) => {
     const notifications = await Notification.find({ recipient: req.user._id })
       .populate('data.challengerClub', 'name logo')
       .populate('data.opponentClub', 'name logo')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .select('+actionUrl');
 
     res.json(notifications);
   } catch (err) {
@@ -232,6 +268,11 @@ const getNotifications = async (req, res) => {
 const markNotificationAsRead = async (req, res) => {
   try {
     const { notificationId } = req.params;
+    
+    // Validate that notificationId is a valid ObjectId format
+    if (!notificationId || !notificationId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ msg: 'Invalid notification ID format' });
+    }
     
     const notification = await Notification.findById(notificationId);
     if (!notification) {
@@ -258,6 +299,7 @@ module.exports = {
   acceptChallenge,
   declineChallenge,
   getChallenges,
+  getChallenge,
   getNotifications,
   markNotificationAsRead
 };

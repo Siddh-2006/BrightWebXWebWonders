@@ -21,6 +21,7 @@ import LivePage from './pages/LivePage';
 import LiveScoreAdmin from './pages/LiveScoreAdmin';
 import Club from './pages/Club';
 import ClubDetails from './pages/ClubDetails';
+import ChallengeDetails from './pages/ChallengeDetails';
 
 function App() {
   const [userType, setUserType] = useState('player');
@@ -79,6 +80,7 @@ function App() {
             <Route path="/logout" element={<Logout setIsLoggedIn={login_info.setIsLoggedIn} />} />
             <Route path="/club" element={<Club isDarkMode={isDarkMode} />} />
             <Route path="/club/:clubName" element={<ClubDetails isDarkMode={isDarkMode} />} />
+            <Route path="/challenges/:challengeId" element={<ChallengeDetails isDarkMode={isDarkMode} />} />
             <Route path="/live_match/:sport/:matchId" element={<LivePage />}></Route>
             <Route path="/live_match_admin/:sport/:matchId" element={<LiveScoreAdmin />}></Route>
           </Routes>

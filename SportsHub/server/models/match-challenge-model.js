@@ -15,6 +15,16 @@ const matchChallengeSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  date: {
+    type: Date,
+  },
+  time: {
+    type: String,
+  },
+  liveStream: {
+    type: Boolean,
+    default: false
+  },
   status: {
     type: String,
     enum: ['pending', 'accepted', 'declined'],
