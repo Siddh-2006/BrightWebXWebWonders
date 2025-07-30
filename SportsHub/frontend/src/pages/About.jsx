@@ -9,14 +9,14 @@ import {
 const About = ({ isDarkMode }) => {
   const teamMembers = [
     {
-      name: 'Alex Rodriguez',
-      role: 'Founder & CEO',
+      name: 'Siddh Shah',
+      role: 'Lead Developer',
       image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
-      bio: 'Former professional athlete turned tech entrepreneur, passionate about democratizing sports excellence.',
+      bio: 'Athlete. Developer. Entrepreneur. On a mission to reshape global sports access through technology.',
       social: {
-        linkedin: '#',
-        twitter: '#',
-        email: 'alex@sportshub.com'
+        linkedin: 'https://in.linkedin.com/in/siddh-shah-71491832a?original_referer=https%3A%2F%2Fwww.bing.com%2F',
+        twitter: 'https://x.com/Siddh_shah7?t=a5erjiGN62hOGD1LbpnGRw&s=09',
+        email: 'i24ai004@aid.svnit.ac.in'
       }
     },
     {
@@ -90,22 +90,22 @@ const About = ({ isDarkMode }) => {
 
   const milestones = [
     {
-      year: '2023',
+      year: '2025',
       title: 'SportsHub Founded',
       description: 'Started with a vision to democratize sports excellence through AI technology.'
     },
     {
-      year: '2023',
+      year: '2025',
       title: 'AI Guru Launch',
       description: 'Launched our revolutionary AI coaching platform with posture analysis.'
     },
     {
-      year: '2024',
+      year: "Get to",
       title: '10K Athletes',
-      description: 'Reached our first major milestone of 10,000 active athletes.'
+      description: 'Reviwed our first major milestone of 10,000 active athletes.'
     },
     {
-      year: '2024',
+      year: "Estimated 2026",
       title: 'Global Expansion',
       description: 'Expanded to serve athletes and clubs across 50+ countries worldwide.'
     }
@@ -167,9 +167,7 @@ const About = ({ isDarkMode }) => {
             }`} />
             <h2 className="text-3xl md:text-4xl font-bold mb-6">Our Mission</h2>
             <p className="text-xl leading-relaxed max-w-4xl mx-auto">
-              "To empower every athlete with digital identity, AI-powered coaching, and a global 
-              community that supports their journey from amateur to professional. We believe that 
-              with the right tools, guidance, and connections, every athlete can unlock their true potential."
+              "SportsHub : an ultimate community where athletes can grow, connect and compete. By blending digital identity, smart coaching, and a global sports network, we aim to unite athletes and clubs into one thriving community. Our platform makes it easier to discover talent, foster competition, and build meaningful connections across the sports world."
             </p>
           </motion.div>
         </div>
@@ -434,26 +432,16 @@ const About = ({ isDarkMode }) => {
                 isDarkMode ? 'text-gray-300' : 'text-gray-600'
               }`}>
                 <p className="text-xl leading-relaxed mb-6">
-                  SportsHub was born from a simple observation: talented athletes everywhere lacked access 
-                  to professional coaching, quality training facilities, and meaningful connections with 
-                  clubs and peers. Our founder, Alex Rodriguez, experienced this firsthand during his 
-                  professional sports career.
+                  SportsHub started from a place of struggle. As an athlete, I faced the harsh truth—talent wasn’t enough. Without access to proper coaching, reliable training, or ways to connect with clubs, too many athletes were slipping through the cracks. I knew the problem because I lived it.
                 </p>
                 <p className="text-lg leading-relaxed mb-6">
-                  In 2023, we assembled a team of sports professionals, AI researchers, and technology 
-                  experts to create something revolutionary. We envisioned a platform where geography, 
-                  resources, and connections would no longer limit an athlete's potential.
+                  That frustration turned into purpose. In 2025, I teamed up with fellow athletes, tech minds, and AI experts to build something better. We imagined a space where limitations didn’t decide anyone’s future—a home for growth, learning, and visibility regardless of background or location.
                 </p>
                 <p className="text-lg leading-relaxed mb-6">
-                  Today, SportsHub serves over 50,000 athletes across 25+ sports, providing AI-powered 
-                  coaching, digital identity management, live streaming capabilities, and a thriving 
-                  community that spans the globe. We're not just a platform – we're a movement toward 
-                  democratizing sports excellence.
+                  At the heart of SportsHub is AI Guru—a virtual coach offering personalized training plans, posture analysis, and real-time feedback. It’s not just about practice; it’s about precision. And we didn’t stop there. We created club profiles and live match tools so players could discover clubs, and clubs could challenge, scout, and grow like never before.
                 </p>
                 <p className="text-lg leading-relaxed">
-                  Our journey has just begun. With every athlete who improves their technique through 
-                  our AI Guru, every club that finds their perfect player match, and every live stream 
-                  that brings communities together, we're building the future of sports.
+                  Now, SportsHub is more than just a product—it’s a movement. A thriving community where athletes and clubs come together to push boundaries, share knowledge, and elevate the game. This is the future of sports—open, connected, and built by those who needed it most.
                 </p>
               </div>
             </div>
@@ -489,7 +477,7 @@ const About = ({ isDarkMode }) => {
               }`} />
               <h3 className="text-xl font-bold mb-2">Email Us</h3>
               <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                hello@sportshub.com
+                support@sportshub.com
               </p>
             </div>
             <div className={`text-center p-8 rounded-2xl ${
@@ -502,7 +490,7 @@ const About = ({ isDarkMode }) => {
               }`} />
               <h3 className="text-xl font-bold mb-2">Call Us</h3>
               <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                +1 (555) 123-4567
+                +1 (800) 123-4567
               </p>
             </div>
             <div className={`text-center p-8 rounded-2xl ${
@@ -515,7 +503,7 @@ const About = ({ isDarkMode }) => {
               }`} />
               <h3 className="text-xl font-bold mb-2">Visit Us</h3>
               <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                San Francisco, CA
+                SVNIT , surat
               </p>
             </div>
           </div>
