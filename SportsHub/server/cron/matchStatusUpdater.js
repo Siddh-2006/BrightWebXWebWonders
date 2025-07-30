@@ -25,7 +25,7 @@ const runMatchStatusCron = () => {
       console.log(`▶️ Matches made Live: ${liveMatches.modifiedCount}`);
       console.log(`⏹ Matches Ended: ${endedMatches.modifiedCount}`);
     } catch (err) {
-      console.error('❌ CRON ERROR:', err.message);
+      console.error('❌ CRON ERROR:', err);
     }
   });
 };

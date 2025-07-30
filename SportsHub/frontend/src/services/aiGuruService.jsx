@@ -1,4 +1,4 @@
-import { AI_GURU_API_ENDPOINT } from '../config/api';
+import { AI_GURU_API_ENDPOINT, API_BASE_URL } from '../config/api';
 
 export const getAIGuruResponse = async ({ chat, userDetails }) => {
   try {
@@ -52,6 +52,23 @@ export const getAIGuruResponse = async ({ chat, userDetails }) => {
     return data.guruResponse; // Backend returns 'guruResponse' not 'response'
   } catch (error) {
     console.error('❌ API call failed:', error);
+    throw error;
+  }
+};
+export const analyzePosture = async (postureData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(postureData),
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API error: ${response.status} - ${errorText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('❌ Posture analysis API call failed:', error);
     throw error;
   }
 };

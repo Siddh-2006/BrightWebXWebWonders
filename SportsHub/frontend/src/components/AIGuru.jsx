@@ -5,7 +5,7 @@ import {
   BarChart3, Send, Image, Video, Star, CheckCircle, ArrowRight, Sun, Moon,
   User, X, Loader2, AlertCircle, Settings, ChevronLeft
 } from 'lucide-react';
-import { getAIGuruResponse } from '../services/aiGuruService';
+import { getAIGuruResponse, analyzePosture as analyzePostureService } from '../services/aiGuruService';
 import { generateTrainingPlan } from '../services/trainingPlanService';
 import { renderMarkdown } from '../utils/markdownRenderer';
 import TrainingPlanModal from './TrainingPlanModal';
@@ -399,24 +399,11 @@ const AIGuru = ({ isDarkMode = true }) => {
       console.log('MediaPipe Pose Landmarks (sent to backend):', landmarksToSend);
 
       // Send landmark data and profile to backend
-      const response = await fetch('http://localhost:3000/api/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          profile: userProfile,
-          mediaType: mediaType,
-          landmarks: landmarksToSend
-        }),
+      const analysis = await analyzePostureService({
+        profile: userProfile,
+        mediaType: mediaType,
+        landmarks: landmarksToSend,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Analysis failed on the server');
-      }
-
-      const analysis = await response.json();
       setAnalysisResults(analysis);
 
       // Add analysis to chat history with enhanced formatting

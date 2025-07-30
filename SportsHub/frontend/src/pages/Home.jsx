@@ -283,41 +283,6 @@ const Home = ({ isDarkMode }) => {
               </button>
             </motion.div>
 
-            {/* Toast Test Buttons */}
-            <motion.div
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1.2 }}
-              className="flex flex-wrap gap-4 justify-center items-center mt-8"
-            >
-              <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Test Notification Toasts:
-              </p>
-              <button
-                onClick={() => showNotificationToast('success', 'Success!', 'This is a success notification toast.', 4000)}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors"
-              >
-                Success Toast
-              </button>
-              <button
-                onClick={() => showNotificationToast('error', 'Error!', 'This is an error notification toast.', 4000)}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
-              >
-                Error Toast
-              </button>
-              <button
-                onClick={() => showNotificationToast('challenge_request', 'Challenge Request', 'You have received a new challenge from Manchester United FC!', 6000)}
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 transition-colors"
-              >
-                Challenge Toast
-              </button>
-              <button
-                onClick={() => showNotificationToast('info', 'Info', 'This is an informational notification toast.', 4000)}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
-              >
-                Info Toast
-              </button>
-            </motion.div>
           </motion.div>
         </div>
 

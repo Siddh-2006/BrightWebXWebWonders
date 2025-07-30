@@ -5,7 +5,7 @@ const router = express.Router();
 const analysisController = require('../controllers/analysisController');
 
 // POST /api/analyze
-router.post('/analyze', analysisController.analyzePosture);
+router.post('/', analysisController.analyzePosture);
 
 // GET /api/history
 router.get('/history', analysisController.getAnalysisHistory);

@@ -39,37 +39,37 @@ const Live = ({ isDarkMode }) => {
         const res = await axios.get("http://localhost:3000/users/profile", { withCredentials: true });
         if (res.status === 200) {
           setUserData(res.data);
-          console.log(res.data)
         }
       } catch (err) {
         console.error("user is not logged in");
       }
     }
 
-    const fetch_live = async () => {
-      try {
-        const res = await axios.get("http://localhost:3000/match/live", { withCredentials: true });
-        if (res.status == 200) {
-          setLiveMatches((prev) => ([...res.data.matches]));
-          console.log(res.data.matches);
-        }
-        const res2 = await axios.get("http://localhost:3000/match/upcoming", { withCredentials: true });
-        if (res2.status == 200) {
-          setUpcomingMatches((prev) => ([...res2.data.matches]));
-          console.log(res2.data.matches);
-        }
-        const res3 = await axios.get("http://localhost:3000/match/past", { withCredentials: true });
-        if (res3.status == 200) {
-          setfinishedMatches((prev) => ([...res3.data.matches]));
-          console.log(res3.data.matches);
-        }
+    const fetchMatches = async () => {
+     try {
+       const [liveRes, upcomingRes, pastRes] = await Promise.all([
+         axios.get("http://localhost:3000/match/live", { withCredentials: true }),
+         axios.get("http://localhost:3000/match/upcoming", { withCredentials: true }),
+         axios.get("http://localhost:3000/match/past", { withCredentials: true })
+       ]);
 
-      } catch (err) {
-        console.log(err)
-      }
-      setLoading(false);
-    }
-    fetch_live();
+       if (liveRes.status === 200) {
+         setLiveMatches(liveRes.data.matches);
+       }
+       if (upcomingRes.status === 200) {
+         setUpcomingMatches(upcomingRes.data.matches);
+       }
+       if (pastRes.status === 200) {
+         setfinishedMatches(pastRes.data.matches);
+       }
+     } catch (err) {
+       console.error("Error fetching matches:", err);
+     } finally {
+       setLoading(false);
+     }
+   };
+
+    fetchMatches();
     checkAdmin();
   }, [])
 
@@ -89,7 +89,6 @@ const Live = ({ isDarkMode }) => {
 
     return matchesSport && matchesStatus && matchesSearch;
   });
-  console.log(filteredMatches)
 
   const getStatusColor = (status) => {
     try {

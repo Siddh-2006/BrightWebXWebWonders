@@ -7,7 +7,7 @@ const config = require("config");
 // Import modular components
 const connectDB = require('./config/db');
 const commonMiddleware = require('./middlewares/commonMiddleware');
-// const analysisRoutes = require('./routes/analysisRoutes');
+const analysisRoutes = require('./routes/analysisRoutes');
 const customErrorHandler = require('./utils/customErrorHandler');
 const aiGuruChatRouter = require("./routes/aiGuruChatRouter");
 const quizRoutes = require('./routes/quizRoutes');
@@ -52,48 +52,48 @@ server.listen(5000, () => {
 
 // runMatchStatusCron();
 
-// Connect to MongoDB
-connectDB();
+const startServer = async () => {
+  try {
+    // Connect to MongoDB
+    await connectDB();
 
-// Apply common middleware
-commonMiddleware(app);
+    // Apply common middleware
+    commonMiddleware(app);
 
+    // Routes
+    const matchRouter = require("./routes/matchRouter");
 
-// Routes
-// const adminsRouter=require("./routes/adminsRouter");
+    app.use("/api/ai-guru-chat", aiGuruChatRouter);
+    app.use('/api/quiz', quizRoutes);
+    app.use("/match", matchRouter);
+    app.use("/api/training-plans", trainingPlanRouter);
+    app.use("/api/custom-training-plans", customTrainingPlanRouter);
+    app.use("/posts", postRouter);
+    app.use("/users", usersRouter);
+    app.use("/clubs", clubsRouter);
+    app.use('/challenges', challengeRouter);
+    app.use('/api', analysisRoutes);
 
-const matchRouter = require("./routes/matchRouter");
-// const indexRouter=require("./routes/index");
+    // Initialize cron jobs after successful DB connection
+    initQuizCronJobs();
+    runMatchStatusCron();
 
-// Routes
-// app.use("/",indexRouter);
-// Use the analysis routes under the /api base path
-// app.use('/api', analysisRoutes);
-app.use("/api/ai-guru-chat", aiGuruChatRouter);
-app.use('/api/quiz', quizRoutes);
-app.use("/match", matchRouter);
-app.use("/api/training-plans", trainingPlanRouter);
-app.use("/api/custom-training-plans", customTrainingPlanRouter);
-app.use("/posts",postRouter);
-app.use("/users", usersRouter);
-app.use("/clubs", clubsRouter);
-app.use('/challenges', challengeRouter);
+    // Error handling middleware (should be last middleware)
+    app.use(customErrorHandler);
 
-// app.use("/profile", verifyToken, getUserProfile);
+    // Start the server
+    const PORT = config.get("PORT") || 3000;
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
 
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+};
 
-
-// initQuizCronJobs();
-runMatchStatusCron();
-
-// Error handling middleware (should be last middleware)
-app.use(customErrorHandler);
-
-// Start the server
-const PORT = config.get("PORT") || 3000; // Port set back to 3000
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+startServer();
 
 // Export app and server for testing if needed
 module.exports = { app, server };
