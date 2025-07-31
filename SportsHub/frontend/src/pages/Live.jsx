@@ -287,20 +287,18 @@ const Live = ({ isDarkMode }) => {
                 {/* Match Header */}
                 <div className="p-6 border-b border-current/10">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-3 min-w-0">
+                    <div className="flex items-center space-x-3">
                       <span className={`${getStatusColor(match.status)} text-white px-3 py-1 rounded-full text-sm font-bold flex items-center space-x-1`}>
                         {match.status === 'Live' && <Radio className="w-3 h-3 animate-pulse" />}
                         <span>{getStatusText(match.status)}</span>
                       </span>
-                      <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} truncate max-w-[80px] sm:max-w-[120px] md:max-w-[160px]`} title={match.sport}>
+                      <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                        }`}>
                         {match.sport}
                       </span>
                     </div>
-                    {/* Responsive match type label: only hide on extra small screens, allow more width before truncating */}
-                    <span
-                      className={`hidden xs:inline-block text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} truncate max-w-[120px] sm:max-w-[160px] md:max-w-[200px] lg:max-w-[240px] xl:max-w-[280px]`}
-                      title={match.matchType}
-                    >
+                    <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
                       {match.matchType}
                     </span>
                   </div>

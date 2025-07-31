@@ -119,39 +119,35 @@ const Club = ({ isDarkMode }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen relative"
+      className="min-h-screen"
     >
-    {/* Subtle background gradient for beauty */}
-    <div className={`absolute inset-0 z-0 pointer-events-none ${isDarkMode
-      ? 'bg-gradient-to-br from-black via-gray-900 to-orange-900/20'
-      : 'bg-gradient-to-br from-white via-blue-50 to-cyan-100/40'} transition-all duration-500`} />
-    <div className={`relative z-10 px-2 sm:px-4 md:px-8 min-h-screen ${isDarkMode ? 'text-white' : 'text-black'} pt-24 pb-8`}>    
+    <div className={`px-10 min-h-screen ${isDarkMode ? 'bg-transparent text-white' : 'bg-white text-black'} p-6 pt-24`}>
       {/* Header */}
       <motion.div
                   initial={{ y: 50, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.1 }}
                 >
-      <div className="max-w-7xl mx-auto mb-8 sm:mb-10">
-        <h1 className={`text-3xl sm:text-5xl md:text-7xl font-bold text-center mb-4 sm:mb-6 mt-10 sm:mt-15 leading-tight`}>Club <span className={`${isDarkMode
+      <div className="max-w-7xl mx-auto mb-10">
+        <h1 className={`text-5xl md:text-7xl font-bold text-center mb-6 mt-15`}>Club <span className={`${isDarkMode
           ? 'bg-gradient-to-r from-orange-400 to-red-500'
           : 'bg-gradient-to-r from-blue-500 to-cyan-400'
           } bg-clip-text text-transparent`}>Hub</span></h1>
-        <p className={`text-base sm:text-xl md:text-2xl max-w-2xl md:max-w-4xl mx-auto mb-6 sm:mb-12 text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+        <p className={`text-xl md:text-2xl max-w-4xl mx-auto mb-12 text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
           }`}>
           Dive into the club’s story, stars, and unforgettable highlights.
         </p>
         {/* Search and Filter Controls */}
-        <div className="flex flex-col md:flex-row gap-3 sm:gap-4 items-center mb-6 sm:mb-10 w-full">
+        <div className="flex flex-col lg:flex-row gap-4 items-center mb-10">
           {/* Search input */}
-          <div className="relative w-full md:w-2/3">
+          <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
               placeholder="Search clubs by name or description..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full pl-12 pr-4 py-3 sm:py-4 rounded-2xl font-medium transition-all duration-300 focus:outline-none ${isDarkMode
+              className={`w-full pl-12 pr-4 py-4 rounded-2xl font-medium transition-all duration-300 focus:outline-none ${isDarkMode
                 ? 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
                 : 'bg-black/10 backdrop-blur-md border border-black/20 text-gray-900 placeholder-gray-500 focus:border-blue-500'
                 }`}
@@ -168,11 +164,11 @@ const Club = ({ isDarkMode }) => {
           </div>
 
           {/* Sort dropdown (optional) */}
-          <div className="relative w-full md:w-1/3 mt-3 md:mt-0">
+          <div className="relative mt-4 lg:mt-0">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className={`w-full pl-4 pr-10 py-3 sm:py-4 rounded-2xl font-medium appearance-none focus:outline-none transition-all duration-300 ${isDarkMode
+              className={`pl-4 pr-10 py-4 rounded-2xl font-medium appearance-none focus:outline-none transition-all duration-300 ${isDarkMode
                 ? 'bg-white/10 text-white border border-white/20 backdrop-blur-md focus:border-orange-500'
                 : 'bg-black/10 text-gray-900 border border-black/20 backdrop-blur-md focus:border-blue-500'
                 }`}
@@ -189,7 +185,7 @@ const Club = ({ isDarkMode }) => {
       </div>
 </motion.div>
       {/* Club Cards */}
-      <div className="max-w-7xl mx-auto py-8 sm:py-14">
+      <div className="max-w-7xl mx-auto py-14">
         {/* No results fallback */}
         {filteredClubs.length === 0 ? (
           <div className="text-center py-20">
@@ -198,21 +194,20 @@ const Club = ({ isDarkMode }) => {
             <p className="text-gray-500">Try adjusting your search terms or filters</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
             {filteredClubs.map((club) => (
               <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+          >
+              <div
                 key={club._id}
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.8 }}
-                whileHover={{ scale: 1.04, boxShadow: isDarkMode ? '0 8px 32px 0 rgba(255,140,0,0.10)' : '0 8px 32px 0 rgba(59,130,246,0.10)' }}
+                className={`group relative overflow-hidden rounded-3xl transition-all duration-300 hover:scale-105 ${isDarkMode
+                  ? 'bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10'
+                  : 'bg-black/5 backdrop-blur-md border border-black/10 hover:bg-black/10'
+                  }`}
               >
-                <div
-                  className={`group relative overflow-hidden rounded-3xl transition-all duration-300 ${isDarkMode
-                    ? 'bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10'
-                    : 'bg-black/5 backdrop-blur-md border border-black/10 hover:bg-black/10'
-                    } shadow-sm hover:shadow-xl`}
-                >
                 <div className="relative p-6 pb-4">
                   {/* Club Header Info */}
                   <div className="flex items-start gap-4 mb-4">
@@ -222,7 +217,7 @@ const Club = ({ isDarkMode }) => {
                         <img
                           src={club.logo}
                           alt={club.name}
-                          className={`w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-xl border-2 ${isDarkMode ? 'border-orange-400/50' : 'border-blue-400/50'} shadow-lg`}
+                          className={`w-16 h-16 object-cover rounded-xl border-2 ${isDarkMode ? 'border-orange-400/50' : 'border-blue-400/50'} shadow-lg`}
                           onError={(e) => {
                             e.target.src = "";
                           }}
@@ -236,7 +231,7 @@ const Club = ({ isDarkMode }) => {
                       </div>
                     )}
                     <div className="flex-1">
-                      <h2 className={`text-base sm:text-xl font-bold mb-1 transition-colors ${isDarkMode ? 'text-orange-400 group-hover:text-orange-300' : 'text-blue-400 group-hover:text-blue-300'}`}>
+                      <h2 className={`text-xl font-bold mb-1 transition-colors ${isDarkMode ? 'text-orange-400 group-hover:text-orange-300' : 'text-blue-400 group-hover:text-blue-300'}`}>
                         {club.name}
                       </h2>
                       <p className="text-xs text-gray-400">
@@ -246,14 +241,14 @@ const Club = ({ isDarkMode }) => {
                   </div>
 
                   {/* Description */}
-                  <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-4 line-clamp-2`}>
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-4 line-clamp-2`}>
                     {club.description}
                   </p>
                 </div>
 
                 {/* Stats */}
-                <div className="px-2 sm:px-6 pb-4">
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
+                <div className="px-6 pb-4">
+                  <div className="grid grid-cols-2 gap-3 mb-4">
                     {/* Player Count */}
                     <div className={`${isDarkMode ? 'bg-white/10' : 'bg-black/10'} rounded-lg p-3 text-center`}>
                       <Users className={`${isDarkMode ? 'text-orange-400' : 'text-blue-400'} w-5 h-5 mx-auto mb-1`} />
@@ -269,7 +264,7 @@ const Club = ({ isDarkMode }) => {
                   </div>
 
                   {/* Tags: Live, Reels, Vlogs */}
-                  <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+                  <div className="flex justify-center gap-4 mb-4">
                     {club.liveMatches?.length > 0 && (
                       <div className="flex items-center gap-1 bg-red-500/20 text-red-400 px-2 py-1 rounded-full text-xs">
                         <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
@@ -297,7 +292,7 @@ const Club = ({ isDarkMode }) => {
                       <button className={`w-full cursor-pointer ${isDarkMode
                         ? 'bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 hover:border-white/30'
                         : 'bg-black/10 hover:bg-black/20 backdrop-blur-sm border border-black/20 hover:border-black/30'
-                      } text-white font-medium py-2.5 rounded-lg transition-all duration-300 hover:scale-[1.02] focus:outline-none flex items-center justify-center space-x-2 shadow-sm`}>
+                      } text-white font-medium py-2.5 rounded-lg transition-all duration-300 hover:scale-[1.02] focus:outline-none flex items-center justify-center space-x-2`}>
                         <Eye className="w-4 h-4" />
                         <span>View Details</span>
                       </button>
@@ -310,7 +305,7 @@ const Club = ({ isDarkMode }) => {
                         className={`w-full cursor-pointer ${isDarkMode
                           ? 'bg-orange-500/20 hover:bg-orange-500/30 backdrop-blur-sm border border-orange-500/30 hover:border-orange-500/50 text-orange-300 hover:text-orange-200'
                           : 'bg-blue-500/20 hover:bg-blue-500/30 backdrop-blur-sm border border-blue-500/30 hover:border-blue-500/50 text-blue-600 hover:text-blue-700'
-                        } font-medium py-2.5 rounded-lg transition-all duration-300 hover:scale-[1.02] focus:outline-none flex items-center justify-center space-x-2 shadow-sm`}>
+                        } font-medium py-2.5 rounded-lg transition-all duration-300 hover:scale-[1.02] focus:outline-none flex items-center justify-center space-x-2`}>
                         <Zap className="w-4 h-4" />
                         <span>Challenge</span>
                       </button>
@@ -321,7 +316,7 @@ const Club = ({ isDarkMode }) => {
                       <div className={`w-full text-center py-2.5 rounded-lg ${isDarkMode
                         ? 'bg-green-500/20 border border-green-500/30 text-green-400'
                         : 'bg-green-500/20 border border-green-500/30 text-green-600'
-                      } font-medium flex items-center justify-center space-x-2 backdrop-blur-sm shadow-sm`}>
+                      } font-medium flex items-center justify-center space-x-2 backdrop-blur-sm`}>
                         <Check className="w-4 h-4" />
                         <span>Your Club</span>
                       </div>
@@ -332,7 +327,7 @@ const Club = ({ isDarkMode }) => {
 
                 {/* Highlight Badge */}
                 {club.highlights?.length > 0 && (
-                  <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full text-xs font-medium shadow">
+                  <div className="absolute top-4 right-4 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full text-xs font-medium">
                     ⭐ {club.highlights.length} Highlights
                   </div>
                 )}

@@ -157,7 +157,7 @@ const Sports = ({ isDarkMode }) => {
 
             {/* Search and Filter */}
             <div className="max-w-4xl mx-auto mb-12">
-              <div className="flex flex-col gap-3 sm:gap-4 md:flex-row">
+              <div className="flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
@@ -165,20 +165,19 @@ const Sports = ({ isDarkMode }) => {
                     placeholder="Search sports, clubs, or events..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`w-full pl-12 pr-4 py-3 sm:py-4 rounded-2xl font-medium transition-all duration-300 ${
+                    className={`w-full pl-12 pr-4 py-4 rounded-2xl font-medium transition-all duration-300 ${
                       isDarkMode
                         ? 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
                         : 'bg-black/10 backdrop-blur-md border border-black/20 text-gray-900 placeholder-gray-500 focus:border-blue-500'
-                    } focus:outline-none text-base sm:text-lg`}
+                    } focus:outline-none`}
                   />
                 </div>
-                {/* Responsive category filter */}
-                <div className="flex flex-row sm:flex-row gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent py-1 sm:py-0 -mx-2 px-2 sm:mx-0 sm:px-0">
+                <div className="flex space-x-2">
                   {categories.map((category) => (
                     <button
                       key={category.id}
                       onClick={() => setSelectedCategory(category.id)}
-                      className={`px-4 sm:px-6 py-2 sm:py-4 rounded-2xl font-medium transition-all duration-300 whitespace-nowrap text-sm sm:text-base ${
+                      className={`px-6 py-4 rounded-2xl font-medium transition-all duration-300 whitespace-nowrap ${
                         selectedCategory === category.id
                           ? isDarkMode
                             ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'

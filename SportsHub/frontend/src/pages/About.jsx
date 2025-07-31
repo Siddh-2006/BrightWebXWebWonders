@@ -119,7 +119,7 @@ const About = ({ isDarkMode }) => {
       className="min-h-screen pt-20"
     >
       {/* Hero Section */}
-      <section className="relative py-16 sm:py-20 overflow-hidden">
+      <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-20 left-20 w-64 h-64 border-2 border-current rounded-full animate-pulse"></div>
           <div className="absolute bottom-20 right-20 w-48 h-48 border-2 border-current rounded-lg rotate-45 animate-bounce"></div>
@@ -131,14 +131,14 @@ const About = ({ isDarkMode }) => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6">
               About <span className={`${
                 isDarkMode 
                   ? 'bg-gradient-to-r from-orange-400 to-red-500' 
                   : 'bg-gradient-to-r from-blue-500 to-cyan-400'
               } bg-clip-text text-transparent`}>SportsHub</span>
             </h1>
-            <p className={`text-base sm:text-xl md:text-2xl max-w-2xl md:max-w-4xl mx-auto leading-relaxed ${
+            <p className={`text-xl md:text-2xl max-w-4xl mx-auto leading-relaxed ${
               isDarkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
               We're revolutionizing the sports world by combining cutting-edge AI technology with 
@@ -150,7 +150,7 @@ const About = ({ isDarkMode }) => {
       </section>
 
       {/* Mission Statement */}
-      <section className="py-14 sm:py-20">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -165,8 +165,8 @@ const About = ({ isDarkMode }) => {
             <Zap className={`w-20 h-20 mx-auto mb-6 ${
               isDarkMode ? 'text-orange-400' : 'text-blue-500'
             }`} />
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6">Our Mission</h2>
-            <p className="text-base sm:text-xl leading-relaxed max-w-2xl md:max-w-4xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">Our Mission</h2>
+            <p className="text-xl leading-relaxed max-w-4xl mx-auto">
               "SportsHub : an ultimate community where athletes can grow, connect and compete. By blending digital identity, smart coaching, and a global sports network, we aim to unite athletes and clubs into one thriving community. Our platform makes it easier to discover talent, foster competition, and build meaningful connections across the sports world."
             </p>
           </motion.div>
@@ -174,9 +174,9 @@ const About = ({ isDarkMode }) => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-14 sm:py-20">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
               <motion.div
                 key={index}
@@ -198,8 +198,8 @@ const About = ({ isDarkMode }) => {
                   }`}>
                     <stat.icon className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">{stat.number}</h3>
-                  <p className={`font-medium text-sm sm:text-base ${
+                  <h3 className="text-4xl font-bold mb-2">{stat.number}</h3>
+                  <p className={`font-medium ${
                     isDarkMode ? 'text-gray-300' : 'text-gray-600'
                   }`}>
                     {stat.label}
@@ -212,7 +212,7 @@ const About = ({ isDarkMode }) => {
       </section>
 
       {/* Values Section */}
-      <section className="py-14 sm:py-20">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -220,15 +220,15 @@ const About = ({ isDarkMode }) => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-6">Our Core Values</h2>
-            <p className={`text-base sm:text-xl max-w-2xl md:max-w-3xl mx-auto ${
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">Our Core Values</h2>
+            <p className={`text-xl max-w-3xl mx-auto ${
               isDarkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
               The principles that guide everything we do at SportsHub
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {values.map((value, index) => (
               <motion.div
                 key={index}
@@ -246,8 +246,8 @@ const About = ({ isDarkMode }) => {
                   <div className={`w-16 h-16 bg-gradient-to-r ${value.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
                     <value.icon className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-bold mb-4">{value.title}</h3>
-                  <p className={`leading-relaxed text-sm sm:text-base ${
+                  <h3 className="text-2xl font-bold mb-4">{value.title}</h3>
+                  <p className={`leading-relaxed ${
                     isDarkMode ? 'text-gray-300' : 'text-gray-600'
                   }`}>
                     {value.description}
@@ -260,7 +260,7 @@ const About = ({ isDarkMode }) => {
       </section>
 
       {/* Team Section */}
-      <section className="py-14 sm:py-20">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -268,15 +268,15 @@ const About = ({ isDarkMode }) => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-6">Meet Our Squad</h2>
-            <p className={`text-base sm:text-xl max-w-2xl md:max-w-3xl mx-auto ${
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">Meet Our Squad</h2>
+            <p className={`text-xl max-w-3xl mx-auto ${
               isDarkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
               The passionate team behind SportsHub's innovation
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {teamMembers.map((member, index) => (
               <motion.div
                 key={index}
@@ -295,18 +295,18 @@ const About = ({ isDarkMode }) => {
                     <img 
                       src={member.image} 
                       alt={member.name}
-                      className="w-full h-56 sm:h-64 object-cover group-hover:scale-110 transition-transform duration-500 rounded-t-3xl"
+                      className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
                   <div className="p-6">
-                    <h3 className="text-lg sm:text-xl font-bold mb-2">{member.name}</h3>
-                    <p className={`font-medium mb-3 text-sm sm:text-base ${
+                    <h3 className="text-xl font-bold mb-2">{member.name}</h3>
+                    <p className={`font-medium mb-3 ${
                       isDarkMode ? 'text-orange-400' : 'text-blue-600'
                     }`}>
                       {member.role}
                     </p>
-                    <p className={`text-xs sm:text-sm leading-relaxed mb-4 ${
+                    <p className={`text-sm leading-relaxed mb-4 ${
                       isDarkMode ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {member.bio}
@@ -348,7 +348,7 @@ const About = ({ isDarkMode }) => {
       </section>
 
       {/* Timeline Section */}
-      <section className="py-14 sm:py-20">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -356,8 +356,8 @@ const About = ({ isDarkMode }) => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-6">Our Journey</h2>
-            <p className={`text-base sm:text-xl max-w-2xl md:max-w-3xl mx-auto ${
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">Our Journey</h2>
+            <p className={`text-xl max-w-3xl mx-auto ${
               isDarkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
               Key milestones in our mission to revolutionize sports
@@ -370,7 +370,7 @@ const About = ({ isDarkMode }) => {
               isDarkMode ? 'bg-orange-500/30' : 'bg-blue-500/30'
             }`}></div>
 
-            <div className="space-y-10 sm:space-y-12">
+            <div className="space-y-12">
               {milestones.map((milestone, index) => (
                 <motion.div
                   key={index}
@@ -378,32 +378,34 @@ const About = ({ isDarkMode }) => {
                   whileInView={{ y: 0, opacity: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.2 }}
-                  className={`flex flex-col sm:flex-row items-center ${index % 2 === 0 ? 'sm:flex-row' : 'sm:flex-row-reverse'}`}
+                  className={`flex items-center ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}`}
                 >
-                  <div className="flex-1 px-0 sm:px-8 w-full">
-                    <div className={`p-4 sm:p-6 rounded-2xl ${
+                  <div className="flex-1 px-8">
+                    <div className={`p-6 rounded-2xl ${
                       isDarkMode 
                         ? 'bg-white/5 backdrop-blur-md border border-white/10' 
                         : 'bg-black/5 backdrop-blur-md border border-black/10'
                     }`}>
-                      <div className={`text-lg sm:text-2xl font-bold mb-2 ${
+                      <div className={`text-2xl font-bold mb-2 ${
                         isDarkMode ? 'text-orange-400' : 'text-blue-600'
                       }`}>
                         {milestone.year}
                       </div>
-                      <h3 className="text-base sm:text-xl font-bold mb-3">{milestone.title}</h3>
-                      <p className={`text-xs sm:text-base ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      <h3 className="text-xl font-bold mb-3">{milestone.title}</h3>
+                      <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
                         {milestone.description}
                       </p>
                     </div>
                   </div>
+                  
                   {/* Timeline Dot */}
-                  <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-4 my-4 sm:my-0 ${
+                  <div className={`w-6 h-6 rounded-full border-4 ${
                     isDarkMode 
                       ? 'bg-orange-500 border-orange-300' 
                       : 'bg-blue-500 border-blue-300'
                   }`}></div>
-                  <div className="flex-1 hidden sm:block"></div>
+                  
+                  <div className="flex-1"></div>
                 </motion.div>
               ))}
             </div>
@@ -412,7 +414,7 @@ const About = ({ isDarkMode }) => {
       </section>
 
       {/* Story Section */}
-      <section className="py-14 sm:py-20">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -425,20 +427,20 @@ const About = ({ isDarkMode }) => {
             }`}
           >
             <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-center mb-8">Our Story</h2>
-            <div className={`prose prose-sm sm:prose-lg mx-auto ${
+              <h2 className="text-4xl md:text-5xl font-bold text-center mb-8">Our Story</h2>
+              <div className={`prose prose-lg mx-auto ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-600'
               }`}>
-                <p className="text-base sm:text-xl leading-relaxed mb-6">
+                <p className="text-xl leading-relaxed mb-6">
                   SportsHub started from a place of struggle. As an athlete, I faced the harsh truth—talent wasn’t enough. Without access to proper coaching, reliable training, or ways to connect with clubs, too many athletes were slipping through the cracks. I knew the problem because I lived it.
                 </p>
-                <p className="text-sm sm:text-lg leading-relaxed mb-6">
+                <p className="text-lg leading-relaxed mb-6">
                   That frustration turned into purpose. In 2025, I teamed up with fellow athletes, tech minds, and AI experts to build something better. We imagined a space where limitations didn’t decide anyone’s future—a home for growth, learning, and visibility regardless of background or location.
                 </p>
-                <p className="text-sm sm:text-lg leading-relaxed mb-6">
+                <p className="text-lg leading-relaxed mb-6">
                   At the heart of SportsHub is AI Guru—a virtual coach offering personalized training plans, posture analysis, and real-time feedback. It’s not just about practice; it’s about precision. And we didn’t stop there. We created club profiles and live match tools so players could discover clubs, and clubs could challenge, scout, and grow like never before.
                 </p>
-                <p className="text-sm sm:text-lg leading-relaxed">
+                <p className="text-lg leading-relaxed">
                   Now, SportsHub is more than just a product—it’s a movement. A thriving community where athletes and clubs come together to push boundaries, share knowledge, and elevate the game. This is the future of sports—open, connected, and built by those who needed it most.
                 </p>
               </div>
@@ -448,7 +450,7 @@ const About = ({ isDarkMode }) => {
       </section>
 
       {/* Contact Section */}
-      <section className="py-14 sm:py-20">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -464,7 +466,7 @@ const About = ({ isDarkMode }) => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
             <div className={`text-center p-8 rounded-2xl ${
               isDarkMode 
                 ? 'bg-white/5 backdrop-blur-md border border-white/10' 
@@ -473,8 +475,10 @@ const About = ({ isDarkMode }) => {
               <Mail className={`w-12 h-12 mx-auto mb-4 ${
                 isDarkMode ? 'text-orange-400' : 'text-blue-500'
               }`} />
-              <h3 className="text-lg sm:text-xl font-bold mb-2">Email Us</h3>
-              <p className={`break-all ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>support@sportshub.com</p>
+              <h3 className="text-xl font-bold mb-2">Email Us</h3>
+              <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                support@sportshub.com
+              </p>
             </div>
             <div className={`text-center p-8 rounded-2xl ${
               isDarkMode 
@@ -484,8 +488,10 @@ const About = ({ isDarkMode }) => {
               <Phone className={`w-12 h-12 mx-auto mb-4 ${
                 isDarkMode ? 'text-orange-400' : 'text-blue-500'
               }`} />
-              <h3 className="text-lg sm:text-xl font-bold mb-2">Call Us</h3>
-              <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>+1 (800) 123-4567</p>
+              <h3 className="text-xl font-bold mb-2">Call Us</h3>
+              <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                +1 (800) 123-4567
+              </p>
             </div>
             <div className={`text-center p-8 rounded-2xl ${
               isDarkMode 
@@ -495,15 +501,17 @@ const About = ({ isDarkMode }) => {
               <MapPin className={`w-12 h-12 mx-auto mb-4 ${
                 isDarkMode ? 'text-orange-400' : 'text-blue-500'
               }`} />
-              <h3 className="text-lg sm:text-xl font-bold mb-2">Visit Us</h3>
-              <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>SVNIT, Surat</p>
+              <h3 className="text-xl font-bold mb-2">Visit Us</h3>
+              <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                SVNIT , surat
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-14 sm:py-20">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -515,21 +523,24 @@ const About = ({ isDarkMode }) => {
                 : 'bg-gradient-to-r from-blue-500/20 to-cyan-400/20 border border-blue-500/30'
             }`}
           >
-            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6">Join the SportsHub Revolution</h3>
-            <p className={`text-base sm:text-xl mb-8 max-w-xl sm:max-w-2xl mx-auto ${
+            <h3 className="text-3xl md:text-4xl font-bold mb-6">
+              Join the SportsHub Revolution
+            </h3>
+            <p className={`text-xl mb-8 max-w-2xl mx-auto ${
               isDarkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
-              Whether you're an athlete looking to improve, a club seeking talent, or a fan wanting to connect with the sports community, there's a place for you here.
+              Whether you're an athlete looking to improve, a club seeking talent, or a fan wanting 
+              to connect with the sports community, there's a place for you here.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md mx-auto">
-              <button className={`w-full sm:w-auto px-6 py-3 rounded-2xl font-semibold transition-all duration-300 ${
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button className={`px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ${
                 isDarkMode
                   ? 'bg-white text-orange-600 hover:bg-gray-100'
                   : 'bg-black text-blue-400 hover:bg-gray-900'
               }`}>
                 Start Your Journey
               </button>
-              <button className={`w-full sm:w-auto border-2 px-6 py-3 rounded-2xl font-semibold transition-all duration-300 ${
+              <button className={`border-2 px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ${
                 isDarkMode
                   ? 'border-orange-500/50 text-orange-400 hover:bg-orange-500/10'
                   : 'border-blue-500/50 text-blue-600 hover:bg-blue-500/10'
