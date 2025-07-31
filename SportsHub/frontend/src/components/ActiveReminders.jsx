@@ -122,61 +122,63 @@ const ActiveReminders = ({ isDarkMode = false }) => {
 
                 {/* Reminders List */}
                 <div className="max-h-80 overflow-y-auto">
-                  {reminders.map((reminder) => (
-                    <motion.div
-                      key={reminder.matchKey}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 20 }}
-                      className={`p-4 border-b border-current/10 last:border-b-0 ${
-                        isDarkMode ? 'hover:bg-gray-700/30' : 'hover:bg-gray-50/50'
-                      } transition-colors`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm mb-1 truncate">
-                            {reminder.match.homeTeam} vs {reminder.match.awayTeam}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {reminders.map((reminder) => (
+                      <motion.div
+                        key={reminder.matchKey}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        className={`p-4 border-b border-current/10 last:border-b-0 ${
+                          isDarkMode ? 'hover:bg-gray-700/30' : 'hover:bg-gray-50/50'
+                        } transition-colors bg-white rounded-xl shadow flex flex-col`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm mb-1 truncate">
+                              {reminder.match.homeTeam} vs {reminder.match.awayTeam}
+                            </div>
+                            
+                            <div className={`flex items-center space-x-3 text-xs ${
+                              isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                            }`}>
+                              <div className="flex items-center space-x-1">
+                                <Clock className="w-3 h-3" />
+                                <span>{reminder.minutes}m before</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Calendar className="w-3 h-3" />
+                                <span>in {formatTimeUntil(reminder.scheduledFor)}</span>
+                              </div>
+                            </div>
+                            
+                            <div className={`text-xs mt-1 ${
+                              isDarkMode ? 'text-gray-500' : 'text-gray-500'
+                            }`}>
+                              {new Date(reminder.scheduledFor).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                                hour12: true
+                              })}
+                            </div>
                           </div>
                           
-                          <div className={`flex items-center space-x-3 text-xs ${
-                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                            <div className="flex items-center space-x-1">
-                              <Clock className="w-3 h-3" />
-                              <span>{reminder.minutes}m before</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Calendar className="w-3 h-3" />
-                              <span>in {formatTimeUntil(reminder.scheduledFor)}</span>
-                            </div>
-                          </div>
-                          
-                          <div className={`text-xs mt-1 ${
-                            isDarkMode ? 'text-gray-500' : 'text-gray-500'
-                          }`}>
-                            {new Date(reminder.scheduledFor).toLocaleString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              hour: 'numeric',
-                              minute: '2-digit',
-                              hour12: true
-                            })}
-                          </div>
+                          <button
+                            onClick={() => handleClearReminder(reminder.matchKey)}
+                            className={`ml-2 p-1 rounded-full transition-colors ${
+                              isDarkMode 
+                                ? 'text-gray-400 hover:text-red-400 hover:bg-red-500/20' 
+                                : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
+                            }`}
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
                         </div>
-                        
-                        <button
-                          onClick={() => handleClearReminder(reminder.matchKey)}
-                          className={`ml-2 p-1 rounded-full transition-colors ${
-                            isDarkMode 
-                              ? 'text-gray-400 hover:text-red-400 hover:bg-red-500/20' 
-                              : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
-                          }`}
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </motion.div>

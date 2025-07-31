@@ -347,109 +347,107 @@ const EndedPage = ({ isDarkMode }) => {
         <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-blob animation-delay-4000"></div>
       </div> */}
 
-      <div className="relative z-10 px-4 py-8 md:px-8 lg:px-16 xl:px-24">
-        <div className="max-w-7xl mx-auto space-y-12">
+      <div className="relative z-10 px-2 sm:px-4 py-6 sm:py-8 md:px-8 lg:px-16 xl:px-24">
+        <div className="max-w-7xl mx-auto space-y-8 sm:space-y-12">
           
           {/* Header Section */}
-          <div className="text-center space-y-8">
+          <div className="text-center space-y-6 sm:space-y-8">
             <div className="relative inline-block">
-              <h1 className={`${theme.textPrimary} text-5xl lg:text-7xl font-black tracking-tight relative z-10`}>
+              <h1 className={`${theme.textPrimary} text-3xl sm:text-5xl lg:text-7xl font-black tracking-tight relative z-10`}>
                 MATCH ENDED
               </h1>
               <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-transparent bg-clip-text blur-sm opacity-30">
                 MATCH ENDED
               </div>
             </div>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              <div className={`px-8 py-4 ${theme.bgCard} ${theme.border} border rounded-2xl ${theme.shadow} flex items-center gap-4`}>
-                <div className="w-4 h-4 bg-gray-500 rounded-full"></div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full">
+              <div className={`w-full sm:w-auto px-4 sm:px-8 py-3 sm:py-4 ${theme.bgCard} ${theme.border} border rounded-2xl ${theme.shadow} flex items-center gap-3 sm:gap-4 mb-2 sm:mb-0`}> 
+                <div className="w-3 h-3 sm:w-4 sm:h-4 bg-gray-500 rounded-full"></div>
                 <div className="text-left">
                   <div className={`${theme.textMuted} text-xs font-semibold uppercase tracking-wider`}>Sport</div>
-                  <div className={`${theme.textPrimary} text-xl font-bold capitalize`}>{sport}</div>
+                  <div className={`${theme.textPrimary} text-base sm:text-xl font-bold capitalize`}>{sport}</div>
                 </div>
               </div>
-              
-              <div className={`px-8 py-4 ${theme.bgCard} ${theme.border} border rounded-2xl ${theme.shadow} flex items-center gap-4`}>
-                <div className={`w-4 h-4 rounded-full ${theme.bgAccent}`}></div>
+              <div className={`w-full sm:w-auto px-4 sm:px-8 py-3 sm:py-4 ${theme.bgCard} ${theme.border} border rounded-2xl ${theme.shadow} flex items-center gap-3 sm:gap-4`}>
+                <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full ${theme.bgAccent}`}></div>
                 <div className="text-left">
                   <div className={`${theme.textMuted} text-xs font-semibold uppercase tracking-wider`}>Match ID</div>
-                  <div className={`${theme.textPrimary} text-xl font-bold`}>{matchId}</div>
+                  <div className={`${theme.textPrimary} text-base sm:text-xl font-bold`}>{matchId}</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Final Score */}
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             <div className="text-center">
-              <h2 className={`${theme.textPrimary} text-4xl lg:text-5xl font-black mb-4`}>Final Score</h2>
-              <div className={`w-32 h-1 ${theme.bgAccent} mx-auto`}></div>
+              <h2 className={`${theme.textPrimary} text-2xl sm:text-4xl lg:text-5xl font-black mb-2 sm:mb-4`}>Final Score</h2>
+              <div className={`w-24 sm:w-32 h-1 ${theme.bgAccent} mx-auto`}></div>
             </div>
             {renderFinalScore()}
           </div>
 
           {/* Poll Results */}
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             <div className="text-center">
-              <h2 className={`${theme.textPrimary} text-4xl lg:text-5xl font-black mb-4`}>Poll Results</h2>
-              <div className={`w-32 h-1 ${theme.bgAccent} mx-auto`}></div>
+              <h2 className={`${theme.textPrimary} text-2xl sm:text-4xl lg:text-5xl font-black mb-2 sm:mb-4`}>Poll Results</h2>
+              <div className={`w-24 sm:w-32 h-1 ${theme.bgAccent} mx-auto`}></div>
             </div>
             {renderPollResults()}
           </div>
 
           {/* Post-Match Chat */}
           <div className={`${theme.bgCard} border ${theme.border} rounded-3xl overflow-hidden ${theme.shadow}`}>
-            <div className={`${theme.bgAccent} p-6`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
-                    <div className="w-4 h-4 bg-white rounded-full"></div>
+            <div className={`${theme.bgAccent} p-4 sm:p-6`}>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 rounded-xl flex items-center justify-center">
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full"></div>
                   </div>
-                  <h2 className="text-white text-2xl font-bold">Post-Match Discussion</h2>
+                  <h2 className="text-white text-lg sm:text-2xl font-bold">Post-Match Discussion</h2>
                 </div>
-                <div className="bg-white/20 px-4 py-2 rounded-full text-white text-sm font-bold">
+                <div className="bg-white/20 px-3 sm:px-4 py-1 sm:py-2 rounded-full text-white text-xs sm:text-sm font-bold">
                   {messages.length} messages
                 </div>
               </div>
             </div>
 
-            <div className="p-8">
-              <div className={`${theme.bgSecondary} rounded-2xl p-6 mb-8 h-80 overflow-y-auto space-y-4`}>
+            <div className="p-4 sm:p-8">
+              <div className={`${theme.bgSecondary} rounded-2xl p-3 sm:p-6 mb-6 sm:mb-8 h-64 sm:h-80 overflow-y-auto space-y-3 sm:space-y-4`}> 
                 {messages.length === 0 ? (
                   <div className="h-full flex items-center justify-center">
                     <div className="text-center space-y-4">
-                      <div className={`w-20 h-20 mx-auto rounded-full ${theme.bgAccent} flex items-center justify-center opacity-50`}>
-                        <div className="w-10 h-10 bg-white rounded-full"></div>
+                      <div className={`w-14 h-14 sm:w-20 sm:h-20 mx-auto rounded-full ${theme.bgAccent} flex items-center justify-center opacity-50`}>
+                        <div className="w-7 h-7 sm:w-10 sm:h-10 bg-white rounded-full"></div>
                       </div>
                       <div>
-                        <h3 className={`${theme.textPrimary} text-xl font-bold mb-2`}>No discussion yet</h3>
-                        <p className={`${theme.textMuted} text-lg`}>Share your thoughts about the match!</p>
+                        <h3 className={`${theme.textPrimary} text-base sm:text-xl font-bold mb-2`}>No discussion yet</h3>
+                        <p className={`${theme.textMuted} text-sm sm:text-lg`}>Share your thoughts about the match!</p>
                       </div>
                     </div>
                   </div>
                 ) : (
                   messages.map((msg, idx) => (
-                    <div key={idx} className={`${theme.bgCard} rounded-xl p-4 border ${theme.border} hover:${theme.glow} transition-all duration-200`}>
-                      <div className={`${theme.textAccent} font-bold text-sm mb-2`}>{msg.username}</div>
-                      <div className={`${theme.textSecondary} leading-relaxed`}>{msg.message}</div>
+                    <div key={idx} className={`relative max-w-[90%] sm:max-w-[70%] ${idx % 2 === 0 ? 'ml-0 mr-auto' : 'ml-auto mr-0'} ${theme.bgCard} rounded-xl p-3 sm:p-4 border ${theme.border} hover:${theme.glow} transition-all duration-200 shadow-sm`}> 
+                      <div className={`${theme.textAccent} font-bold text-xs sm:text-sm mb-1`}>{msg.username}</div>
+                      <div className={`${theme.textSecondary} leading-relaxed break-words`}>{msg.message}</div>
                     </div>
                   ))
                 )}
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <input
                   value={chatMsg}
                   onChange={(e) => setChatMsg(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Share your thoughts about the match..."
-                  className={`flex-1 ${theme.input} border-2 rounded-2xl p-4 text-lg focus:outline-none focus:ring-4 focus:ring-orange-500/20 transition-all duration-200`}
+                  className={`flex-1 ${theme.input} border-2 rounded-2xl p-3 sm:p-4 text-base sm:text-lg focus:outline-none focus:ring-4 focus:ring-orange-500/20 transition-all duration-200`}
                 />
                 <button
                   onClick={sendMessage}
                   disabled={!chatMsg.trim()}
-                  className={`${theme.bgAccent} text-white px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100 ${theme.glow}`}
+                  className={`${theme.bgAccent} text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-bold text-base sm:text-lg hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100 ${theme.glow}`}
                 >
                   Send
                 </button>
