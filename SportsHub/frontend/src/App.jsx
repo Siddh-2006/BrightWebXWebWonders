@@ -26,6 +26,9 @@ import ClubDetails from './pages/ClubDetails';
 import EndedPage from './pages/EndedPage';
 import ScrollToTop from './components/ScrollToTop'; 
 import ChallengeDetails from './pages/ChallengeDetails';
+import EndedScoreAdmin from './pages/EndedScoreAdmin';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndCondition';
 
 function App() {
   const [userType, setUserType] = useState('player');
@@ -85,10 +88,13 @@ function App() {
             <Route path="/logout" element={<Logout setIsLoggedIn={login_info.setIsLoggedIn} />} />
             <Route path="/club" element={<Club isDarkMode={isDarkMode} />} />
             <Route path="/match_ended/:sport/:matchId" element={<EndedPage isDarkMode={isDarkMode}/>}></Route>
+            <Route path="/match_ended_admin/:sport/:matchId" element={<EndedScoreAdmin isDarkMode={isDarkMode}/>}></Route>
             <Route path="/club/:clubName" element={<ClubDetails isDarkMode={isDarkMode} />} />
             <Route path="/live_match/:sport/:matchId" element={<LivePage isDarkMode={isDarkMode}/>}></Route>
             <Route path="/challenges/:challengeId" element={<ChallengeDetails isDarkMode={isDarkMode} />} />
             <Route path="/live_match_admin/:sport/:matchId" element={<LiveScoreAdmin />}></Route>
+            <Route path="/privacy-policy" element={<PrivacyPolicy isDarkMode={isDarkMode}/>}></Route>
+            <Route path='/terms-and-conditon' element={<TermsAndConditions isDarkMode={isDarkMode}/>}></Route>
           </Routes>
         </AnimatePresence>
 

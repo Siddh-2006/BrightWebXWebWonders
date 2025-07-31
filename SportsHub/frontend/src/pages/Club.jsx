@@ -141,7 +141,7 @@ const Club = ({ isDarkMode }) => {
         <div className="flex flex-col lg:flex-row gap-4 items-center mb-10">
           {/* Search input */}
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 " />
             <input
               type="text"
               placeholder="Search clubs by name or description..."
@@ -189,7 +189,7 @@ const Club = ({ isDarkMode }) => {
         {/* No results fallback */}
         {filteredClubs.length === 0 ? (
           <div className="text-center py-20">
-            <Search className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+            <Search className="w-16 h-16 text-gray-500 mx-auto mb-4 "  />
             <h3 className="text-2xl font-semibold text-gray-400 mb-2">No clubs found</h3>
             <p className="text-gray-500">Try adjusting your search terms or filters</p>
           </div>
@@ -208,7 +208,7 @@ const Club = ({ isDarkMode }) => {
                   : 'bg-black/5 backdrop-blur-md border border-black/10 hover:bg-black/10'
                   }`}
               >
-                <div className="relative p-6 pb-4">
+                <div className="relative pt-6 pl-2 lg:p-6 pb-4">
                   {/* Club Header Info */}
                   <div className="flex items-start gap-4 mb-4">
                     {/* Club Logo */}
