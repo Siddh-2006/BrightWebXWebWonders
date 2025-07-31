@@ -29,6 +29,7 @@ import ChallengeDetails from './pages/ChallengeDetails';
 import EndedScoreAdmin from './pages/EndedScoreAdmin';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndCondition';
+import ContactUs from './components/ContactUs';
 
 function App() {
   const [userType, setUserType] = useState('player');
@@ -96,6 +97,7 @@ function App() {
             <Route path="/live_match_admin/:sport/:matchId" element={<LiveScoreAdmin />}></Route>
             <Route path="/privacy-policy" element={<PrivacyPolicy isDarkMode={isDarkMode}/>}></Route>
             <Route path='/terms-and-conditon' element={<TermsAndConditions isDarkMode={isDarkMode}/>}></Route>
+            <Route path='/contact-us' element={ <ContactUs isDarkMode={isDarkMode}/>}></Route>
           </Routes>
         </AnimatePresence>
 

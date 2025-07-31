@@ -8,7 +8,7 @@ const TermsAndConditions = ({ isDarkMode = false }) => {
   const accentColor = isDarkMode ? "text-orange-400" : "text-blue-600";
 
   return (
-    <div className={`min-h-screen px-4 sm:px-6 lg:px-8 py-6 sm:py-10 ${bgColor} ${textColor}`}>
+    <div className={`min-h-screen px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pt-25 md:pt-35 ${bgColor} ${textColor}`}>
       <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="text-center mb-8 sm:mb-12">

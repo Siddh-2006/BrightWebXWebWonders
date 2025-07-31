@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router';
 import { motion } from 'framer-motion';
-import { 
-  Home, Radio, MapPin, Users, Play, Trophy, Star, Calendar, 
+import {
+  Home, Radio, MapPin, Users, Play, Trophy, Star, Calendar,
   Clock, Eye, Heart, MessageCircle, Share2, ArrowLeft, Filter,
   Search, Target, Award, Zap, Video, BookOpen, Brain
 } from 'lucide-react';
 import QuizSection from '../components/QuizSection';
+import axios from "axios"
 
 const SportSpecific = ({ isDarkMode }) => {
   const { sport } = useParams();
@@ -14,8 +15,15 @@ const SportSpecific = ({ isDarkMode }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [allClubs, setallClubs] = useState([]);
   const canvasRef = useRef(null);
-
+  // fetch clubs function
+  const fetch_clubs = async () => {
+      const res = await axios.get("http://localhost:3000/club", { withCredentials: true });
+      if (res.status == 200) {
+        setallClubs(...res.data);
+      }
+    }
   // 3D Background Animation Effect
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -52,8 +60,8 @@ const SportSpecific = ({ isDarkMode }) => {
 
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fillStyle = isDarkMode 
-          ? `rgba(249, 115, 22, ${particle.opacity})` 
+        ctx.fillStyle = isDarkMode
+          ? `rgba(249, 115, 22, ${particle.opacity})`
           : `rgba(59, 130, 246, ${particle.opacity})`;
         ctx.fill();
       });
@@ -320,9 +328,8 @@ const SportSpecific = ({ isDarkMode }) => {
             <motion.div
               key={vlog.id}
               whileHover={{ scale: 1.02 }}
-              className={`group rounded-2xl overflow-hidden ${
-                isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'
-              }`}
+              className={`group rounded-2xl overflow-hidden ${isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'
+                }`}
             >
               <div className="relative">
                 <img src={vlog.thumbnail} alt={vlog.title} className="w-full h-48 object-cover" />
@@ -364,9 +371,8 @@ const SportSpecific = ({ isDarkMode }) => {
             <motion.div
               key={highlight.id}
               whileHover={{ scale: 1.02 }}
-              className={`group rounded-2xl overflow-hidden ${
-                isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'
-              }`}
+              className={`group rounded-2xl overflow-hidden ${isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'
+                }`}
             >
               <div className="relative">
                 <img src={highlight.thumbnail} alt={highlight.title} className="w-full h-48 object-cover" />
@@ -414,9 +420,8 @@ const SportSpecific = ({ isDarkMode }) => {
             <motion.div
               key={post.id}
               whileHover={{ scale: 1.01 }}
-              className={`p-6 rounded-2xl ${
-                isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'
-              }`}
+              className={`p-6 rounded-2xl ${isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'
+                }`}
             >
               <div className="flex items-start space-x-4">
                 <div className={`w-10 h-10 rounded-full ${isDarkMode ? 'bg-orange-500' : 'bg-blue-500'} flex items-center justify-center text-white font-semibold`}>
@@ -461,11 +466,10 @@ const SportSpecific = ({ isDarkMode }) => {
             <span>{currentSport.name} Quiz Challenge</span>
           </h3>
         </div>
-        <div className={`p-8 rounded-2xl text-center ${
-          isDarkMode 
-            ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30'
-            : 'bg-gradient-to-r from-blue-500/20 to-cyan-400/20 border border-blue-500/30'
-        }`}>
+        <div className={`p-8 rounded-2xl text-center ${isDarkMode
+          ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30'
+          : 'bg-gradient-to-r from-blue-500/20 to-cyan-400/20 border border-blue-500/30'
+          }`}>
           <Brain className={`w-16 h-16 mx-auto mb-4 ${isDarkMode ? 'text-orange-400' : 'text-blue-500'}`} />
           <h4 className="text-2xl font-bold mb-4">Test Your {currentSport.name} Knowledge!</h4>
           <p className={`text-lg mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -474,11 +478,10 @@ const SportSpecific = ({ isDarkMode }) => {
           <Link
             to="/quiz"
             state={{ selectedSport: currentSport.name }}
-            className={`inline-flex items-center space-x-2 px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ${
-              isDarkMode
-                ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
-                : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
-            } text-white shadow-lg hover:shadow-xl`}
+            className={`inline-flex items-center space-x-2 px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ${isDarkMode
+              ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
+              : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
+              } text-white shadow-lg hover:shadow-xl`}
           >
             <Target className="w-5 h-5" />
             <span>Start {currentSport.name} Quiz</span>
@@ -495,16 +498,14 @@ const SportSpecific = ({ isDarkMode }) => {
           <motion.div
             key={match.id}
             whileHover={{ scale: 1.02 }}
-            className={`p-6 rounded-2xl ${
-              isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'
-            }`}
+            className={`p-6 rounded-2xl ${isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'
+              }`}
           >
             <div className="flex items-center justify-between mb-4">
-              <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                match.status === 'Live' 
-                  ? 'bg-red-500 text-white' 
-                  : 'bg-blue-500 text-white'
-              }`}>
+              <span className={`px-3 py-1 rounded-full text-sm font-bold ${match.status === 'Live'
+                ? 'bg-red-500 text-white'
+                : 'bg-blue-500 text-white'
+                }`}>
                 {match.status === 'Live' && <Radio className="w-3 h-3 inline mr-1" />}
                 {match.status}
               </span>
@@ -513,7 +514,7 @@ const SportSpecific = ({ isDarkMode }) => {
                 <span>{match.viewers} watching</span>
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="font-semibold">{match.teamA}</span>
@@ -538,11 +539,10 @@ const SportSpecific = ({ isDarkMode }) => {
               </div>
             </div>
 
-            <button className={`w-full mt-4 py-3 rounded-xl font-semibold transition-all duration-300 ${
-              match.status === 'Live'
-                ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-400 hover:to-pink-500 text-white'
-                : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white'
-            }`}>
+            <button className={`w-full mt-4 py-3 rounded-xl font-semibold transition-all duration-300 ${match.status === 'Live'
+              ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-400 hover:to-pink-500 text-white'
+              : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white'
+              }`}>
               {match.status === 'Live' ? 'Watch Live' : 'Set Reminder'}
             </button>
           </motion.div>
@@ -551,55 +551,56 @@ const SportSpecific = ({ isDarkMode }) => {
     </div>
   );
 
-  const renderClubsContent = () => (
-    <div className="space-y-8">
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sampleContent.clubs.map((club) => (
-          <motion.div
-            key={club.id}
-            whileHover={{ scale: 1.02 }}
-            className={`p-6 rounded-2xl ${
-              isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'
-            }`}
-          >
-            <div className="flex items-center space-x-4 mb-4">
-              <img src={club.logo} alt={club.name} className="w-16 h-16 rounded-full object-cover" />
-              <div>
-                <h4 className="font-bold text-lg">{club.name}</h4>
-                <div className="flex items-center space-x-2 text-sm">
-                  <MapPin className="w-4 h-4" />
-                  <span>{club.location}</span>
+  const renderClubsContent = () => {
+    fetch_clubs();
+    return (
+      <div className="space-y-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {allClubs?.map((club) => (
+            <motion.div
+              key={club.id}
+              whileHover={{ scale: 1.02 }}
+              className={`p-6 rounded-2xl ${isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'
+                }`}
+            >
+              <div className="flex items-center space-x-4 mb-4">
+                <img src={club.logo} alt={club.name} className="w-16 h-16 rounded-full object-cover" />
+                <div>
+                  <h4 className="font-bold text-lg">{club.name}</h4>
+                  <div className="flex items-center space-x-2 text-sm">
+                    <MapPin className="w-4 h-4" />
+                    <span>{club.location}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              {club.description}
-            </p>
 
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-1">
-                <Users className="w-4 h-4" />
-                <span className="text-sm">{club.members} members</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Star className="w-4 h-4 text-yellow-500" />
-                <span className="text-sm">{club.rating}</span>
-              </div>
-            </div>
+              <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                {club.description}
+              </p>
 
-            <button className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 ${
-              isDarkMode
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-1">
+                  <Users className="w-4 h-4" />
+                  <span className="text-sm">{club.members} members</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Star className="w-4 h-4 text-yellow-500" />
+                  <span className="text-sm">{club.rating}</span>
+                </div>
+              </div>
+
+              <button className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 ${isDarkMode
                 ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
                 : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
-            } text-white`}>
-              Join Club
-            </button>
-          </motion.div>
-        ))}
+                } text-white`}>
+                Join Club
+              </button>
+            </motion.div>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    )
+  };
 
   const renderGroundsContent = () => (
     <div className="space-y-8">
@@ -608,9 +609,8 @@ const SportSpecific = ({ isDarkMode }) => {
           <motion.div
             key={ground.id}
             whileHover={{ scale: 1.02 }}
-            className={`rounded-2xl overflow-hidden ${
-              isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'
-            }`}
+            className={`rounded-2xl overflow-hidden ${isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'
+              }`}
           >
             <img src={ground.image} alt={ground.name} className="w-full h-48 object-cover" />
             <div className="p-6">
@@ -619,7 +619,7 @@ const SportSpecific = ({ isDarkMode }) => {
                 <MapPin className="w-4 h-4" />
                 <span>{ground.location}</span>
               </div>
-              
+
               <div className="flex items-center justify-between mb-4 text-sm">
                 <div className="flex items-center space-x-1">
                   <Users className="w-4 h-4" />
@@ -635,11 +635,10 @@ const SportSpecific = ({ isDarkMode }) => {
                 <h5 className="font-semibold text-sm mb-2">Facilities:</h5>
                 <div className="flex flex-wrap gap-1">
                   {ground.facilities.map((facility, index) => (
-                    <span 
+                    <span
                       key={index}
-                      className={`text-xs px-2 py-1 rounded-full ${
-                        isDarkMode ? 'bg-white/10 text-gray-300' : 'bg-black/10 text-gray-700'
-                      }`}
+                      className={`text-xs px-2 py-1 rounded-full ${isDarkMode ? 'bg-white/10 text-gray-300' : 'bg-black/10 text-gray-700'
+                        }`}
                     >
                       {facility}
                     </span>
@@ -647,11 +646,10 @@ const SportSpecific = ({ isDarkMode }) => {
                 </div>
               </div>
 
-              <button className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 ${
-                isDarkMode
-                  ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
-                  : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
-              } text-white`}>
+              <button className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 ${isDarkMode
+                ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
+                : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
+                } text-white`}>
                 Book Ground
               </button>
             </div>
@@ -692,7 +690,7 @@ const SportSpecific = ({ isDarkMode }) => {
           <div className={`absolute bottom-20 right-20 w-96 h-96 rounded-full blur-3xl animate-pulse delay-1000 ${isDarkMode ? 'bg-red-500' : 'bg-cyan-500'}`}></div>
           <div className="absolute top-40 right-32 w-48 h-48 border-2 border-current rounded-lg rotate-45 animate-bounce"></div>
         </div>
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -702,56 +700,77 @@ const SportSpecific = ({ isDarkMode }) => {
           >
             <button
               onClick={() => navigate('/sports')}
-              className={`inline-flex items-center space-x-2 mb-6 transition-colors ${
-                isDarkMode ? 'text-white/80 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`inline-flex items-center space-x-2 mb-6 transition-colors ${isDarkMode ? 'text-white/80 hover:text-white' : 'text-gray-600 hover:text-gray-900'
+                }`}
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Back to Sports</span>
             </button>
-            
+
             <div className="text-6xl mb-4">{currentSport.icon}</div>
             <h1 className="text-5xl md:text-7xl font-bold mb-6">
-              <span className={`${
-                isDarkMode
-                  ? 'bg-gradient-to-r from-orange-400 to-red-500'
-                  : 'bg-gradient-to-r from-blue-500 to-cyan-400'
-              } bg-clip-text text-transparent`}>
+              <span className={`${isDarkMode
+                ? 'bg-gradient-to-r from-orange-400 to-red-500'
+                : 'bg-gradient-to-r from-blue-500 to-cyan-400'
+                } bg-clip-text text-transparent`}>
                 {currentSport.name}
               </span>
             </h1>
-            <p className={`text-xl md:text-2xl max-w-3xl mx-auto mb-8 ${
-              isDarkMode ? 'text-gray-300' : 'text-gray-600'
-            }`}>
+            <p className={`text-xl md:text-2xl max-w-3xl mx-auto mb-8 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}>
               {currentSport.description}
             </p>
 
             {/* Sport-specific Navigation */}
-            <div className={`${
-              isDarkMode ? 'bg-white/5 backdrop-blur-md border-white/10' : 'bg-black/5 backdrop-blur-md border-black/10'
-            } rounded-2xl p-2 inline-flex space-x-2 border`}>
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                      activeTab === tab.id
+            <>
+              {/* Mobile Dropdown (visible on small screens) */}
+              <div className="sm:hidden mb-4">
+                <select
+                  value={activeTab}
+                  onChange={(e) => setActiveTab(e.target.value)}
+                  className={`w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 border ${isDarkMode
+                    ? 'bg-white/5 text-white border-white/10'
+                    : 'bg-black/5 text-black border-black/10'
+                    }`}
+                >
+                  {tabs.map((tab) => (
+                    <option className={(isDarkMode) ? ('bg-black/80') : ('bg-white')} key={tab.id} value={tab.id}>
+                      {tab.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Tab Buttons (hidden on small screens) */}
+              <div
+                className={`hidden sm:inline-flex rounded-2xl p-2 space-x-2 border ${isDarkMode
+                  ? 'bg-white/5 backdrop-blur-md border-white/10'
+                  : 'bg-black/5 backdrop-blur-md border-black/10'
+                  }`}
+              >
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${activeTab === tab.id
                         ? isDarkMode
                           ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white'
                           : 'bg-gradient-to-r from-blue-500 to-cyan-400 text-white'
                         : isDarkMode
                           ? 'text-gray-300 hover:text-white hover:bg-white/10'
                           : 'text-gray-600 hover:text-gray-900 hover:bg-black/10'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+                        }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+
           </motion.div>
         </div>
       </section>
@@ -762,11 +781,9 @@ const SportSpecific = ({ isDarkMode }) => {
           {/* Search and Filter Bar */}
           {(activeTab === 'clubs' || activeTab === 'grounds') && (
             <div className="mb-8">
-              <div className={`${
-                isDarkMode ? 'bg-white/5' : 'bg-black/5'
-              } backdrop-blur-sm rounded-2xl p-6 border ${
-                isDarkMode ? 'border-white/10' : 'border-black/10'
-              }`}>
+              <div className={`${isDarkMode ? 'bg-white/5' : 'bg-black/5'
+                } backdrop-blur-sm rounded-2xl p-6 border ${isDarkMode ? 'border-white/10' : 'border-black/10'
+                }`}>
                 <div className="flex flex-col lg:flex-row gap-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -775,21 +792,19 @@ const SportSpecific = ({ isDarkMode }) => {
                       placeholder={`Search ${activeTab}...`}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className={`w-full pl-12 pr-4 py-3 rounded-xl font-medium transition-all duration-300 ${
-                        isDarkMode
-                          ? 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-400'
-                          : 'bg-black/10 backdrop-blur-md border border-black/20 text-gray-900 placeholder-gray-500'
-                      } focus:outline-none`}
+                      className={`w-full pl-12 pr-4 py-3 rounded-xl font-medium transition-all duration-300 ${isDarkMode
+                        ? 'bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-400'
+                        : 'bg-black/10 backdrop-blur-md border border-black/20 text-gray-900 placeholder-gray-500'
+                        } focus:outline-none`}
                     />
                   </div>
                   <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    className={`px-4 py-3 rounded-xl font-medium transition-all duration-300 ${
-                      isDarkMode
-                        ? 'bg-white/10 backdrop-blur-md border border-white/20 text-white'
-                        : 'bg-black/10 backdrop-blur-md border border-black/20 text-gray-900'
-                    } focus:outline-none`}
+                    className={`px-4 py-3 rounded-xl font-medium transition-all duration-300 ${isDarkMode
+                      ? 'bg-white/10 backdrop-blur-md border border-white/20 text-white'
+                      : 'bg-black/10 backdrop-blur-md border border-black/20 text-gray-900'
+                      } focus:outline-none`}
                   >
                     <option value="all">All {activeTab}</option>
                     <option value="nearby">Nearby</option>
@@ -807,9 +822,8 @@ const SportSpecific = ({ isDarkMode }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className={`${
-              isDarkMode ? 'bg-white/5 backdrop-blur-md border-white/10' : 'bg-black/5 backdrop-blur-md border-black/10'
-            } rounded-3xl p-8 border`}
+            className={`${isDarkMode ? 'bg-white/5 backdrop-blur-md border-white/10' : 'bg-black/5 backdrop-blur-md border-black/10'
+              } rounded-3xl p-8 border`}
           >
             {renderContent()}
           </motion.div>

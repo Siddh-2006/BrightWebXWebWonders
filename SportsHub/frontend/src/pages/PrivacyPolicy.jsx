@@ -2,8 +2,8 @@ import React from "react";
 import { Shield, Eye, Users, Cookie, UserCheck, Mail, Calendar, Lock } from "lucide-react";
 
 const PrivacyPolicy = ({ isDarkMode = false }) => {
-  const bgColor = isDarkMode ? "bg-gray-900" : "bg-blue-50";
-  const containerBg = isDarkMode ? "bg-gray-800" : "bg-white";
+  const bgColor = isDarkMode ? "bg-transparent" : "bg-transparent";
+  const containerBg = isDarkMode ? "bg-transparent" : "bg-transparent";
   const textColor = isDarkMode ? "text-gray-100" : "text-gray-800";
   const mutedText = isDarkMode ? "text-gray-300" : "text-gray-600";
   const accentColor = isDarkMode ? "text-orange-400" : "text-blue-600";
@@ -193,7 +193,7 @@ const PrivacyPolicy = ({ isDarkMode = false }) => {
   ];
 
   return (
-    <div className={`min-h-screen ${bgColor} transition-colors duration-300`}>
+    <div className={`min-h-screen ${bgColor} transition-colors pt-20 md:pt-0 duration-300`}>
       <div className={`${containerBg} shadow-lg transition-colors duration-300`}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
           {/* Header */}

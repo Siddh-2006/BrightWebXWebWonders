@@ -121,7 +121,7 @@ const Club = ({ isDarkMode }) => {
       exit={{ opacity: 0 }}
       className="min-h-screen"
     >
-    <div className={`px-10 min-h-screen ${isDarkMode ? 'bg-transparent text-white' : 'bg-white text-black'} p-6 pt-24`}>
+    <div className={`px-5 min-h-screen ${isDarkMode ? 'bg-transparent text-white' : 'bg-white text-black'} p-6 pt-24`}>
       {/* Header */}
       <motion.div
                   initial={{ y: 50, opacity: 0 }}

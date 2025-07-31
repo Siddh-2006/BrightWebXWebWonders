@@ -145,7 +145,7 @@ const LiveScoreAdmin = () => {
               <div key={stat} className="flex items-center gap-3 mb-2">
                 <span className="w-24 font-semibold">{stat}</span>
                 {[1, 2, 4, 6].map((val) => (
-                  <button
+                  <button      
                     key={val}
                     className="bg-blue-600 px-3 py-1 rounded"
                     onClick={() => addScore(stat, val, team)}
