@@ -10,15 +10,15 @@ const Footer = ({ isDarkMode }) => {
         { name: 'Sports', href: '/sports' },
         { name: 'Live Matches', href: '/live' },
         { name: 'AI Guru', href: '/ai-guru' },
-        { name: 'Clubs', href: '/clubs' },
-        { name: 'Grounds', href: '/grounds' }
+        { name: 'Clubs', href: '/club' },
+        // { name: 'Grounds', href: '/grounds' }
       ]
     },
     {
       title: 'For Athletes',
       links: [
         { name: 'Create Profile', href: '/profile' },
-        { name: 'Find Clubs', href: '/clubs' },
+        { name: 'Find Clubs', href: '/club' },
         { name: 'Training Programs', href: '/training' },
         { name: 'Competitions', href: '/competitions' },
         { name: 'Community', href: '/community' }
@@ -39,8 +39,8 @@ const Footer = ({ isDarkMode }) => {
       links: [
         { name: 'Help Center', href: '/help' },
         { name: 'Contact Us', href: '/contact' },
-        { name: 'Privacy Policy', href: '/privacy' },
-        { name: 'Terms of Service', href: '/terms' },
+        { name: 'Privacy Policy', href: '/privacy-policy' },
+        { name: 'Terms of Service', href: '/terms-and-conditon' },
         { name: 'FAQ', href: '/faq' }
       ]
     }
@@ -98,23 +98,55 @@ const Footer = ({ isDarkMode }) => {
           </div>
 
           {/* Footer Links */}
-          {footerSections.map((section, index) => (
-            <div key={index}>
-              <h4 className="text-lg font-semibold mb-6">{section.title}</h4>
-              <ul className="space-y-3">
-                {section.links.map((link, linkIndex) => (
-                  <li key={linkIndex}>
-                    <Link 
-                      to={link.href}
-                      className="text-gray-400 hover:text-white transition-colors duration-200 text-sm"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {footerSections.map((section, index) => {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <div key={index}>
+      {/* Small Screens: Dropdown */}
+      <div className="sm:hidden">
+        <button
+          onClick={() => setOpen(!open)}
+          className="flex justify-between w-full text-left text-lg font-semibold mb-3 text-white"
+        >
+          {section.title}
+          <span>{open ? "▲" : "▼"}</span>
+        </button>
+        {open && (
+          <ul className="space-y-2 mb-6">
+            {section.links.map((link, linkIndex) => (
+              <li key={linkIndex}>
+                <Link
+                  to={link.href}
+                  className="text-gray-400 hover:text-white text-sm block"
+                >
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Large Screens: Always Visible */}
+      <div className="hidden sm:block">
+        <h4 className="text-lg font-semibold mb-6">{section.title}</h4>
+        <ul className="space-y-3">
+          {section.links.map((link, linkIndex) => (
+            <li key={linkIndex}>
+              <Link
+                to={link.href}
+                className="text-gray-400 hover:text-white text-sm"
+              >
+                {link.name}
+              </Link>
+            </li>
           ))}
+        </ul>
+      </div>
+    </div>
+  );
+})}
+
         </div>
 
         {/* Newsletter Signup */}

@@ -426,7 +426,13 @@ const Live = ({ isDarkMode }) => {
                       }}>
                       Admin Panel
                     </button>
-                  ) : (null)}
+                  ) : match.status === 'Ended' ? (
+                    <button className="w-full p-2 my-2 rounded-4xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white cursor-pointer"
+                      onClick={() => {
+                        navigate(`/match_ended_admin/${match.sport}/${match._id}`)
+                      }}>
+                      Admin Panel
+                      </button>):(null)}
                 </div>
 
                 {/* Hover Effect */}

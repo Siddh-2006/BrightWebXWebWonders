@@ -1,29 +1,47 @@
 {
   "AIzaSyD3T_6r6Zhe1ZjcZyVkS4uTs7NaEtd8lyQ": {
+<<<<<<< Updated upstream
     "requestsToday": 5,
     "lastResetDate": "2025-07-31",
     "lastMinuteCalls": [
       1753933546526,
       1753933563231
     ],
+=======
+    "requestsToday": 0,
+    "lastResetDate": "2025-07-31",
+    "lastMinuteCalls": [],
+>>>>>>> Stashed changes
     "disabledUntil": 0,
     "lastGenerationRun": 1753933563231
   },
   "AIzaSyChDRdHLPBXsXkEa8USwxdEtaF88Zl3Km0": {
+<<<<<<< Updated upstream
     "requestsToday": 3,
     "lastResetDate": "2025-07-31",
     "lastMinuteCalls": [
       1753933489941
     ],
+=======
+    "requestsToday": 0,
+    "lastResetDate": "2025-07-31",
+    "lastMinuteCalls": [],
+>>>>>>> Stashed changes
     "disabledUntil": 0,
     "lastGenerationRun": 1753933489941
   },
   "AIzaSyDIT90XMN9-oJdDt3X8X1F3G5rZuuXQN7w": {
+<<<<<<< Updated upstream
     "requestsToday": 2,
     "lastResetDate": "2025-07-31",
     "lastMinuteCalls": [
       1753933532409
     ],
+=======
+    "requestsToday": 0,
+    "lastResetDate": "2025-07-31",
+    "lastMinuteCalls": [],
+>>>>>>> Stashed changes
     "disabledUntil": 0,
     "lastGenerationRun": 1753933532409
   }
