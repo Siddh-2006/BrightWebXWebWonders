@@ -9,6 +9,8 @@ import {
 const Sports = ({ isDarkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [showRequestField, setShowRequestField] = useState(false);
+  const [requestSport, setRequestSport] = useState('');
 
   const sports = [
     {
@@ -361,18 +363,66 @@ const Sports = ({ isDarkMode }) => {
             }`}>
               Request new sports, suggest improvements, or join our community to help shape the future of SportsHub
             </p>
-            <button className={`px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ${
-              isDarkMode
-                ? 'bg-white text-orange-600 hover:bg-gray-100'
-                : 'bg-black text-blue-400 hover:bg-gray-900'
-            }`}>
-              Request New Sport
-            </button>
+            {showRequestField ? (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-xl mx-auto">
+                <input
+                  type="text"
+                  placeholder="Suggest a new sport..."
+                  value={requestSport || ''}
+                  onChange={e => setRequestSport(e.target.value)}
+                  className={`flex-1 px-4 py-4 rounded-2xl font-medium transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-40 ${
+                    isDarkMode
+                      ? 'bg-white/10 text-white border border-white/20 placeholder-gray-400 focus:ring-orange-400'
+                      : 'bg-black/10 text-gray-900 border border-black/20 placeholder-gray-500 focus:ring-blue-400'
+                  }`}
+                />
+                <button
+                  className={`px-8 py-4 rounded-2xl font-semibold transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-40 ${
+                    isDarkMode
+                      ? 'bg-white text-orange-600 hover:bg-gray-100 focus:ring-orange-400'
+                      : 'bg-black text-blue-400 hover:bg-gray-900 focus:ring-blue-400'
+                  }`}
+                  onClick={() => {
+                    if (!requestSport || !requestSport.trim()) return;
+                    if (window && window.document) {
+                      const toast = document.createElement('div');
+                      toast.innerText = `Request received: "${requestSport}". Will add soon!`;
+                      toast.className = `fixed bottom-8 left-1/2 transform -translate-x-1/2 px-6 py-4 rounded-2xl font-semibold shadow-lg z-50 transition-all duration-300 text-center ${
+                        isDarkMode
+                          ? 'bg-orange-600 text-white'
+                          : 'bg-blue-600 text-white'
+                      }`;
+                      document.body.appendChild(toast);
+                      setTimeout(() => {
+                        toast.style.opacity = '0';
+                        setTimeout(() => toast.remove(), 400);
+                      }, 1800);
+                    } else {
+                      alert(`Request received: "${requestSport}". Will add soon!`);
+                    }
+                    setRequestSport('');
+                    setShowRequestField(false);
+                  }}
+                >
+                  Submit
+                </button>
+              </div>
+            ) : (
+              <button
+                className={`px-8 py-4 rounded-2xl font-semibold transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-40 ${
+                  isDarkMode
+                    ? 'bg-white text-orange-600 hover:bg-gray-100 focus:ring-orange-400'
+                    : 'bg-black text-blue-400 hover:bg-gray-900 focus:ring-blue-400'
+                }`}
+                onClick={() => setShowRequestField(true)}
+              >
+                Request New Sport
+              </button>
+            )}
           </motion.div>
         </div>
       </section>
     </motion.div>
   );
-};
-
+}
 export default Sports;

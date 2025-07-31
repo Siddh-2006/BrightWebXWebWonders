@@ -90,6 +90,7 @@ function App() {
             <Route path="/match_ended/:sport/:matchId" element={<EndedPage isDarkMode={isDarkMode}/>}></Route>
             <Route path="/match_ended_admin/:sport/:matchId" element={<EndedScoreAdmin isDarkMode={isDarkMode}/>}></Route>
             <Route path="/club/:clubName" element={<ClubDetails isDarkMode={isDarkMode} />} />
+            <Route path ="ended" element={<EndedPage isDarkMode={isDarkMode} />} />
             <Route path="/live_match/:sport/:matchId" element={<LivePage isDarkMode={isDarkMode}/>}></Route>
             <Route path="/challenges/:challengeId" element={<ChallengeDetails isDarkMode={isDarkMode} />} />
             <Route path="/live_match_admin/:sport/:matchId" element={<LiveScoreAdmin />}></Route>
