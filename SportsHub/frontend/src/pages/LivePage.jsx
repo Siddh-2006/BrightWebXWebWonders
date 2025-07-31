@@ -300,7 +300,7 @@ const LivePage = ({ isDarkMode }) => {
             </div>
             <button
               onClick={openModal}
-              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 backdrop-blur-sm"
+              className="bg-black bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 backdrop-blur-sm"
             >
               <Bell className="w-5 h-5" />
               Set Reminder

@@ -39,6 +39,7 @@ const Live = ({ isDarkMode }) => {
         const res = await axios.get("http://localhost:3000/users/profile", { withCredentials: true });
         if (res.status === 200) {
           setUserData(res.data);
+          console.log(res.data)
         }
       } catch (err) {
         console.error("user is not logged in");
@@ -52,7 +53,7 @@ const Live = ({ isDarkMode }) => {
          axios.get("http://localhost:3000/match/upcoming", { withCredentials: true }),
          axios.get("http://localhost:3000/match/past", { withCredentials: true })
        ]);
-
+      console.log(liveRes);
        if (liveRes.status === 200) {
          setLiveMatches(liveRes.data.matches);
        }
@@ -419,7 +420,7 @@ const Live = ({ isDarkMode }) => {
                       </button>
                     )}
                   </div>
-                  {(match.status === 'Live') ? (
+                  {(match.status === 'Live' && match.createdBy===userData._id || 1) ? (
                     <button className="w-full p-2 my-2 rounded-4xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white"
                       onClick={() => {
                         navigate(`/live_match_admin/${match.sport}/${match._id}`)

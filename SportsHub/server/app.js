@@ -82,7 +82,7 @@ const startServer = async () => {
 
     // Initialize cron jobs after successful DB connection
     initQuizCronJobs();
-    runMatchStatusCron();
+    //runMatchStatusCron();
 
     // Error handling middleware (should be last middleware)
     app.use(customErrorHandler);
