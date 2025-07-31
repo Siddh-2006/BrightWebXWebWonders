@@ -26,4 +26,5 @@ router.post('/request/club-to-user', protect, clubSendRequest);
 router.post('/request/user-to-club', protect, userSendRequest);
 router.patch('/request/:requestId/approve', protect, approveJoinRequest);
 
+
 module.exports = router;

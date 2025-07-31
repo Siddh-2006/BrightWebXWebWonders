@@ -18,6 +18,7 @@ const clubsRouter = require("./routes/clubsRouter");
 const trainingPlanRouter = require('./routes/trainingPlanRouter');
 const customTrainingPlanRouter = require('./routes/customTrainingPlanRouter');
 const groundRouter=require("./routes/groundRouter");
+const sportsRouter=require('./routes/sportsRouter');
 const cookieParser = require("cookie-parser");
 const path = require('path');
 const flash = require("connect-flash");
@@ -81,6 +82,7 @@ const startServer = async () => {
     app.use('/challenges', challengeRouter);
     app.use('/api', analysisRoutes);
     app.use('/grounds',groundRouter);
+    app.use('/sports',sportsRouter);
 
     // Initialize cron jobs after successful DB connection
     initQuizCronJobs();
