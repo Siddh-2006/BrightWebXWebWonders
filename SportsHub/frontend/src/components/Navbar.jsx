@@ -36,7 +36,7 @@ const Navbar = ({ userType, isLoggedIn, isDarkMode, toggleTheme }) => {
     ] : [
       { icon: LogIn, label: 'Login', href: '/login' }
     ]),
-    ...(isMobile ? [{ icon: Bell, label: 'notification', href: '/notification' }] : []),
+    ...(isMobile ? [{ icon: Bell, label: 'notifications', href: '/notifications' }] : []),
   ];
 
   const isActive = (path) => location.pathname === path;

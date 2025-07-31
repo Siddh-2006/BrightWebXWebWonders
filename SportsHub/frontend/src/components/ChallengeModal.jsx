@@ -80,7 +80,7 @@ const ChallengeModal = ({ isOpen, onClose, targetClub, isDarkMode }) => {
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className={`relative w-full max-w-md rounded-2xl p-6 ${
+        className={`relative w-full max-w-md h-screen overflow-auto rounded-2xl p-6 ${
           isDarkMode 
             ? 'bg-gray-900/95 backdrop-blur-md border border-white/10' 
             : 'bg-white/95 backdrop-blur-md border border-black/10'

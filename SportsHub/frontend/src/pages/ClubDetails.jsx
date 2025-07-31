@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import loginContext from '../context/loginContext';
 import { challengeService } from '../services/challengeService';
 import ChallengeModal from '../components/ChallengeModal';
+import ClubUploadModal from '../components/ClubUploadMoodal';
 
 const ClubDetails = ({ isDarkMode }) => {
     const { clubName } = useParams();
@@ -20,6 +21,7 @@ const ClubDetails = ({ isDarkMode }) => {
     const [userClub, setUserClub] = useState(null);
     const [isClubOwner, setIsClubOwner] = useState(false);
     const [challengeModalOpen, setChallengeModalOpen] = useState(false);
+    const [uploadModal,setUploadModal] = useState(false);
     
     const login_info = useContext(loginContext);
 
@@ -35,6 +37,7 @@ const ClubDetails = ({ isDarkMode }) => {
                 );
 
                 setClub(match);
+                console.log(match)
 
                 // Check if user owns a club (only if logged in)
                 if (login_info.isLoggedIn) {
@@ -166,6 +169,7 @@ const ClubDetails = ({ isDarkMode }) => {
 
                 {/* Show "Your Club" indicator */}
                 {isClubOwner && userClub && club._id === userClub._id && (
+                    <>
                     <div className={`px-6 py-3 rounded-xl ${
                         isDarkMode
                             ? 'bg-green-500/20 border border-green-500/30 text-green-400'
@@ -174,6 +178,15 @@ const ClubDetails = ({ isDarkMode }) => {
                         <Check className="w-5 h-5" />
                         <span>Your Club</span>
                     </div>
+                    <div>
+                        <button
+                        onClick={()=>{setUploadModal(true)}}
+                        className={(isDarkMode)?(`bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 rounded-4xl`):(`bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-4 rounded-4xl`)}
+                        >
+                            Update details
+                        </button>
+                    </div>
+                    </>
                 )}
             </div>
 
@@ -424,6 +437,11 @@ const ClubDetails = ({ isDarkMode }) => {
                 targetClub={club}
                 isDarkMode={isDarkMode}
             />
+            <ClubUploadModal
+            isOpen={uploadModal}
+            onClose={()=>setUploadModal(false)}
+            club={club}
+            isDarkMode={isDarkMode}/>
         </div>
     );
 };

@@ -720,7 +720,7 @@ const AIGuru = ({ isDarkMode = true }) => {
             </div>
 
             {/* Tab Content */}
-            <div className="p-8">
+            <div className="p-2 sm:p-8">
               {activeTab === 'chat' && (
                 <div className="space-y-6 min-h-[600px]">
                   <div className="text-center mb-8">
@@ -890,14 +890,14 @@ const AIGuru = ({ isDarkMode = true }) => {
                   </div> */}
 
                   {/* Chat Input */}
-                  <div className="flex space-x-4">
+                  <div className="flex flex-wrap space-x-4">
                     <input
                       type="text"
                       value={chatMessage}
                       onChange={(e) => setChatMessage(e.target.value)}
                       placeholder="Ask about ANY sport - basketball, tennis, football, etc. I'll answer based on your question!"
                       onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                      className={`flex-1 px-6 py-4 rounded-2xl font-medium transition-all duration-300 ${
+                      className={`flex-1 px-6 py-4 rounded-2xl mb-4 sm:mb-0 font-medium transition-all duration-300 ${
                         isDarkMode
                           ? 'bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
                           : 'bg-black/10 border border-black/20 text-gray-900 placeholder-gray-500 focus:border-orange-500'
@@ -1538,9 +1538,9 @@ const AIGuru = ({ isDarkMode = true }) => {
 
               {activeTab === 'training' && !showCustomPlanCreator && (
                 <div className="space-y-6 min-h-[600px]" ref={trainingRef}>
-                  <div className={`backdrop-blur-md rounded-2xl p-6 border ${isDarkMode ? 'bg-white/5 border-orange-500/20' : 'bg-black/5 border-orange-500/20'}`}>
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className={`text-2xl font-bold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <div className={`backdrop-blur-md rounded-2xl p-3 sm:p-6 border ${isDarkMode ? 'bg-white/5 border-orange-500/20' : 'bg-black/5 border-orange-500/20'}`}>
+                    <div className="flex flex-wrap items-center justify-between mb-6">
+                      <h2 className={`text-2xl font-bold flex mb-2 items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                         <Award className={`h-6 w-6 ${isDarkMode ? 'text-orange-400' : 'text-orange-500'}`} />
                         Training Plans
                       </h2>

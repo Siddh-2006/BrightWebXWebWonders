@@ -174,12 +174,12 @@ const Sports = ({ isDarkMode }) => {
                     } focus:outline-none`}
                   />
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex justify-center space-x-2">
                   {categories.map((category) => (
                     <button
                       key={category.id}
                       onClick={() => setSelectedCategory(category.id)}
-                      className={`px-2 py-2 sm:px-6 sm:py-4 rounded-2xl text-[0.8rem] sm:text-[1rem] mt-2 font-medium transition-all duration-300 whitespace-nowrap ${
+                      className={`px-2 py-2 sm:px-6 sm:py-4 rounded-2xl text-[0.8rem] md:text-[1rem] mt-2 font-medium transition-all duration-300 whitespace-nowrap ${
                         selectedCategory === category.id
                           ? isDarkMode
                             ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'

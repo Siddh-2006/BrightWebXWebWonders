@@ -730,7 +730,7 @@ const CustomTrainingPlanCreator = ({ isDarkMode = true }) => {
                   <div className="flex items-center justify-between mb-8">
                     {steps.map((step, index) => (
                       <div key={step.number} className="flex items-center">
-                        <div className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 ${
+                        <div className={`flex items-center justify-center w-7 h-7 sm:w-12 sm:h-12 rounded-full border-2 transition-all duration-300 ${
                           currentStep >= step.number
                             ? isDarkMode
                               ? 'bg-orange-500 border-orange-500 text-white'
@@ -739,9 +739,9 @@ const CustomTrainingPlanCreator = ({ isDarkMode = true }) => {
                               ? 'border-white/20 text-gray-400'
                               : 'border-gray-300 text-gray-500'
                         }`}>
-                          <step.icon className="w-5 h-5" />
+                          <step.icon className="w-5 h-5 sm:w-5 sm:h-5 " />
                         </div>
-                        <div className="ml-3 hidden md:block">
+                        <div className="ml-3 w-4 hidden md:block">
                           <div className={`text-sm font-medium ${
                             currentStep >= step.number
                               ? isDarkMode ? 'text-orange-400' : 'text-orange-600'
@@ -754,7 +754,7 @@ const CustomTrainingPlanCreator = ({ isDarkMode = true }) => {
                           </div>
                         </div>
                         {index < steps.length - 1 && (
-                          <div className={`w-8 h-0.5 mx-4 ${
+                          <div className={`w-1 sm:w-8 h-0.5 mx-1 sm:mx-4 ${
                             currentStep > step.number
                               ? isDarkMode ? 'bg-orange-500' : 'bg-orange-500'
                               : isDarkMode ? 'bg-white/20' : 'bg-gray-300'
@@ -770,11 +770,11 @@ const CustomTrainingPlanCreator = ({ isDarkMode = true }) => {
                   </div>
 
                   {/* Navigation Buttons */}
-                  <div className="flex justify-between pt-8 border-t border-current/10">
+                  <div className="flex gap-2 justify-between pt-8 border-t border-current/10">
                     <button
                       onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
                       disabled={currentStep === 1}
-                      className={`flex items-center space-x-2 px-6 py-3 rounded-xl transition-all duration-300 ${
+                      className={`flex items-center space-x-2 px-2 py-1 sm:px-6 sm:py-3 rounded-xl transition-all duration-300 ${
                         currentStep === 1
                           ? isDarkMode
                             ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
@@ -791,7 +791,7 @@ const CustomTrainingPlanCreator = ({ isDarkMode = true }) => {
                     {currentStep < steps.length ? (
                       <button
                         onClick={() => setCurrentStep(Math.min(steps.length, currentStep + 1))}
-                        className={`flex items-center space-x-2 px-6 py-3 rounded-xl transition-all duration-300 ${
+                        className={`flex items-center space-x-2  px-2 py-1 sm:px-6 sm:py-3 rounded-xl transition-all duration-300 ${
                           isDarkMode
                             ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
                             : 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700'

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   Home, Radio, MapPin, Users, Play, Trophy, Star, Calendar,
   Clock, Eye, Heart, MessageCircle, Share2, ArrowLeft, Filter,
-  Search, Target, Award, Zap, Video, BookOpen, Brain
+  Search, Target, Award, Zap, Video, BookOpen, Brain,
 } from 'lucide-react';
 import QuizSection from '../components/QuizSection';
 import axios from "axios"
@@ -15,15 +15,24 @@ const SportSpecific = ({ isDarkMode }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
-  const [allClubs, setallClubs] = useState([]);
+  const [allClubs, setallClubs] = useState(null);
+  const [allGround, setAllGround] = useState(null);
   const canvasRef = useRef(null);
   // fetch clubs function
   const fetch_clubs = async () => {
-      const res = await axios.get("http://localhost:3000/club", { withCredentials: true });
-      if (res.status == 200) {
-        setallClubs(...res.data);
-      }
+    const res = await axios.get("http://localhost:3000/clubs", { withCredentials: true });
+    if (res.status == 200) {
+      console.log(res.data)
+      setallClubs(...res.data);
     }
+  }
+  const fetch_grounds = async (sport) => {
+    const res = await axios.get(`http://localhost:3000/grounds/${sport[0].toUpperCase() + sport.toLowerCase().substring(1)}`, { withCredentials: true });
+    if (res.status == 200) {
+      console.log(res.data)
+      setAllGround(res.data);
+    }
+  }
   // 3D Background Animation Effect
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -552,11 +561,11 @@ const SportSpecific = ({ isDarkMode }) => {
   );
 
   const renderClubsContent = () => {
-    fetch_clubs();
+    if(!allClubs)fetch_clubs();
     return (
       <div className="space-y-8">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {allClubs?.map((club) => (
+          {sampleContent.clubs.map((club) => (
             <motion.div
               key={club.id}
               whileHover={{ scale: 1.02 }}
@@ -602,62 +611,163 @@ const SportSpecific = ({ isDarkMode }) => {
     )
   };
 
-  const renderGroundsContent = () => (
-    <div className="space-y-8">
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sampleContent.grounds.map((ground) => (
-          <motion.div
-            key={ground.id}
-            whileHover={{ scale: 1.02 }}
-            className={`rounded-2xl overflow-hidden ${isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'
-              }`}
-          >
-            <img src={ground.image} alt={ground.name} className="w-full h-48 object-cover" />
-            <div className="p-6">
-              <h4 className="font-bold text-lg mb-2">{ground.name}</h4>
-              <div className="flex items-center space-x-2 mb-2 text-sm">
-                <MapPin className="w-4 h-4" />
-                <span>{ground.location}</span>
-              </div>
+  const renderGroundsContent = () => {
+    if (!allGround) {
+      fetch_grounds(sport);
+      return (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+      );
+    }
 
-              <div className="flex items-center justify-between mb-4 text-sm">
-                <div className="flex items-center space-x-1">
-                  <Users className="w-4 h-4" />
-                  <span>{ground.capacity.toLocaleString()} capacity</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Star className="w-4 h-4 text-yellow-500" />
-                  <span>{ground.rating}</span>
-                </div>
-              </div>
+    // Check if allGround has results
+    if (!allGround.results || allGround.results.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <p className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            No grounds available for {sport}
+          </p>
+        </div>
+      );
+    }
 
-              <div className="mb-4">
-                <h5 className="font-semibold text-sm mb-2">Facilities:</h5>
-                <div className="flex flex-wrap gap-1">
-                  {ground.facilities.map((facility, index) => (
-                    <span
-                      key={index}
-                      className={`text-xs px-2 py-1 rounded-full ${isDarkMode ? 'bg-white/10 text-gray-300' : 'bg-black/10 text-gray-700'
-                        }`}
-                    >
-                      {facility}
-                    </span>
-                  ))}
-                </div>
-              </div>
+    return (
+      <div className="space-y-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {allGround.results.map((ground) => (
+            <motion.div
+              key={ground._id}
+              whileHover={{ scale: 1.02 }}
+              className={`rounded-2xl overflow-hidden ${isDarkMode
+                  ? 'bg-white/5 border border-white/10'
+                  : 'bg-black/5 border border-black/10'
+                }`}
+            >
+              {/* Ground Image */}
+              <img
+                src={ground.photos_of_ground?.[0] || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image'}
+                alt={ground.name}
+                className="w-full h-48 object-cover"
+              />
 
-              <button className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 ${isDarkMode
-                ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
-                : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
-                } text-white`}>
-                Book Ground
-              </button>
-            </div>
-          </motion.div>
-        ))}
+              <div className="p-6">
+                {/* Ground Name */}
+                <h4 className="font-bold text-lg mb-2">{ground.name}</h4>
+
+                {/* Sports offered */}
+                <div className="flex items-center space-x-2 mb-2 text-sm">
+                  <span className="font-medium">Sports:</span>
+                  <span>{ground.sport?.join(', ') || 'Not specified'}</span>
+                </div>
+
+                {/* Pricing and Timing */}
+                <div className="flex items-center justify-between mb-4 text-sm">
+                  <div className="flex items-center space-x-1">
+                    <span className="font-medium">Price:</span>
+                    <span className="text-green-600 font-semibold">{ground.money_to_book}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <span className="text-xs">{ground.how_old} years old</span>
+                  </div>
+                </div>
+
+                {/* Timing */}
+                <div className="mb-4 text-sm">
+                  <span className="font-medium">Timing: </span>
+                  <span>{ground.timing}</span>
+                </div>
+
+                {/* Important Information */}
+                {ground.important_data_to_be_shown && (
+                  <div className="mb-4">
+                    <h5 className="font-semibold text-sm mb-2">Facilities:</h5>
+                    <p className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                      }`}>
+                      {ground.important_data_to_be_shown}
+                    </p>
+                  </div>
+                )}
+
+                {/* Contact Information */}
+                <div className="mb-4 text-xs space-y-1">
+                  {ground.contact?.number && (
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">Phone:</span>
+                      <a
+                        href={`tel:${ground.contact.number}`}
+                        className="text-blue-500 hover:underline"
+                      >
+                        {ground.contact.number}
+                      </a>
+                    </div>
+                  )}
+                  {ground.contact?.email && (
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">Email:</span>
+                      <a
+                        href={`mailto:${ground.contact.email}`}
+                        className="text-blue-500 hover:underline"
+                      >
+                        {ground.contact.email}
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                {/* Social Media Links */}
+                {ground.contact?.social_media && (
+                  <div className="flex space-x-2 mb-4">
+                    {ground.contact.social_media.facebook && (
+                      <a
+                        href={ground.contact.social_media.facebook}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-facebook w-4 h-4" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                      </a>
+                    )}
+                    {ground.contact.social_media.instagram && (
+                      <a
+                        href={ground.contact.social_media.instagram}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-pink-600 hover:text-pink-800"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-instagram w-4 h-4" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* Book Button */}
+                <a
+                  className={`w-full py-3 rounded-xl p-4 font-semibold transition-all duration-300 ${isDarkMode
+                      ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500'
+                      : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500'
+                    } text-white`}
+                  href ={`mailto:${ground.contact.email}`}
+                >
+                  Book Ground
+                </a>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Pagination Info */}
+        {allGround.totalPages > 1 && (
+          <div className="text-center mt-8">
+            <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              Page {allGround.currentPage} of {allGround.totalPages}
+              ({allGround.totalGrounds} total grounds)
+            </p>
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -779,7 +889,7 @@ const SportSpecific = ({ isDarkMode }) => {
       <section className="relative py-20 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Search and Filter Bar */}
-          {(activeTab === 'clubs' || activeTab === 'grounds') && (
+          {/* {(activeTab === 'clubs' || activeTab === 'grounds') && (
             <div className="mb-8">
               <div className={`${isDarkMode ? 'bg-white/5' : 'bg-black/5'
                 } backdrop-blur-sm rounded-2xl p-6 border ${isDarkMode ? 'border-white/10' : 'border-black/10'
@@ -814,7 +924,7 @@ const SportSpecific = ({ isDarkMode }) => {
                 </div>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Tab Content */}
           <motion.div

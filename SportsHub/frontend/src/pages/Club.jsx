@@ -32,6 +32,7 @@ const Club = ({ isDarkMode }) => {
         // Fetch all clubs
         const res = await axios.get("http://localhost:3000/clubs", { withCredentials: true });
         if (res.status === 200) {
+          console.log("Fetched clubs:", res.data);
           setClubData(res.data);
           setFilteredClubs(res.data);
         }

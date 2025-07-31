@@ -5,8 +5,8 @@ function Logout({setIsLoggedIn}) {
   const navigate=useNavigate();
   useEffect(()=>{
     setIsLoggedIn(false);
-    navigate("/login");
-
+    localStorage.clear();
+      navigate("/login");
   })
   return (
     <div>
