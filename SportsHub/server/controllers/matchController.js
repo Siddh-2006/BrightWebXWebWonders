@@ -1,4 +1,6 @@
 const Match = require('../models/match-model'); // Adjust path as needed
+const mongoose=require("mongoose");
+const Club=require("../models/club-model");
 
 // 📡 GET all live matches
 exports.getLiveMatches = async (req, res) => {
@@ -72,5 +74,44 @@ exports.getPastMatches = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ success: false, message: "Server Error", error: err.message });
+  }
+};
+
+exports.checkIfUserIsMatchClubAdmin = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const matchId = req.params.matchId || req.body.matchId;
+
+    const match = await Match.findById(matchId).lean();
+    if (!match) {
+      console.log('❌ Match not found');
+      return res.status(404).json({ success: false, message: 'Match not found' });
+    }
+
+
+    const [clubA, clubB] = await Promise.all([
+      Club.findById(match.clubA).lean(),
+      Club.findById(match.clubB).lean()
+    ]);
+
+    if (!clubA || !clubB) {
+      console.log('❌ One or both clubs not found');
+      return res.status(404).json({ success: false, message: 'One or both clubs not found' });
+    }
+
+    const isClubAAdmin = clubA.createdBy?.toString() === userId.toString();
+    const isClubBAdmin = clubB.createdBy?.toString() === userId.toString();
+
+    if (!isClubAAdmin && !isClubBAdmin) {
+      console.log('❌ User is not admin of either club');
+      return res.status(403).json({ success: false, message: 'Access denied: Not a match club admin' });
+    }
+
+    req.clubRole = isClubAAdmin ? 'clubA' : 'clubB';
+
+    next();
+  } catch (error) {
+    console.error('🔥 Error checking club admin:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

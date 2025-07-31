@@ -1,24 +1,48 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { io } from "socket.io-client";
-
-
+import axios from "axios";
 
 const AdminLivePage = () => {
   const { sport, matchId } = useParams();
+  const navigate = useNavigate();
+  
+  const [isAdmin, setIsAdmin] = useState(null); // null = loading, false = denied, true = allowed
   const [streamUrl, setStreamUrl] = useState("");
   const [scoreData, setScoreData] = useState({});
   const [statusMsg, setStatusMsg] = useState("");
-  const [socket ,setSocket] = useState(null);
+  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    console.log(matchId)
+  const checkAdminAccess = async () => {
+    try {
+      const res = await axios.get(`http://localhost:3000/match/live/${matchId}/check-club-admin`, {
+        withCredentials: true,
+      });
+      if (res.data.success) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    } catch (err) {
+      console.error("Admin check failed", err?.response?.data || err.message);
+      setIsAdmin(false);
+    }
+  };
+
+  checkAdminAccess();
+}, [matchId]);
+
+
+  useEffect(() => {
+    if (isAdmin !== true) return;
+
     const socket = io("http://localhost:5000", {
       withCredentials: true,
       transports: ["websocket"],
     });
     setSocket(socket);
-    
+
     socket.on("error", (msg) => {
       setStatusMsg(`Error: ${msg}`);
     });
@@ -26,10 +50,9 @@ const AdminLivePage = () => {
     return () => {
       socket.off("error");
     };
-  }, [matchId]);
+  }, [matchId, isAdmin]);
 
   const updateScore = () => {
-    console.log("Sending:", { matchId, streamUrl, sport, scoreData });
     socket.emit("adminUpdateScore", {
       matchId,
       streamUrl,
@@ -58,6 +81,18 @@ const AdminLivePage = () => {
     }
   };
 
+  if (isAdmin === null) {
+    return <div className="text-white text-center mt-10">Checking access...</div>;
+  }
+
+  if (isAdmin === false) {
+    return (
+      <div className="text-red-500 text-center mt-10 font-bold text-xl">
+        Access Denied: You are not the admin of this match.
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 max-w-xl mx-auto pt-50">
       <h1 className="text-white">{matchId}</h1>
@@ -80,25 +115,31 @@ const AdminLivePage = () => {
         </select>
       </div>
 
+      {/* FOOTBALL SCORE INPUTS */}
       {sport === "football" && (
         <div className="space-y-2">
           <input
             placeholder="Team A Score"
             type="number"
             value={scoreData.teamAScore || ""}
-            onChange={(e) => handleScoreChange("teamAScore", parseInt(e.target.value))}
+            onChange={(e) =>
+              handleScoreChange("teamAScore", parseInt(e.target.value))
+            }
             className="border p-2 w-full"
           />
           <input
             placeholder="Team B Score"
             type="number"
             value={scoreData.teamBScore || ""}
-            onChange={(e) => handleScoreChange("teamBScore", parseInt(e.target.value))}
+            onChange={(e) =>
+              handleScoreChange("teamBScore", parseInt(e.target.value))
+            }
             className="border p-2 w-full"
           />
         </div>
       )}
 
+      {/* CRICKET SCORE INPUTS */}
       {sport === "cricket" && (
         <div className="space-y-2">
           <label className="block font-semibold mt-2">Team A</label>
@@ -106,14 +147,18 @@ const AdminLivePage = () => {
             placeholder="Runs"
             type="number"
             value={scoreData.teamA?.runs || ""}
-            onChange={(e) => handleScoreChange("runs", parseInt(e.target.value), "teamA")}
+            onChange={(e) =>
+              handleScoreChange("runs", parseInt(e.target.value), "teamA")
+            }
             className="border p-2 w-full"
           />
           <input
             placeholder="Wickets"
             type="number"
             value={scoreData.teamA?.wickets || ""}
-            onChange={(e) => handleScoreChange("wickets", parseInt(e.target.value), "teamA")}
+            onChange={(e) =>
+              handleScoreChange("wickets", parseInt(e.target.value), "teamA")
+            }
             className="border p-2 w-full"
           />
           <input
@@ -128,14 +173,18 @@ const AdminLivePage = () => {
             placeholder="Runs"
             type="number"
             value={scoreData.teamB?.runs || ""}
-            onChange={(e) => handleScoreChange("runs", parseInt(e.target.value), "teamB")}
+            onChange={(e) =>
+              handleScoreChange("runs", parseInt(e.target.value), "teamB")
+            }
             className="border p-2 w-full"
           />
           <input
             placeholder="Wickets"
             type="number"
             value={scoreData.teamB?.wickets || ""}
-            onChange={(e) => handleScoreChange("wickets", parseInt(e.target.value), "teamB")}
+            onChange={(e) =>
+              handleScoreChange("wickets", parseInt(e.target.value), "teamB")
+            }
             className="border p-2 w-full"
           />
           <input
