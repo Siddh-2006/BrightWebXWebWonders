@@ -9,7 +9,25 @@ import { challengeService } from '../services/challengeService';
 import reminderService from '../services/reminderService';
 import { showNotificationToast } from '../components/NotificationToast';
 
-const Notifications = ({ isDarkMode, userType }) => {
+const Notifications = ({ isDarkMode, userType, isAdmin }) => {
+  const [pendingClubs, setPendingClubs] = useState([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  // Fetch pending clubs if admin
+  useEffect(() => {
+    if (!isAdmin) return;
+    const fetchPendingClubs = async () => {
+      setPendingLoading(true);
+      try {
+        const res = await axios.get('http://localhost:3000/clubs/pending-clubs', { withCredentials: true });
+        setPendingClubs(res.data);
+      } catch (err) {
+        setPendingClubs([]);
+      } finally {
+        setPendingLoading(false);
+      }
+    };
+    fetchPendingClubs();
+  }, [isAdmin]);
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [notifications, setNotifications] = useState([]);
@@ -365,6 +383,50 @@ const Notifications = ({ isDarkMode, userType }) => {
       exit={{ opacity: 0 }}
       className="min-h-screen pt-20"
     >
+      {/* Admin Pending Clubs Section */}
+      {isAdmin && (
+        <section className="py-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
+            <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
+              <span className={isDarkMode ? 'text-orange-400' : 'text-blue-500'}>Pending Clubs</span>
+            </h2>
+            {pendingLoading ? (
+              <div className="py-8 text-center text-lg">Loading pending clubs...</div>
+            ) : pendingClubs.length === 0 ? (
+              <div className="py-8 text-center text-gray-400">No pending clubs.</div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-6">
+                {pendingClubs.map(club => (
+                  <div key={club._id} className={`rounded-xl p-6 shadow ${isDarkMode ? 'bg-white/10' : 'bg-black/10'}`}>
+                    <div className="flex items-center gap-4 mb-3">
+                      <img src={club.logo} alt={club.name} className="w-16 h-16 object-cover rounded-xl border-2" />
+                      <div>
+                        <h3 className="text-xl font-bold mb-1">{club.name}</h3>
+                        <p className="text-sm text-gray-400">{club.officialEmail}</p>
+                      </div>
+                    </div>
+                    <p className="mb-3 text-gray-300">{club.description}</p>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await axios.patch(`http://localhost:3000/clubs/${club._id}/approve`, {}, { withCredentials: true });
+                          setPendingClubs(prev => prev.filter(c => c._id !== club._id));
+                          alert('Club approved!');
+                        } catch (err) {
+                          alert('Failed to approve club.');
+                        }
+                      }}
+                      className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${isDarkMode ? 'bg-gradient-to-r from-orange-500 to-green-500' : 'bg-gradient-to-r from-blue-500 to-green-400'} text-white shadow-lg hover:shadow-xl`}
+                    >
+                      Approve
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
       {/* Header */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

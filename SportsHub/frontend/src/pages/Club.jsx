@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import loginContext from '../context/loginContext';
 import { challengeService } from '../services/challengeService';
 import ChallengeModal from '../components/ChallengeModal';
+import AddClubModal from '../components/AddClubModal';
 
 const Club = ({ isDarkMode }) => {
   // State hooks for storing data and UI behavior
@@ -22,6 +23,30 @@ const Club = ({ isDarkMode }) => {
   const [isClubOwner, setIsClubOwner] = useState(false); // whether user owns a club
   const [challengeModalOpen, setChallengeModalOpen] = useState(false);
   const [selectedClubToChallenge, setSelectedClubToChallenge] = useState(null);
+  const [addClubModalOpen, setAddClubModalOpen] = useState(false);
+  // Add Club handler
+  const handleAddClub = async (clubData) => {
+    try {
+      const formData = new FormData();
+      for (const key in clubData) {
+        if (clubData[key] !== undefined && clubData[key] !== null && clubData[key] !== '') {
+          if (key === 'logo' && clubData.logo) {
+            formData.append('logo', clubData.logo);
+          } else {
+            formData.append(key, String(clubData[key]));
+          }
+        }
+      }
+      await axios.post('http://localhost:3000/clubs/register', formData, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      window.location.reload();
+    } catch (err) {
+      console.error('Add club error:', err?.response || err);
+      alert('Failed to add club.');
+    }
+  };
   
   const login_info = useContext(loginContext);
 
@@ -130,14 +155,21 @@ const Club = ({ isDarkMode }) => {
                   transition={{ duration: 0.8, delay: 0.1 }}
                 >
       <div className="max-w-7xl mx-auto mb-10">
-        <h1 className={`text-5xl md:text-7xl font-bold text-center mb-6 mt-15`}>Club <span className={`${isDarkMode
-          ? 'bg-gradient-to-r from-orange-400 to-red-500'
-          : 'bg-gradient-to-r from-blue-500 to-cyan-400'
-          } bg-clip-text text-transparent`}>Hub</span></h1>
-        <p className={`text-xl md:text-2xl max-w-4xl mx-auto mb-12 text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
-          }`}>
-          Dive into the club’s story, stars, and unforgettable highlights.
-        </p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <div>
+            <h1 className={`text-5xl md:text-7xl font-bold text-center md:text-left mb-2 mt-15`}>Club <span className={`${isDarkMode
+              ? 'bg-gradient-to-r from-orange-400 to-red-500'
+              : 'bg-gradient-to-r from-blue-500 to-cyan-400'
+              } bg-clip-text text-transparent`}>Hub</span></h1>
+            <p className={`text-xl md:text-2xl max-w-4xl text-center md:text-left ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Dive into the club’s story, stars, and unforgettable highlights.</p>
+          </div>
+          <button
+            onClick={() => setAddClubModalOpen(true)}
+            className="px-6 py-3 rounded-xl font-bold text-lg shadow-lg transition-all duration-300 bg-gradient-to-r from-orange-500 to-yellow-400 text-white hover:from-orange-600 hover:to-yellow-500"
+          >
+            + Add Club
+          </button>
+        </div>
         {/* Search and Filter Controls */}
         <div className="flex flex-col lg:flex-row gap-4 items-center mb-10">
           {/* Search input */}
@@ -344,6 +376,12 @@ const Club = ({ isDarkMode }) => {
         isOpen={challengeModalOpen}
         onClose={() => setChallengeModalOpen(false)}
         targetClub={selectedClubToChallenge}
+        isDarkMode={isDarkMode}
+      />
+      <AddClubModal
+        isOpen={addClubModalOpen}
+        onClose={() => setAddClubModalOpen(false)}
+        onAdd={handleAddClub}
         isDarkMode={isDarkMode}
       />
     </div>

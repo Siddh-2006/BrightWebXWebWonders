@@ -11,6 +11,7 @@ import loginContext from '../context/loginContext';
 import { challengeService } from '../services/challengeService';
 import ChallengeModal from '../components/ChallengeModal';
 import ClubUploadModal from '../components/ClubUploadMoodal';
+import EditClubProfileModal from '../components/EditClubProfileModal';
 
 const ClubDetails = ({ isDarkMode }) => {
     const { clubName } = useParams();
@@ -22,7 +23,8 @@ const ClubDetails = ({ isDarkMode }) => {
     const [isClubOwner, setIsClubOwner] = useState(false);
     const [challengeModalOpen, setChallengeModalOpen] = useState(false);
     const [uploadModal,setUploadModal] = useState(false);
-    // const [posts, setPosts] = useState([]);
+    const [posts, setPosts] = useState([]);
+    const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
     
     const login_info = useContext(loginContext);
 
@@ -63,18 +65,19 @@ const ClubDetails = ({ isDarkMode }) => {
 
 
 
-    // useEffect(() => {
-    // const fetchClubPosts = async () => {
-    //     try {
-    //     const res = await axios.get(`http://localhost:3000/clubs/${club._i}/posts`);
-    //     setPosts(res.data.posts); // assuming backend sends { posts: [...] }
-    //     } catch (error) {
-    //     console.error("Error fetching club posts:", error);
-    //     }
-    // };
-
-    // if (clubId) fetchClubPosts();
-    // }, [clubId]);
+    useEffect(() => {
+        const fetchClubPosts = async () => {
+            try {
+                if (club && club._id) {
+                    const res = await axios.get(`http://localhost:3000/clubs/${club._id}/posts`);
+                    setPosts(res.data.posts || []); // assuming backend sends { posts: [...] }
+                }
+            } catch (error) {
+                console.error("Error fetching club posts:", error);
+            }
+        };
+        fetchClubPosts();
+    }, [club]);
 
 
     // Handle challenge club
@@ -195,13 +198,55 @@ const ClubDetails = ({ isDarkMode }) => {
                         <Check className="w-5 h-5" />
                         <span>Your Club</span>
                     </div>
-                    <div>
+                    <div className="flex gap-3 mt-2">
                         <button
-                        onClick={()=>{setUploadModal(true)}}
-                        className={(isDarkMode)?(`bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 rounded-4xl`):(`bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-4 rounded-4xl`)}
+                            onClick={() => setUploadModal(true)}
+                            className={isDarkMode
+                                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white px-5 py-3 rounded-2xl font-semibold shadow hover:from-orange-600 hover:to-red-600 transition-all'
+                                : 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-5 py-3 rounded-2xl font-semibold shadow hover:from-blue-600 hover:to-cyan-600 transition-all'}
                         >
                             Update details
                         </button>
+                        <button
+                            onClick={() => setEditProfileModalOpen(true)}
+                            className={isDarkMode
+                                ? 'bg-gradient-to-r from-orange-400 to-yellow-400 text-white px-5 py-3 rounded-2xl font-semibold shadow hover:from-orange-500 hover:to-yellow-500 transition-all'
+                                : 'bg-gradient-to-r from-orange-500 to-yellow-300 text-white px-5 py-3 rounded-2xl font-semibold shadow hover:from-orange-600 hover:to-yellow-400 transition-all'}
+                        >
+                            Edit Profile
+                        </button>
+            {/* Edit Club Profile Modal */}
+            <EditClubProfileModal
+                isOpen={editProfileModalOpen}
+                onClose={() => setEditProfileModalOpen(false)}
+                club={club}
+                isDarkMode={isDarkMode}
+                onSave={async (form) => {
+                    if (!club || !club._id) return;
+                    const formData = new FormData();
+                    for (const key in form) {
+                        if (form[key] !== undefined && form[key] !== null && form[key] !== '') {
+                            if (key === 'logo' && form.logo) {
+                                formData.append('logo', form.logo);
+                            } else {
+                                formData.append(key, String(form[key]));
+                            }
+                        }
+                    }
+                    try {
+                        const res = await axios.put(
+                            `http://localhost:3000/club-profile/edit/${club._id}`,
+                            formData,
+                            { withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' } }
+                        );
+                        alert(res.data?.message || 'Profile updated!');
+                        setClub(res.data.club);
+                    } catch (err) {
+                        console.error('Edit club error:', err?.response || err);
+                        alert('Failed to update club profile.');
+                    }
+                }}
+            />
                     </div>
                     </>
                 )}
@@ -354,33 +399,30 @@ const ClubDetails = ({ isDarkMode }) => {
             )}
 
             {/* Club Posts */}
-            {/* {club && club.posts?.length > 0 && (
-            <div className="mb-10">
-                <h2 className={`text-2xl font-semibold mb-4 ${accentColor} flex items-center`}>
-                <Newspaper className="w-6 h-6 mr-2" />
-                Club Posts
-                </h2>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                {club.posts.map((post, index) => (
-                    <div key={index} className={`${cardBg} p-4 rounded-xl shadow`}>
-                    <div className="mb-2 text-lg font-semibold flex items-center gap-2">
-                        <MessageSquare className="w-4 h-4 text-blue-500" />
-                        {post?.title || 'Untitled Post'}
+            {posts && posts.length > 0 && (
+                <div className="mb-10">
+                    <h2 className={`text-2xl font-semibold mb-4 ${accentColor} flex items-center`}>
+                        <Newspaper className="w-6 h-6 mr-2" />
+                        Club Posts
+                    </h2>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        {posts.map((post, index) => (
+                            <div key={index} className={`${cardBg} p-4 rounded-xl shadow`}>
+                                <div className="mb-2 text-lg font-semibold flex items-center gap-2">
+                                    <MessageSquare className="w-4 h-4 text-blue-500" />
+                                    {post?.title || 'Untitled Post'}
+                                </div>
+                                <p className="text-sm text-gray-300 mb-2">
+                                    {post?.text || 'No content available.'}
+                                </p>
+                                <p className="text-xs text-right text-gray-400">
+                                    {post?.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'No date'}
+                                </p>
+                            </div>
+                        ))}
                     </div>
-
-                    <p className="text-sm text-gray-300 mb-2">
-                        {post?.content || 'No content available.'}
-                    </p>
-
-                    <p className="text-xs text-right text-gray-400">
-                        {post?.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'No date'}
-                    </p>
-                    </div>
-                ))}
                 </div>
-            </div>
-            )} */}
+            )}
 
 
             {/* Players */}

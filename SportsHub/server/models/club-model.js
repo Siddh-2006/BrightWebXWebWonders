@@ -47,10 +47,10 @@ const clubSchema = new mongoose.Schema({
         { type: mongoose.Schema.Types.ObjectId, ref: 'Match' }
     ],
     // 🆕 New Fields
-    officialEmail: { type: String, required: true },
+    officialEmail: { type: String, },
     location: {
-        city: { type: String, required: true },
-        state: { type: String, required: true },
+        city: { type: String,  },
+        state: { type: String,  },
         country: { type: String, default: "India" }
     },
     foundedYear: { type: Number },
