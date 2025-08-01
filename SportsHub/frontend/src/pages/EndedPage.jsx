@@ -37,8 +37,8 @@ const EndedPage = ({ isDarkMode }) => {
 
     setSocket(socketInstance);
     socketInstance.emit("joinMatchRoom", { matchId });
-
-    socketInstance.on("matchEnded", (data) => setMatchData(data));
+    socketInstance.emit("sendEndedResults",{matchId});
+    socketInstance.on("recieveEndedresults", (data) => {setMatchData(data);console.log(data); setPollResults(data.predictions)});
     socketInstance.on("pollResults", (data) => setPollResults(data));
     socketInstance.on("receiveMessage", (msg) => {
       setMessages((prev) => [...prev, msg]);
@@ -62,7 +62,7 @@ const EndedPage = ({ isDarkMode }) => {
   };
 
   const renderFinalScore = () => {
-    const score = matchData?.finalScore;
+    const score = matchData?.liveScore;
     if (!score) {
       return (
         <div className={`${theme.bgCard} ${theme.border} border rounded-3xl p-12 ${theme.shadow} relative overflow-hidden`}>
@@ -183,8 +183,8 @@ const EndedPage = ({ isDarkMode }) => {
     }
 
     if (sport === "cricket") {
-      const teamATotal = score.teamA.runs;
-      const teamBTotal = score.teamB.runs;
+      const teamATotal = score?.teamA?.runs;
+      const teamBTotal = score?.teamB?.runs;
       const winner = teamATotal > teamBTotal ? "Team A" : 
                     teamBTotal > teamATotal ? "Team B" : "Draw";
       
@@ -218,13 +218,13 @@ const EndedPage = ({ isDarkMode }) => {
                   
                   <div className="relative">
                     <div className={`${theme.textPrimary} text-5xl font-black ${((i === 0 && teamATotal > teamBTotal) || (i === 1 && teamBTotal > teamATotal)) ? 'text-green-500' : ''}`}>
-                      {team.runs}
-                      <span className={`${theme.textAccent} text-3xl`}>/{team.wickets}</span>
+                      {team?.runs}
+                      <span className={`${theme.textAccent} text-3xl`}>/{team?.wickets}</span>
                     </div>
                   </div>
                   
                   <div className={`${theme.textSecondary} text-lg font-semibold`}>
-                    in {team.overs} overs
+                    in {team?.overs} overs
                   </div>
                   
                   <div className={`w-20 h-1 ${((i === 0 && teamATotal > teamBTotal) || (i === 1 && teamBTotal > teamATotal)) ? 'bg-green-500' : theme.bgAccent} mx-auto`}></div>
@@ -293,48 +293,26 @@ const EndedPage = ({ isDarkMode }) => {
     }
 
     return (
-      <div className="space-y-6">
-        {pollResults.polls?.map((poll, pollIdx) => (
-          <div key={pollIdx} className={`${theme.bgCard} border ${theme.border} rounded-2xl p-6 ${theme.shadow} hover:${theme.glow} transition-all duration-300`}>
-            <div className="mb-6">
-              <h3 className={`${theme.textPrimary} text-xl font-bold mb-2`}>{poll.question}</h3>
-              <div className={`${theme.textMuted} text-sm`}>Total Votes: {poll.totalVotes}</div>
-            </div>
-            
-            <div className="space-y-4">
-              {poll.options?.map((option, optIdx) => {
-                const percentage = poll.totalVotes > 0 ? (option.votes / poll.totalVotes * 100).toFixed(1) : 0;
-                const isWinning = option.votes === Math.max(...poll.options.map(o => o.votes));
-                
-                return (
-                  <div key={optIdx} className={`${theme.bgSecondary} rounded-xl p-4 relative overflow-hidden`}>
-                    <div className={`absolute inset-0 ${isWinning ? 'bg-green-500/20' : theme.bgAccent.replace('bg-gradient-to-r', 'bg-gradient-to-r').replace('to-red-600', 'to-red-600/10').replace('to-indigo-600', 'to-indigo-600/10')} transition-all duration-500`} 
-                         style={{ width: `${percentage}%` }}></div>
-                    
-                    <div className="relative z-10 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {isWinning && <span className="text-green-500 text-lg">🏆</span>}
-                        <span className={`${theme.textPrimary} font-semibold`}>{option.text}</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`${theme.textSecondary} font-bold`}>{option.votes} votes</span>
-                        <span className={`${theme.textAccent} font-black text-lg`}>{percentage}%</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+      <div className="w-full max-w-xl mx-auto space-y-4 bg-gray-900 p-6 rounded-xl shadow-lg">
+      <h2 className="text-xl font-bold text-white mb-4">Poll Results</h2>
+      {Object.entries(pollResults).map(([club,percent],index) => (
+        <div key={index}>
+          <div className="flex justify-between text-sm mb-1 text-white">
+            <span>{club}</span>
+            <span>{parseFloat(percent)}%</span>
           </div>
-        )) || (
-          <div className="text-center py-12">
-            <div className={`w-16 h-16 mx-auto mb-4 rounded-full ${theme.bgSecondary} flex items-center justify-center`}>
-              <div className={`w-8 h-8 rounded-full ${theme.bgAccent} opacity-50`}></div>
-            </div>
-            <p className={`${theme.textMuted} text-xl`}>No polls were conducted during this match</p>
+          <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500`}
+              style={{
+                width: `${parseFloat(percent)}%`,
+                background: `linear-gradient(to right, #4ade80, #22c55e)`,
+              }}
+            />
           </div>
-        )}
-      </div>
+        </div>
+      ))}
+    </div>
     );
   };
 
@@ -351,7 +329,7 @@ const EndedPage = ({ isDarkMode }) => {
         <div className="max-w-7xl mx-auto space-y-12">
           
           {/* Header Section */}
-          <div className="text-center space-y-8">
+          <div className="text-center pt-20 space-y-8">
             <div className="relative inline-block">
               <h1 className={`${theme.textPrimary} text-5xl lg:text-7xl font-black tracking-tight relative z-10`}>
                 MATCH ENDED
@@ -367,14 +345,6 @@ const EndedPage = ({ isDarkMode }) => {
                 <div className="text-left">
                   <div className={`${theme.textMuted} text-xs font-semibold uppercase tracking-wider`}>Sport</div>
                   <div className={`${theme.textPrimary} text-xl font-bold capitalize`}>{sport}</div>
-                </div>
-              </div>
-              
-              <div className={`px-8 py-4 ${theme.bgCard} ${theme.border} border rounded-2xl ${theme.shadow} flex items-center gap-4`}>
-                <div className={`w-4 h-4 rounded-full ${theme.bgAccent}`}></div>
-                <div className="text-left">
-                  <div className={`${theme.textMuted} text-xs font-semibold uppercase tracking-wider`}>Match ID</div>
-                  <div className={`${theme.textPrimary} text-xl font-bold`}>{matchId}</div>
                 </div>
               </div>
             </div>
