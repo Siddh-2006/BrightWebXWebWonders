@@ -74,7 +74,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
     joinDate: "March 2023",
     profileImage: userData.profilePhoto,
     coverImage:
-      "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80",
+      "./bg-img.jpg",
     sports: ["Football", "Basketball", "Tennis"],
     primarySport: "Football",
     position: "Midfielder",
@@ -212,7 +212,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                     </p>
                   </div>
                   <div className="flex items-center space-x-4 mt-4 md:mt-0">
-                    <button
+                    {/* <button
                       onClick={() => setIsEditing(!isEditing)}
                       className={`sm:px-6 sm:py-3 px-4 py-2 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2 ${
                         isDarkMode
@@ -225,7 +225,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                     </button>
                     <button className="p-3 bg-white/20 backdrop-blur-sm rounded-xl hover:bg-white/30 transition-colors">
                       <Settings className="w-5 h-5 text-white" />
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>
@@ -236,65 +236,6 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
 
       {/* Profile Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-          <div
-            className={`text-center p-6 rounded-2xl ${
-              isDarkMode
-                ? "bg-white/5 backdrop-blur-md border-white/10"
-                : "bg-black/5 backdrop-blur-md border-black/10"
-            } border`}
-          >
-            <h3 className="text-3xl font-bold mb-1">
-              {playerData.followers.toLocaleString()}
-            </h3>
-            <p className={isDarkMode ? "text-gray-400" : "text-gray-600"}>
-              Followers
-            </p>
-          </div>
-          <div
-            className={`text-center p-6 rounded-2xl ${
-              isDarkMode
-                ? "bg-white/5 backdrop-blur-md border-white/10"
-                : "bg-black/5 backdrop-blur-md border-black/10"
-            } border`}
-          >
-            <h3 className="text-3xl font-bold mb-1">{playerData.following}</h3>
-            <p className={isDarkMode ? "text-gray-400" : "text-gray-600"}>
-              Following
-            </p>
-          </div>
-          <div
-            className={`text-center p-6 rounded-2xl ${
-              isDarkMode
-                ? "bg-white/5 backdrop-blur-md border-white/10"
-                : "bg-black/5 backdrop-blur-md border-black/10"
-            } border`}
-          >
-            <h3 className="text-3xl font-bold mb-1">{playerData.posts}</h3>
-            <p className={isDarkMode ? "text-gray-400" : "text-gray-600"}>
-              Posts
-            </p>
-          </div>
-          <div
-            className={`text-center p-6 rounded-2xl ${
-              isDarkMode
-                ? "bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/30"
-                : "bg-gradient-to-r from-blue-500/20 to-cyan-400/20 border-blue-500/30"
-            } border`}
-          >
-            <h3
-              className={`text-3xl font-bold mb-1 ${
-                isDarkMode ? "text-orange-400" : "text-blue-600"
-              }`}
-            >
-              {playerData.aiRating}
-            </h3>
-            <p className={isDarkMode ? "text-gray-400" : "text-gray-600"}>
-              AI Rating
-            </p>
-          </div>
-        </div>
 
         {/* Tab Navigation */}
         <div className="flex space-x-1 flex-wrap mb-8">

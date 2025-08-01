@@ -420,7 +420,7 @@ const Live = ({ isDarkMode }) => {
                       </button>
                     )}
                   </div>
-                  {(match.status === 'Live' && match.createdBy===userData?._id ) ? (
+                  {(match.status === 'Live') ? (
                     <button className="w-full p-2 my-2 rounded-4xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white"
                       onClick={() => {
                         navigate(`/live_match_admin/${match.sport}/${match._id}`)
