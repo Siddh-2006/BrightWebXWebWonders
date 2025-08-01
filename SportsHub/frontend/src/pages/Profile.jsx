@@ -175,9 +175,9 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-8">
+        <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-8">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row items-end space-y-4 md:space-y-0 md:space-x-6">
+            <div className="flex flex-row sm:items-end gap-3 sm:gap-0 items-center space-y-4 md:space-y-0 md:space-x-6">
               {/* Profile Picture */}
               <div className="relative">
                 <img
@@ -200,7 +200,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
               <div className="flex-1 text-white">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                   <div>
-                    <h1 className="text-4xl font-bold mb-2">
+                    <h1 className="sm:text-4xl text-3xl font-bold mb-2">
                       {userData.fullname}
                     </h1>
                     <p className="text-xl opacity-90 mb-2">
@@ -214,7 +214,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                   <div className="flex items-center space-x-4 mt-4 md:mt-0">
                     <button
                       onClick={() => setIsEditing(!isEditing)}
-                      className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2 ${
+                      className={`sm:px-6 sm:py-3 px-4 py-2 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2 ${
                         isDarkMode
                           ? "bg-orange-500 hover:bg-orange-400"
                           : "bg-blue-500 hover:bg-blue-400"

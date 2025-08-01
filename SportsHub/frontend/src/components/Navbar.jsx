@@ -8,11 +8,11 @@ import {
 
 
 const Navbar = ({ userType, isLoggedIn, isDarkMode, toggleTheme }) => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 700);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 780);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 700);
+      setIsMobile(window.innerWidth < 780);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -56,7 +56,7 @@ const Navbar = ({ userType, isLoggedIn, isDarkMode, toggleTheme }) => {
         : 'bg-white/20 backdrop-blur-xl border-b border-blue-500/20'
         }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-6">
         <div className="flex items-center justify-between h-20 w-full">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-x-2 min-w-0">
