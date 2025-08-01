@@ -97,7 +97,7 @@ function App() {
             <Route path="/challenges/:challengeId" element={<ChallengeDetails isDarkMode={isDarkMode} />} />
             <Route path="/live_match_admin/:sport/:matchId" element={<LiveScoreAdmin />}></Route>
             <Route path="/privacy-policy" element={<PrivacyPolicy isDarkMode={isDarkMode}/>}></Route>
-            <Route path='/terms-and-conditon' element={<TermsAndConditions isDarkMode={isDarkMode}/>}></Route>
+            <Route path='/terms-and-condition' element={<TermsAndConditions isDarkMode={isDarkMode}/>}></Route>
             <Route path='/contact-us' element={ <ContactUs isDarkMode={isDarkMode}/>}></Route>
           </Routes>
         </AnimatePresence>

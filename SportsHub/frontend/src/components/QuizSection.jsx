@@ -336,7 +336,7 @@ const QuizSection = ({ isDarkMode, preSelectedSport }) => {
                   </motion.button>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                   <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-green-500/10' : 'bg-green-500/10'}`}>
                     <Target className="w-8 h-8 mx-auto mb-2 text-green-500" />
                     <div className="font-semibold text-green-500">4 Easy</div>

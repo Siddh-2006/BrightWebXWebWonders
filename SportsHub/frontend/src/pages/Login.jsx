@@ -550,16 +550,16 @@ const Login = ({ isDarkMode,isLoggedIn }) => {
                       >
                         By creating an account, you agree to our{" "}
                         <Link
-                          to="/terms"
+                          to="/terms-and-condition"
                           className={
                             isDarkMode ? "text-orange-400" : "text-blue-600"
                           }
                         >
-                          Terms of Service
+                          Terms & Conditions
                         </Link>{" "}
                         and{" "}
                         <Link
-                          to="/privacy"
+                          to="/privacy-policy"
                           className={
                             isDarkMode ? "text-orange-400" : "text-blue-600"
                           }
