@@ -20,14 +20,14 @@ const About = ({ isDarkMode }) => {
       }
     },
     {
-      name: 'Sarah Chen',
-      role: 'Head of AI Development',
+      name: 'Freny Chauhan',
+      role: 'Backend Developer',
       image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?auto=format&fit=crop&w=400&q=80',
-      bio: 'AI researcher with 10+ years in computer vision and machine learning for sports analytics.',
+      bio: 'Athlete.Developer.With a vision to shape the future of sports through digital innovation.',
       social: {
-        linkedin: '#',
-        github: '#',
-        email: 'sarah@sportshub.com'
+        linkedin: 'https://www.linkedin.com/in/freny-chauhan-80932832a/',
+        twitter: '#',
+        email: 'u24cs042@coed.svnit.ac.in'
       }
     },
     {

@@ -8,7 +8,8 @@ const {
   clubSendRequest,
   userSendRequest,
   approveJoinRequest,
-  getMyClub
+  getMyClub,
+  getClubPosts,
 } = require('../controllers/clubController');
 
 const { protect, adminOnly } = require('../middlewares/clubMiddleware');
@@ -25,6 +26,8 @@ router.get('/my-club', protect, getMyClub);
 router.post('/request/club-to-user', protect, clubSendRequest);
 router.post('/request/user-to-club', protect, userSendRequest);
 router.patch('/request/:requestId/approve', protect, approveJoinRequest);
+router.get('/:clubId/posts', getClubPosts);
+
 
 
 module.exports = router;

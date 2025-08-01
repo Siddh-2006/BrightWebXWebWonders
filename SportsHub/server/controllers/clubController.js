@@ -100,6 +100,28 @@ const getMyClub = async (req, res) => {
   }
 };
 
+const getClubPosts = async (req, res) => {
+  try {
+    const { clubId } = req.params;
+
+    const club = await Club.findById(clubId)
+      .populate({
+        path: 'posts',
+        options: { sort: { createdAt: -1 } } // Optional: newest first
+      });
+
+    if (!club) {
+      return res.status(404).json({ message: 'Club not found' });
+    }
+
+    res.status(200).json({ posts: club.posts });
+  } catch (error) {
+    console.error("Error fetching club posts:", error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+
 module.exports = {
   registerClub,
   approveClub,
@@ -108,5 +130,6 @@ module.exports = {
   clubSendRequest,
   userSendRequest,
   approveJoinRequest,
-  getMyClub
+  getMyClub,
+  getClubPosts
 };

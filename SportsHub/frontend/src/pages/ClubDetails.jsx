@@ -4,7 +4,7 @@ import axios from 'axios';
 import { 
     Check, Users, Trophy, Video, Play, Star, Zap, ArrowLeft, 
     Calendar, MapPin, Mail, Phone, Globe, Award, Instagram, 
-    Twitter, Youtube, ExternalLink 
+    Twitter, Youtube, ExternalLink, Newspaper,MessageSquare 
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import loginContext from '../context/loginContext';
@@ -22,6 +22,7 @@ const ClubDetails = ({ isDarkMode }) => {
     const [isClubOwner, setIsClubOwner] = useState(false);
     const [challengeModalOpen, setChallengeModalOpen] = useState(false);
     const [uploadModal,setUploadModal] = useState(false);
+    // const [posts, setPosts] = useState([]);
     
     const login_info = useContext(loginContext);
 
@@ -59,6 +60,22 @@ const ClubDetails = ({ isDarkMode }) => {
         };
         fetchClub();
     }, [decodedClubName, login_info.isLoggedIn]);
+
+
+
+    // useEffect(() => {
+    // const fetchClubPosts = async () => {
+    //     try {
+    //     const res = await axios.get(`http://localhost:3000/clubs/${club._i}/posts`);
+    //     setPosts(res.data.posts); // assuming backend sends { posts: [...] }
+    //     } catch (error) {
+    //     console.error("Error fetching club posts:", error);
+    //     }
+    // };
+
+    // if (clubId) fetchClubPosts();
+    // }, [clubId]);
+
 
     // Handle challenge club
     const handleChallengeClub = () => {
@@ -335,6 +352,36 @@ const ClubDetails = ({ isDarkMode }) => {
                     </div>
                 </div>
             )}
+
+            {/* Club Posts */}
+            {/* {club && club.posts?.length > 0 && (
+            <div className="mb-10">
+                <h2 className={`text-2xl font-semibold mb-4 ${accentColor} flex items-center`}>
+                <Newspaper className="w-6 h-6 mr-2" />
+                Club Posts
+                </h2>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                {club.posts.map((post, index) => (
+                    <div key={index} className={`${cardBg} p-4 rounded-xl shadow`}>
+                    <div className="mb-2 text-lg font-semibold flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4 text-blue-500" />
+                        {post?.title || 'Untitled Post'}
+                    </div>
+
+                    <p className="text-sm text-gray-300 mb-2">
+                        {post?.content || 'No content available.'}
+                    </p>
+
+                    <p className="text-xs text-right text-gray-400">
+                        {post?.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'No date'}
+                    </p>
+                    </div>
+                ))}
+                </div>
+            </div>
+            )} */}
+
 
             {/* Players */}
             {club.players?.length > 0 && (
