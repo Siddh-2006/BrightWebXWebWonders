@@ -10,11 +10,11 @@ module.exports = (io, socket) => {
 
       socket.join(matchId.toString());
 
-       // Calculate prediction percentages
-    const total =
-      (match.predictions?.clubA || 0) + (match.predictions?.clubB || 0);
-    const percentA = total ? ((match.predictions.clubA / total) * 100).toFixed(1) : 0;
-    const percentB = total ? ((match.predictions.clubB / total) * 100).toFixed(1) : 0;
+      // Calculate prediction percentages
+      const total =
+        (match.predictions?.clubA || 0) + (match.predictions?.clubB || 0);
+      const percentA = total ? ((match.predictions.clubA / total) * 100).toFixed(1) : 0;
+      const percentB = total ? ((match.predictions.clubB / total) * 100).toFixed(1) : 0;
 
       // Send initial data (stream + score + predictions)
       socket.emit("initialLiveData", {
@@ -22,9 +22,9 @@ module.exports = (io, socket) => {
         sport: match.sport,
         liveScore: match.liveScore || null,
         predictions: {
-        clubA: percentA,
-        clubB: percentB,
-      },
+          clubA: percentA,
+          clubB: percentB,
+        },
       });
     } catch (err) {
       console.error("joinMatchRoom error:", err);
@@ -40,24 +40,24 @@ module.exports = (io, socket) => {
 
     try {
       // Update the match in DB
-      let final_score=buildScoreForSport(sport, scoreData)
+      let final_score = buildScoreForSport(sport, scoreData)
       let clubA = 0;
       let clubB = 0;
-      if(sport==="football"){
-        clubA=Number(final_score.teamAScore);
-        clubB=Number(final_score.teamBScore);
+      if (sport === "football") {
+        clubA = Number(final_score.teamAScore);
+        clubB = Number(final_score.teamBScore);
       }
-      else if(sport==="cricket"){
-        clubA=Number(final_score.teamA.runs); 
-        clubB=Number(final_score.teamB.runs);
+      else if (sport === "cricket") {
+        clubA = Number(final_score.teamA.runs);
+        clubB = Number(final_score.teamB.runs);
       }
       const updatedMatch = await Match.findByIdAndUpdate(
         matchId,
         {
           streamURL: streamUrl,
           liveScore: final_score,
-          score:{clubA:clubA,clubB:clubB},
-          
+          score: { clubA: clubA, clubB: clubB },
+
         },
         { new: true }
       );
@@ -68,7 +68,7 @@ module.exports = (io, socket) => {
         liveScore: updatedMatch.liveScore,
         liveStreamUrl: updatedMatch.streamURL,
       });
-      console.log("Score updated successfully for match:",sport, updatedMatch.liveScore);
+      console.log("Score updated successfully for match:", sport, updatedMatch.liveScore);
     } catch (err) {
       console.error("adminUpdateScore error:", err);
       socket.emit("error", "Update failed");
@@ -81,6 +81,27 @@ module.exports = (io, socket) => {
       username,
       message,
       timestamp: new Date(),
+    });
+  });
+
+  socket.on("sendEndedResults", async ({ matchId }) => {
+    const match =await Match.findById(matchId);
+    if (!match) return socket.emit("error", "Match not found");
+    const total =
+        (match.predictions?.clubA || 0) + (match.predictions?.clubB || 0);
+    const percentA = total ? ((match.predictions.clubA / total) * 100).toFixed(1) : 0;
+    const percentB = total ? ((match.predictions.clubB / total) * 100).toFixed(1) : 0;
+    socket.emit("recieveEndedresults", {
+      liveStreamUrl: match.streamURL || null,
+      sport: match.sport,
+      liveScore: match.liveScore || null,
+      clubA_score: match.score?.clubA || null,
+      clubB_score: match.score?.clubB || null,
+      predictions: {
+        clubA: percentA,
+        clubB: percentB,
+      },
+
     });
   });
 
@@ -106,7 +127,7 @@ module.exports = (io, socket) => {
         clubA: percentA,
         clubB: percentB,
       });
-      
+
     } catch (err) {
       console.error("submitPrediction error:", err);
       socket.emit("error", "Prediction failed");
@@ -142,7 +163,7 @@ function buildScoreForSport(sport, data) {
           wickets: data.teamB?.wickets || 0,
           overs: data.teamB?.overs || "0.0",
         },
-        timeline:data.timeline || [],
+        timeline: data.timeline || [],
       };
     // Add more sports as needed
     default:
