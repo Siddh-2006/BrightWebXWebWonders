@@ -89,3 +89,29 @@ module.exports.getUserProfile = async (req, res) => {
         res.status(500).send("Server error");
     }
 };
+exports.updateProfilePhoto = async (req, res) => {
+  try {
+    const userId = req.user._id; // from auth middleware
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: 'No image file provided' });
+    }
+
+    const imageUrl = await uploadToCloudinary(file.buffer, 'profile_photos');
+
+    const updatedUser = await userModel.findByIdAndUpdate(
+      userId,
+      { profilePhoto: imageUrl },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: 'Profile photo updated successfully',
+      profilePhoto: updatedUser.profilePhoto,
+    });
+  } catch (error) {
+    console.error('Error uploading profile photo:', error);
+    res.status(500).json({ error: 'Failed to update profile photo' });
+  }
+};
