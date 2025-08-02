@@ -215,7 +215,6 @@ const Footer = ({ isDarkMode }) => {
       <ToastContainer
         position="top-right"
         autoClose={3000}
-        hideProgressBar
         closeOnClick
         pauseOnHover
         draggable

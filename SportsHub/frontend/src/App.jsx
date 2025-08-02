@@ -30,6 +30,8 @@ import EndedScoreAdmin from './pages/EndedScoreAdmin';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndCondition';
 import ContactUs from './components/ContactUs';
+import Admin from "./pages/Admin"
+
 
 function App() {
   const [userType, setUserType] = useState('player');
@@ -47,7 +49,7 @@ function App() {
         const res = await axios.get("http://localhost:3000/users/profile", { withCredentials: true });
         if (res.status == 200) {
           login_info.setIsLoggedIn(true);
-          localStorage.setItem("username", res.data.fullname);
+          console.log("set login true at app.jsx")
         }
         else {
           login_info.setIsLoggedIn(false);
@@ -57,7 +59,7 @@ function App() {
         login_info.setIsLoggedIn(false);
       }
     }
-    fetch_user()
+    if(login_info.isLoggedIn==false){fetch_user()}
   }, [login_info])
 
   return (
@@ -99,6 +101,7 @@ function App() {
             <Route path="/privacy-policy" element={<PrivacyPolicy isDarkMode={isDarkMode}/>}></Route>
             <Route path='/terms-and-condition' element={<TermsAndConditions isDarkMode={isDarkMode}/>}></Route>
             <Route path='/contact-us' element={ <ContactUs isDarkMode={isDarkMode}/>}></Route>
+            <Route path="/admin" element={<Admin isDarkMode={isDarkMode}/>}></Route>
           </Routes>
         </AnimatePresence>
 

@@ -155,23 +155,17 @@ const Club = ({ isDarkMode }) => {
                   transition={{ duration: 0.8, delay: 0.1 }}
                 >
       <div className="max-w-7xl mx-auto mb-10">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div className="flex flex-col md:items-center md:justify-between gap-4 mb-6">
           <div>
-            <h1 className={`text-5xl md:text-7xl font-bold text-center md:text-left mb-2 mt-15`}>Club <span className={`${isDarkMode
+            <h1 className={`text-5xl md:text-7xl font-bold text-center mb-2 mt-15`}>Club <span className={`${isDarkMode
               ? 'bg-gradient-to-r from-orange-400 to-red-500'
               : 'bg-gradient-to-r from-blue-500 to-cyan-400'
               } bg-clip-text text-transparent`}>Hub</span></h1>
             <p className={`text-xl md:text-2xl max-w-4xl text-center md:text-left ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Dive into the club’s story, stars, and unforgettable highlights.</p>
           </div>
-          <button
-            onClick={() => setAddClubModalOpen(true)}
-            className="px-6 py-3 rounded-xl font-bold text-lg shadow-lg transition-all duration-300 bg-gradient-to-r from-orange-500 to-yellow-400 text-white hover:from-orange-600 hover:to-yellow-500"
-          >
-            + Add Club
-          </button>
         </div>
         {/* Search and Filter Controls */}
-        <div className="flex flex-col lg:flex-row gap-4 items-center mb-10">
+        <div className="flex flex-col sm:flex-row gap-4 items-center mb-10">
           {/* Search input */}
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 " />
@@ -197,7 +191,7 @@ const Club = ({ isDarkMode }) => {
           </div>
 
           {/* Sort dropdown (optional) */}
-          <div className="relative mt-4 lg:mt-0">
+          <div className="relative">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -213,6 +207,13 @@ const Club = ({ isDarkMode }) => {
             </select>
             <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
           </div>
+
+          <button
+            onClick={() => setAddClubModalOpen(true)}
+            className="px-6 py-3 rounded-xl font-bold text-lg shadow-lg transition-all duration-300 bg-gradient-to-r from-orange-500 to-yellow-400 text-white hover:from-orange-600 hover:to-yellow-500"
+          >
+            + Add Club
+          </button>
         </div>
 
       </div>

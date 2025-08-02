@@ -36,6 +36,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState({});
   const [loading, setLoading] = useState(true);
+
   // for navigation
   const navigate = useNavigate();
   // basic check
@@ -74,7 +75,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
     joinDate: "March 2023",
     profileImage: userData.profilePhoto,
     coverImage:
-      "./bg-img.jpg",
+      "/bg-img.jpg",
     sports: ["Football", "Basketball", "Tennis"],
     primarySport: "Football",
     position: "Midfielder",
@@ -185,15 +186,20 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                   alt={playerData.name}
                   className="w-32 h-32 rounded-3xl border-4 border-white shadow-2xl"
                 />
-                <button
+                <form className="absolute bottom-2 right-2" action={"http://localhost:3000"} method="post">
+                <label htmlFor="profile_input" className="bg-orange-400"><Camera></Camera></label>
+                <input type="file"
+                id="profile_input"
                   className={`absolute bottom-2 right-2 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                     isDarkMode
                       ? "bg-orange-500 hover:bg-orange-400"
                       : "bg-blue-500 hover:bg-blue-400"
-                  } text-white`}
+                  } text-white hidden`}
+                 
                 >
-                  <Camera className="w-5 h-5" />
-                </button>
+                  
+                </input>
+                </form>
               </div>
 
               {/* Profile Info */}
@@ -241,9 +247,8 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
         <div className="flex space-x-1 flex-wrap mb-8">
           {[
             { id: "overview", label: "Overview", icon: User },
-            { id: "stats", label: "Statistics", icon: BarChart3 },
-            { id: "achievements", label: "Achievements", icon: Award },
-            { id: "settings", label: "contact", icon: Contact },
+            { id: "stats", label: "Training plan", icon: BarChart3 },
+            
           ].map((tab) => (
             <button
               key={tab.id}

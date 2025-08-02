@@ -23,9 +23,9 @@ import { ToastContainer, toast } from "react-toastify";
 import { showCustomToast } from "../helper/CustomToast";
 import LoginContext from "../context/loginContext";
 
-const Login = ({ isDarkMode,isLoggedIn }) => {
+const Login = ({ isDarkMode}) => {
   const navigate=useNavigate();
-  const { setIsLoggedIn, setUserType } = useContext(LoginContext);
+  const {isLoggedIn, setIsLoggedIn} = useContext(LoginContext);
 
   // quick check is user is already logged in
   useEffect(()=>{
@@ -33,7 +33,7 @@ const Login = ({ isDarkMode,isLoggedIn }) => {
     if(isLoggedIn){
       navigate("/profile")
     }
-  },[])
+  },[isLoggedIn])
 
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -70,15 +70,8 @@ const Login = ({ isDarkMode,isLoggedIn }) => {
           },
         });
         if (res.status == 200) {
-          showCustomToast("success",res.data.msg+"redirecting...")
+          showCustomToast("success","redirecting...")
           setIsLoggedIn(true);
-          setUserType(res.data.userType);
-          
-          // Store token in localStorage for API calls
-          if (res.data.token) {
-            localStorage.setItem('token', res.data.token);
-          }
-          
           setTimeout(()=>{navigate("/")},1000)
           
         }
@@ -139,7 +132,7 @@ const Login = ({ isDarkMode,isLoggedIn }) => {
       <div className="min-h-screen flex">
         {/* this is the notification toast */}
 
-        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover draggable/>
+        {/* <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} newestOnTop closeOnClick draggable/> */}
         {/* Left Side - Features */}
         <div
           className={`hidden lg:flex lg:w-1/2 relative overflow-hidden ${
