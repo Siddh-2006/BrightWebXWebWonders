@@ -40,26 +40,14 @@ allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS: " + origin));
-    }
-  },
+  origin: "https://sportshub-murex.vercel.app/",
   credentials: true,
 }));
 
 
 const io = socketIO(server, {
   cors: {
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Socket origin not allowed: " + origin));
-      }
-    },
+    origin: "https://sportshub-murex.vercel.app/",
     credentials: true,
     methods: ["GET", "POST"],
   }
