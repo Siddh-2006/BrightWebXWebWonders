@@ -55,11 +55,11 @@ io.on("connection", (socket) => {
   liveMatchRoomHandler(io, socket);
 });
 // start the server on port 5000
-server.listen(5000, () => {
-  console.log(`🚀[socketserver] Server running on http://localhost:5000`);
+server.listen(3000, () => {
+  console.log(`🚀 websocek running on 3000`);
 });
 
-// runMatchStatusCron();
+runMatchStatusCron();
 
 const startServer = async () => {
   try {
@@ -94,7 +94,7 @@ const startServer = async () => {
     app.use(customErrorHandler);
 
     // Start the server
-    const PORT = config.get("PORT") || 3000;
+    const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
