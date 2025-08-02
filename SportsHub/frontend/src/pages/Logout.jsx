@@ -7,7 +7,7 @@ function Logout({setIsLoggedIn}) {
   const navigate=useNavigate();
   useEffect(()=>{
     const log_out= async ()=>{
-      const res=await axios.get(`${process.env.BACKEND_URL}/users/logout`,{withCredentials:true})
+      const res=await axios.get(`${import.meta.env.BACKEND_URL}/users/logout`,{withCredentials:true})
       if(res.status==200){
         setIsLoggedIn(false);
         localStorage.clear();

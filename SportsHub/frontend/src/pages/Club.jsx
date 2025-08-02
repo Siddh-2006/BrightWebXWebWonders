@@ -37,7 +37,7 @@ const Club = ({ isDarkMode }) => {
           }
         }
       }
-      await axios.post(`${process.env.BACKEND_URL}/clubs/register`, formData, {
+      await axios.post(`${import.meta.env.BACKEND_URL}/clubs/register`, formData, {
         withCredentials: true,
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -55,7 +55,7 @@ const Club = ({ isDarkMode }) => {
     const fetch_data = async () => {
       try {
         // Fetch all clubs
-        const res = await axios.get(`${process.env.BACKEND_URL}/clubs`, { withCredentials: true });
+        const res = await axios.get(`${import.meta.env.BACKEND_URL}/clubs`, { withCredentials: true });
         if (res.status === 200) {
           console.log("Fetched clubs:", res.data);
           setClubData(res.data);

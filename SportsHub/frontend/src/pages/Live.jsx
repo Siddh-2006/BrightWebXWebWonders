@@ -36,7 +36,7 @@ const Live = ({ isDarkMode }) => {
     // check if the user is admin
     const checkAdmin = async () => {
       try {
-        const res = await axios.get(`${process.env.BACKEND_URL}/users/profile`, { withCredentials: true });
+        const res = await axios.get(`${import.meta.env.BACKEND_URL}/users/profile`, { withCredentials: true });
         if (res.status === 200) {
           setUserData(res.data);
           console.log(res.data)
@@ -49,9 +49,9 @@ const Live = ({ isDarkMode }) => {
     const fetchMatches = async () => {
      try {
        const [liveRes, upcomingRes, pastRes] = await Promise.all([
-         axios.get(`${process.env.BACKEND_URL}/match/live`, { withCredentials: true }),
-         axios.get(`${process.env.BACKEND_URL}/match/upcoming`, { withCredentials: true }),
-         axios.get(`${process.env.BACKEND_URL}/match/past`, { withCredentials: true })
+         axios.get(`${import.meta.env.BACKEND_URL}/match/live`, { withCredentials: true }),
+         axios.get(`${import.meta.env.BACKEND_URL}/match/upcoming`, { withCredentials: true }),
+         axios.get(`${import.meta.env.BACKEND_URL}/match/past`, { withCredentials: true })
        ]);
       console.log(liveRes);
        if (liveRes.status === 200) {
@@ -122,7 +122,7 @@ const Live = ({ isDarkMode }) => {
   const handleBroadcastClick = async () => {
     if (isLoggedIn && userType === 'club') {
       try {
-        const res = await axios.get(`${process.env.BACKEND_URL}/api/club/my-club`, { withCredentials: true });
+        const res = await axios.get(`${import.meta.env.BACKEND_URL}/api/club/my-club`, { withCredentials: true });
         if (res.status === 200) {
           setCurrentClub(res.data);
           setIsModalOpen(true);

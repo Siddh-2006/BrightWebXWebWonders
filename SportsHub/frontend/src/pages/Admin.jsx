@@ -44,7 +44,7 @@ const Admin = ({ isDarkMode }) => {
 
   const fetchPendingClubs = async () => {
     try {
-      const res = await axios.get(`${process.env.BACKEND_URL}/clubs/pending-clubs`, {
+      const res = await axios.get(`${import.meta.env.BACKEND_URL}/clubs/pending-clubs`, {
         withCredentials: true,
       });
       setPendingClubs(res.data);
@@ -61,7 +61,7 @@ const Admin = ({ isDarkMode }) => {
 
   const fetchAllClubs = async () => {
     try {
-      const res = await axios.get(`${process.env.BACKEND_URL}:3000/clubs`, {
+      const res = await axios.get(`${import.meta.env.BACKEND_URL}:3000/clubs`, {
         withCredentials: true,
       });
       setAllClubs(res.data);

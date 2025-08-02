@@ -49,7 +49,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
     const fetch_data = async () => {
       try {
         console.log("fecthing");
-        const res = await axios.get(`${process.env.BACKEND_URL}/users/profile`, {
+        const res = await axios.get(`${import.meta.env.BACKEND_URL}/users/profile`, {
           withCredentials: true,
         });
         if (res.status == 200) {
@@ -68,7 +68,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
       try {
         console.log(user_id);
         const res = await axios.get(
-          `${process.env.BACKEND_URL}/api/custom-training-plans/user/${user_id}`
+          `${import.meta.env.BACKEND_URL}/api/custom-training-plans/user/${user_id}`
         );
         if (res.status == 200) {
           console.log(res.data);
@@ -211,7 +211,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                 />
                 <form
                   className="absolute bottom-2 right-2"
-                  action={`${process.env.BACKEND_URL}/users/profile/photo`}
+                  action={`${import.meta.env.BACKEND_URL}/users/profile/photo`}
                   method="PUT"
                 >
                   <label htmlFor="profile_input" className="bg-orange-400">
