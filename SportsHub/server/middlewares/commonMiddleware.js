@@ -13,7 +13,7 @@ module.exports = (app) => {
     app.use(express.urlencoded({ extended: true })); // To parse URL-encoded bodies
     app.use(cookieParser());
     app.use(cors({
-        origin: "https://sportshub3.vercel.app", // Frontend URL
+        origin: "https://sportshub-murex.vercel.app/", // Frontend URL
         credentials: true
     }));
     app.use(session({

@@ -36,8 +36,7 @@ const server = http.createServer(app);
 console.log("running with origin set to https://sportshub3.vercel.app")
 allowedOrigins = [
   "http://localhost:5173",
-  "https://sportshub3.vercel.app",
-  "https://sportshub3-glibe6y62-brightwebs-projects.vercel.app" // for Vercel preview deployments
+  "https://sportshub-murex.vercel.app/",
 ];
 
 app.use(cors({
