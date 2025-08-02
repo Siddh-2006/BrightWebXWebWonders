@@ -47,7 +47,7 @@ app.use(cors({
 
 const io = socketIO(server, {
   cors: {
-    origin: "https://sportshub-murex.vercel.app/",
+    origin: "https://sportshub-murex.vercel.app",
     credentials: true,
     methods: ["GET", "POST"],
   }
