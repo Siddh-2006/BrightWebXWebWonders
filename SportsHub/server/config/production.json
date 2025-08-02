@@ -1,0 +1,4 @@
+{
+    "MONGO_URI":"mongodb+srv://freny826:nrSPUbUDEZs1JctR@sportshub.pmpnhzh.mongodb.net/?retryWrites=true&w=majority&appName=SportsHub",
+    "PORT":3000 
+}
