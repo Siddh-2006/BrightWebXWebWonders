@@ -46,7 +46,7 @@ function App() {
   useEffect(() => {
     const fetch_user = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/users/profile", { withCredentials: true });
+        const res = await axios.get(`${process.env.BACKEND_URL}/users/profile`, { withCredentials: true });
         if (res.status == 200) {
           login_info.setIsLoggedIn(true);
           console.log("set login true at app.jsx")

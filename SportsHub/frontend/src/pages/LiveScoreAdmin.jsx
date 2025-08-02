@@ -20,7 +20,7 @@ const LiveScoreAdmin = () => {
     const checkAdminAccess = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:3000/match/live/${matchId}/check-club-admin`,
+          `${process.env.BACKEND_URL}/match/live/${matchId}/check-club-admin`,
           {
             withCredentials: true,
           }
@@ -38,7 +38,7 @@ const LiveScoreAdmin = () => {
   useEffect(() => {
     if (isAdmin !== true) return;
 
-    const socket = io("http://localhost:5000", {
+    const socket = io(`${process.env.BACKEND_URL}`, {
       withCredentials: true,
       transports: ["websocket"],
     });

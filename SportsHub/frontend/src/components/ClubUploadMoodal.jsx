@@ -24,7 +24,7 @@ export default function ClubUploadModal({ isOpen, onClose, club, isDarkMode, onP
     reel.forEach(video => formData.append('reel', video));
 
     try {
-      const response = await fetch('http://localhost:3000/posts/add', {
+      const response = await fetch(`${process.env.BACKEND_URL}/posts/add`, {
         method: 'POST',
         body: formData,
         credentials: 'include', // send cookies for auth

@@ -20,14 +20,14 @@ const SportSpecific = ({ isDarkMode }) => {
   const canvasRef = useRef(null);
   // fetch clubs function
   const fetch_clubs = async () => {
-    const res = await axios.get("http://localhost:3000/clubs", { withCredentials: true });
+    const res = await axios.get(`${process.env.BACKEND_URL}/clubs`, { withCredentials: true });
     if (res.status == 200) {
       console.log(res.data)
       setallClubs(...res.data);
     }
   }
   const fetch_grounds = async (sport) => {
-    const res = await axios.get(`http://localhost:3000/grounds/${sport[0].toUpperCase() + sport.toLowerCase().substring(1)}`, { withCredentials: true });
+    const res = await axios.get(`${process.env.BACKEND_URL}/grounds/${sport[0].toUpperCase() + sport.toLowerCase().substring(1)}`, { withCredentials: true });
     if (res.status == 200) {
       console.log(res.data)
       setAllGround(res.data);

@@ -18,7 +18,7 @@ const Notifications = ({ isDarkMode, userType, isAdmin }) => {
     const fetchPendingClubs = async () => {
       setPendingLoading(true);
       try {
-        const res = await axios.get('http://localhost:3000/clubs/pending-clubs', { withCredentials: true });
+        const res = await axios.get(`${process.env.BACKEND_URL}/clubs/pending-clubs`, { withCredentials: true });
         setPendingClubs(res.data);
       } catch (err) {
         setPendingClubs([]);
@@ -409,7 +409,7 @@ const Notifications = ({ isDarkMode, userType, isAdmin }) => {
                     <button
                       onClick={async () => {
                         try {
-                          await axios.patch(`http://localhost:3000/clubs/${club._id}/approve`, {}, { withCredentials: true });
+                          await axios.patch(`${process.env.BACKEND_URL}/clubs/${club._id}/approve`, {}, { withCredentials: true });
                           setPendingClubs(prev => prev.filter(c => c._id !== club._id));
                           alert('Club approved!');
                         } catch (err) {

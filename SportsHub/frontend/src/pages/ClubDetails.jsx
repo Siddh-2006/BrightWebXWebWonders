@@ -48,7 +48,7 @@ const ClubDetails = ({ isDarkMode }) => {
   useEffect(() => {
     const fetchClub = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/clubs", {
+        const res = await axios.get(`${process.env.BACKEND_URL}/clubs`, {
           withCredentials: true,
         });
         console.log("Fetched clubs:", res.data);
@@ -85,7 +85,7 @@ const ClubDetails = ({ isDarkMode }) => {
       try {
         if (club && club._id) {
           const res = await axios.get(
-            `http://localhost:3000/clubs/${club._id}/posts`
+            `${process.env.BACKEND_URL}/clubs/${club._id}/posts`
           );
           setPosts(res.data.posts || []); // assuming backend sends { posts: [...] }
         }
@@ -266,7 +266,7 @@ const ClubDetails = ({ isDarkMode }) => {
                   }
                   try {
                     const res = await axios.put(
-                      `http://localhost:3000/club-profile/edit/${club._id}`,
+                      `${process.env.BACKEND_URL}/club-profile/edit/${club._id}`,
                       formData,
                       {
                         withCredentials: true,
