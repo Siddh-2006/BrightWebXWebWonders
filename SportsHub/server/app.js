@@ -34,17 +34,35 @@ const initQuizCronJobs = require('./cron/quizCronJobs');
 const app = express();
 const server = http.createServer(app);
 console.log("running with origin set to https://sportshub3.vercel.app")
+allowedOrigins = [
+  "http://localhost:5173",
+  "https://sportshub3.vercel.app",
+  "https://sportshub3-glibe6y62-brightwebs-projects.vercel.app" // for Vercel preview deployments
+];
+
 app.use(cors({
-  origin: `https://sportshub3.vercel.app`,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS: " + origin));
+    }
+  },
   credentials: true,
 }));
 
 
 const io = socketIO(server, {
   cors: {
-    origin: `https://sportshub3.vercel.app`, // frontend URL
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Socket origin not allowed: " + origin));
+      }
+    },
+    credentials: true,
     methods: ["GET", "POST"],
-    credentials: true ,
   }
 });
 
