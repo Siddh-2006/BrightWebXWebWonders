@@ -68,7 +68,9 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
       try {
         console.log(user_id);
         const res = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/custom-training-plans/user/${user_id}`
+          `${import.meta.env.VITE_BACKEND_URL}/api/custom-training-plans/user/${user_id}`,{
+            withCredentials:true
+          }
         );
         if (res.status == 200) {
           console.log(res.data);

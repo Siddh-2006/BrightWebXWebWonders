@@ -47,7 +47,7 @@ function App() {
     console.log(`${import.meta.env.VITE_BACKEND_URL}`)
     const fetch_user = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.BACKEND_URL}/users/profile`, { withCredentials: true });
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/users/profile`, { withCredentials: true });
         if (res.status == 200) {
           login_info.setIsLoggedIn(true);
           console.log("set login true at app.jsx",res.data)
