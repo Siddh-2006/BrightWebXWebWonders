@@ -36,11 +36,11 @@ const server = http.createServer(app);
 console.log("running with origin set to https://sportshub3.vercel.app")
 allowedOrigins = [
   "http://localhost:5173",
-  "https://sportshub-murex.vercel.app/",
+  "https://sportshub-murex.vercel.app",
 ];
 
 app.use(cors({
-  origin: "https://sportshub-murex.vercel.app/",
+  origin: "https://sportshub-murex.vercel.app",
   credentials: true,
 }));
 
