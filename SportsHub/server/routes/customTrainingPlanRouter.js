@@ -10,6 +10,7 @@ const {
   toggleLikeTrainingPlan,
   updateSessionProgress
 } = require('../controllers/customTrainingPlanController');
+const {isLoggedIn}=require("../utils/isLoggedIn");
 
 // Middleware for user authentication (optional - can be added later)
 const authenticateUser = (req, res, next) => {
@@ -26,7 +27,7 @@ router.post('/create', authenticateUser, createCustomTrainingPlan);
 router.get('/my-plans', authenticateUser, getUserTrainingPlans);
 
 // Get all training plans for a specific user (by user ID)
-router.get('/user/:userId', getUserTrainingPlans);
+router.get('/user/:userId',isLoggedIn, getUserTrainingPlans);
 
 // Get a specific training plan by ID
 router.get('/:planId', getTrainingPlan);

@@ -13,6 +13,8 @@ import {
   MapPin,
   Phone,
   Mail,
+  Timer,
+  Play,
   Star,
   Award,
   TrendingUp,
@@ -36,6 +38,8 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState({});
   const [loading, setLoading] = useState(true);
+  const [trainingData, setTrainingData] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   // for navigation
   const navigate = useNavigate();
@@ -50,7 +54,8 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
         });
         if (res.status == 200) {
           setUserData(res.data);
-          console.log(res.data)
+          setUserId(res.data._id);
+          console.log(res.data);
         } else {
           console.log(res);
         }
@@ -59,12 +64,31 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
         showCustomToast("error", err.message + err.response.data);
       }
     };
+    const fetch_training_data = async (user_id) => {
+      try {
+        console.log(user_id);
+        const res = await axios.get(
+          `http://localhost:3000/api/custom-training-plans/user/${user_id}`
+        );
+        if (res.status == 200) {
+          console.log(res.data);
+          setTrainingData(res.data.trainingPlans);
+        }
+      } catch (err) {
+        console.log("errior in training data", err);
+      }
+    };
     if (isLoggedIn) {
-      fetch_data();
+      if (!userId) {
+        fetch_data();
+      }
+      if (userId) {
+        fetch_training_data(userId);
+      }
     } else {
       navigate("/login");
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, userId]);
 
   const playerData = {
     name: "Alex Rodriguez",
@@ -74,8 +98,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
     location: "Los Angeles, CA",
     joinDate: "March 2023",
     profileImage: userData.profilePhoto,
-    coverImage:
-      "/bg-img.jpg",
+    coverImage: "/bg-img.jpg",
     sports: ["Football", "Basketball", "Tennis"],
     primarySport: "Football",
     position: "Midfielder",
@@ -178,27 +201,31 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
 
         <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-8">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-row sm:items-end gap-3 sm:gap-0 items-center space-y-4 md:space-y-0 md:space-x-6">
+            <div className="flex flex-col sm:items-end gap-3 sm:gap-0 items-center space-y-4 md:space-y-0 md:space-x-6">
               {/* Profile Picture */}
               <div className="relative">
                 <img
                   src={playerData.profileImage}
                   alt={playerData.name}
-                  className="w-32 h-32 rounded-3xl border-4 border-white shadow-2xl"
+                  className="w-32 h-32 rounded-[50%] border-4 border-white shadow-2xl"
                 />
-                <form className="absolute bottom-2 right-2" action={"http://localhost:3000"} method="post">
-                <label htmlFor="profile_input" className="bg-orange-400"><Camera></Camera></label>
-                <input type="file"
-                id="profile_input"
-                  className={`absolute bottom-2 right-2 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                    isDarkMode
-                      ? "bg-orange-500 hover:bg-orange-400"
-                      : "bg-blue-500 hover:bg-blue-400"
-                  } text-white hidden`}
-                 
+                <form
+                  className="absolute bottom-2 right-2"
+                  action={"http://localhost:3000/users/profile/photo"}
+                  method="PUT"
                 >
-                  
-                </input>
+                  <label htmlFor="profile_input" className="bg-orange-400">
+                    <Camera className="bg-red-400 rounded-[50%] min-w-5 min-h-5 p-1 border border-white"></Camera>
+                  </label>
+                  <input
+                    type="file"
+                    id="profile_input"
+                    className={`absolute bottom-2 right-2 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                      isDarkMode
+                        ? "bg-orange-500 hover:bg-orange-400"
+                        : "bg-blue-500 hover:bg-blue-400"
+                    } text-white hidden`}
+                  ></input>
                 </form>
               </div>
 
@@ -209,11 +236,10 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                     <h1 className="sm:text-4xl text-3xl font-bold mb-2">
                       {userData.fullname}
                     </h1>
-                    <p className="text-xl opacity-90 mb-2">
-                      {playerData.username}
+                    <p className="sm:text-xl opacity-90 mb-2">
+                      {userData.email}
                     </p>
                     <p className="text-lg opacity-75">
-                      {playerData.pronouns} • {playerData.position} at{" "}
                       {playerData.currentClub}
                     </p>
                   </div>
@@ -242,13 +268,11 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
 
       {/* Profile Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
         {/* Tab Navigation */}
         <div className="flex space-x-1 flex-wrap mb-8">
           {[
             { id: "overview", label: "Overview", icon: User },
-            { id: "stats", label: "Training plan", icon: BarChart3 },
-            
+            { id: "training_data", label: "Training plan", icon: BarChart3 },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -414,49 +438,431 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
               </div>
             )}
 
-            {activeTab === "achievements" && (
-              <div className="space-y-4">
-                {achievements.map((achievement) => (
-                  <div
-                    key={achievement.id}
-                    className={`p-6 rounded-2xl ${
-                      isDarkMode
-                        ? "bg-white/5 backdrop-blur-md border-white/10"
-                        : "bg-black/5 backdrop-blur-md border-black/10"
-                    } border`}
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div
-                        className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                          isDarkMode ? "bg-white/10" : "bg-black/10"
-                        }`}
-                      >
-                        <achievement.icon
-                          className={`w-6 h-6 ${achievement.color}`}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold mb-1">{achievement.title}</h4>
+            {activeTab === "training_data" &&(
+                  <div className="space-y-6">
+                    {/* Header Section */}
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h2 className="text-2xl font-bold">Training Plans</h2>
                         <p
                           className={`text-sm ${
                             isDarkMode ? "text-gray-400" : "text-gray-600"
                           }`}
                         >
-                          {achievement.description}
+                          Your personalized AI-generated training programs
                         </p>
                       </div>
-                      <span
-                        className={`text-sm ${
-                          isDarkMode ? "text-gray-400" : "text-gray-500"
-                        }`}
-                      >
-                        {achievement.date}
-                      </span>
+                      <div className="flex items-center space-x-3">
+                        <span
+                          className={`text-sm px-3 py-1 rounded-full ${
+                            isDarkMode
+                              ? "bg-orange-500/20 text-orange-400"
+                              : "bg-blue-500/20 text-blue-600"
+                          }`}
+                        >
+                          {trainingData?.length || 0} Plans
+                        </span>
+                        <button
+                          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                            isDarkMode
+                              ? "bg-orange-500/20 text-orange-400 hover:bg-orange-500/30"
+                              : "bg-blue-500/20 text-blue-600 hover:bg-blue-500/30"
+                          }`}
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>New Plan</span>
+                        </button>
+                      </div>
                     </div>
+
+                    {/* Training Plans Grid */}
+                    <div className="space-y-4">
+                      {trainingData?.map((data, index) => (
+                        <motion.div
+                          key={data._id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className={`group relative p-6 rounded-2xl ${
+                            isDarkMode
+                              ? "bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10"
+                              : "bg-black/5 backdrop-blur-md border-black/10 hover:bg-black/10"
+                          } border transition-all duration-300 hover:shadow-lg hover:scale-[1.02]`}
+                        >
+                          {/* Plan Header */}
+                          <div className="flex items-start justify-between mb-6">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3 mb-2">
+                                <div
+                                  className={`p-2 rounded-lg ${
+                                    isDarkMode
+                                      ? "bg-orange-500/20"
+                                      : "bg-blue-500/20"
+                                  }`}
+                                >
+                                  <Target
+                                    className={`w-5 h-5 ${
+                                      isDarkMode
+                                        ? "text-orange-400"
+                                        : "text-blue-600"
+                                    }`}
+                                  />
+                                </div>
+                                <div>
+                                  <h3 className="text-xl font-bold group-hover:text-orange-400 transition-colors">
+                                    {data.planName}
+                                  </h3>
+                                  <div className="flex items-center space-x-2 text-sm">
+                                    <span
+                                      className={`px-2 py-1 rounded-full ${
+                                        isDarkMode
+                                          ? "bg-white/10 text-gray-300"
+                                          : "bg-black/10 text-gray-700"
+                                      }`}
+                                    >
+                                      {data.sport}
+                                    </span>
+                                    <span
+                                      className={`px-2 py-1 rounded-full ${
+                                        data.difficulty === "Beginner"
+                                          ? "bg-green-500/20 text-green-400"
+                                          : data.difficulty === "Intermediate"
+                                          ? "bg-yellow-500/20 text-yellow-400"
+                                          : "bg-red-500/20 text-red-400"
+                                      }`}
+                                    >
+                                      {data.difficulty}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                              <span
+                                className={`text-xs px-2 py-1 rounded-full ${
+                                  isDarkMode
+                                    ? "bg-white/10 text-gray-400"
+                                    : "bg-black/10 text-gray-500"
+                                }`}
+                              >
+                                {new Date(data.createdAt).toLocaleDateString()}
+                              </span>
+                              <button
+                                className={`opacity-0 group-hover:opacity-100 p-2 rounded-lg transition-all ${
+                                  isDarkMode
+                                    ? "hover:bg-white/10"
+                                    : "hover:bg-black/10"
+                                }`}
+                              >
+                                <ChevronRight className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Key Metrics */}
+                          <div className="grid grid-cols-3 gap-4 mb-6">
+                            <div
+                              className={`p-3 rounded-xl ${
+                                isDarkMode ? "bg-white/5" : "bg-black/5"
+                              } text-center`}
+                            >
+                              <Calendar
+                                className={`w-5 h-5 mx-auto mb-1 ${
+                                  isDarkMode
+                                    ? "text-orange-400"
+                                    : "text-blue-600"
+                                }`}
+                              />
+                              <p className="text-sm font-semibold">
+                                {data.duration.weeks} Weeks
+                              </p>
+                              <p
+                                className={`text-xs ${
+                                  isDarkMode ? "text-gray-400" : "text-gray-600"
+                                }`}
+                              >
+                                Duration
+                              </p>
+                            </div>
+                            <div
+                              className={`p-3 rounded-xl ${
+                                isDarkMode ? "bg-white/5" : "bg-black/5"
+                              } text-center`}
+                            >
+                              <Zap
+                                className={`w-5 h-5 mx-auto mb-1 ${
+                                  isDarkMode
+                                    ? "text-orange-400"
+                                    : "text-blue-600"
+                                }`}
+                              />
+                              <p className="text-sm font-semibold">
+                                {data.sessions.sessionsPerWeek}/week
+                              </p>
+                              <p
+                                className={`text-xs ${
+                                  isDarkMode ? "text-gray-400" : "text-gray-600"
+                                }`}
+                              >
+                                Sessions
+                              </p>
+                            </div>
+                            <div
+                              className={`p-3 rounded-xl ${
+                                isDarkMode ? "bg-white/5" : "bg-black/5"
+                              } text-center`}
+                            >
+                              <Timer
+                                className={`w-5 h-5 mx-auto mb-1 ${
+                                  isDarkMode
+                                    ? "text-orange-400"
+                                    : "text-blue-600"
+                                }`}
+                              />
+                              <p className="text-sm font-semibold">
+                                {data.sessions.sessionDuration}min
+                              </p>
+                              <p
+                                className={`text-xs ${
+                                  isDarkMode ? "text-gray-400" : "text-gray-600"
+                                }`}
+                              >
+                                Per Session
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Goals Section */}
+                          <div className="mb-4">
+                            <div className="flex items-center space-x-2 mb-3">
+                              <Trophy
+                                className={`w-4 h-4 ${
+                                  isDarkMode
+                                    ? "text-orange-400"
+                                    : "text-blue-600"
+                                }`}
+                              />
+                              <h4 className="font-semibold">Training Goals</h4>
+                            </div>
+                            <div className="grid gap-2">
+                              {data.goals.slice(0, 2).map((goal, index) => (
+                                <div
+                                  key={index}
+                                  className={`flex items-center space-x-2 p-2 rounded-lg ${
+                                    isDarkMode ? "bg-white/5" : "bg-black/5"
+                                  }`}
+                                >
+                                  <div
+                                    className={`w-2 h-2 rounded-full ${
+                                      isDarkMode
+                                        ? "bg-orange-400"
+                                        : "bg-blue-600"
+                                    }`}
+                                  ></div>
+                                  <span className="text-sm">{goal}</span>
+                                </div>
+                              ))}
+                              {data.goals.length > 2 && (
+                                <span
+                                  className={`text-xs ${
+                                    isDarkMode
+                                      ? "text-gray-400"
+                                      : "text-gray-600"
+                                  }`}
+                                >
+                                  +{data.goals.length - 2} more goals
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Focus Areas */}
+                          <div className="mb-4">
+                            <div className="flex items-center space-x-2 mb-3">
+                              <Brain
+                                className={`w-4 h-4 ${
+                                  isDarkMode
+                                    ? "text-orange-400"
+                                    : "text-blue-600"
+                                }`}
+                              />
+                              <h4 className="font-semibold">Focus Areas</h4>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {data.focusAreas.map((area, index) => (
+                                <span
+                                  key={index}
+                                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                    isDarkMode
+                                      ? "bg-gradient-to-r from-orange-500/20 to-red-500/20 text-orange-300 border border-orange-500/30"
+                                      : "bg-gradient-to-r from-blue-500/20 to-cyan-400/20 text-blue-700 border border-blue-500/30"
+                                  }`}
+                                >
+                                  {area}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Overview */}
+                          {data.generatedPlan?.overview && (
+                            <div className="mb-4">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <BarChart3
+                                  className={`w-4 h-4 ${
+                                    isDarkMode
+                                      ? "text-orange-400"
+                                      : "text-blue-600"
+                                  }`}
+                                />
+                                <h4 className="font-semibold">Plan Overview</h4>
+                              </div>
+                              <p
+                                className={`text-sm leading-relaxed ${
+                                  isDarkMode ? "text-gray-300" : "text-gray-600"
+                                }`}
+                              >
+                                {data.generatedPlan.overview.length > 150
+                                  ? `${data.generatedPlan.overview.substring(
+                                      0,
+                                      150
+                                    )}...`
+                                  : data.generatedPlan.overview}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Custom Notes */}
+                          {data.customNotes && (
+                            <div className="mb-4">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <MessageCircle
+                                  className={`w-4 h-4 ${
+                                    isDarkMode
+                                      ? "text-orange-400"
+                                      : "text-blue-600"
+                                  }`}
+                                />
+                                <h4 className="font-semibold">
+                                  Personal Notes
+                                </h4>
+                              </div>
+                              <div
+                                className={`p-3 rounded-lg ${
+                                  isDarkMode
+                                    ? "bg-white/5 border-l-2 border-orange-500/50"
+                                    : "bg-black/5 border-l-2 border-blue-500/50"
+                                }`}
+                              >
+                                <p
+                                  className={`text-sm italic ${
+                                    isDarkMode
+                                      ? "text-gray-300"
+                                      : "text-gray-600"
+                                  }`}
+                                >
+                                  "{data.customNotes}"
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                            <div className="flex items-center space-x-4">
+                              <button
+                                className={`flex items-center space-x-2 px-3 py-1 rounded-lg text-sm transition-colors ${
+                                  isDarkMode
+                                    ? "text-orange-400 hover:bg-orange-500/20"
+                                    : "text-blue-600 hover:bg-blue-500/20"
+                                }`}
+                              >
+                                <Play className="w-4 h-4" />
+                                <span>Start Training</span>
+                              </button>
+                              <button
+                                className={`flex items-center space-x-2 px-3 py-1 rounded-lg text-sm transition-colors ${
+                                  isDarkMode
+                                    ? "text-gray-400 hover:bg-white/10"
+                                    : "text-gray-600 hover:bg-black/10"
+                                }`}
+                              >
+                                <Edit3 className="w-4 h-4" />
+                                <span>Edit</span>
+                              </button>
+                            </div>
+                            <button
+                              className={`flex items-center space-x-2 px-3 py-1 rounded-lg text-sm transition-colors ${
+                                isDarkMode
+                                  ? "text-gray-400 hover:bg-white/10"
+                                  : "text-gray-600 hover:bg-black/10"
+                              }`}
+                            >
+                              <Share2 className="w-4 h-4" />
+                              <span>Share</span>
+                            </button>
+                          </div>
+
+                          {/* Progress Indicator (if applicable) */}
+                          <div
+                            className={`absolute top-4 right-4 w-12 h-12 rounded-full flex items-center justify-center ${
+                              isDarkMode
+                                ? "bg-gradient-to-r from-orange-500/20 to-red-500/20"
+                                : "bg-gradient-to-r from-blue-500/20 to-cyan-400/20"
+                            }`}
+                          >
+                            <span
+                              className={`text-xs font-bold ${
+                                isDarkMode ? "text-orange-400" : "text-blue-600"
+                              }`}
+                            >
+                              {Math.floor(Math.random() * 100)}%
+                            </span>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {/* Empty State */}
+                    {(!trainingData || trainingData.length === 0) && (
+                      <div
+                        className={`text-center py-12 rounded-2xl ${
+                          isDarkMode
+                            ? "bg-white/5 backdrop-blur-md border-white/10"
+                            : "bg-black/5 backdrop-blur-md border-black/10"
+                        } border`}
+                      >
+                        <Target
+                          className={`w-12 h-12 mx-auto mb-4 ${
+                            isDarkMode ? "text-gray-600" : "text-gray-400"
+                          }`}
+                        />
+                        <h3 className="text-lg font-semibold mb-2">
+                          No Training Plans Yet
+                        </h3>
+                        <p
+                          className={`${
+                            isDarkMode ? "text-gray-400" : "text-gray-600"
+                          } mb-4`}
+                        >
+                          Create your first AI-powered training plan to get
+                          started
+                        </p>
+                        <button
+                          className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 mx-auto ${
+                            isDarkMode
+                              ? "bg-orange-500 hover:bg-orange-400"
+                              : "bg-blue-500 hover:bg-blue-400"
+                          } text-white`}
+                        >
+                          <Plus className="w-5 h-5" />
+                          <span>Create Training Plan</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
+                )}
           </div>
 
           {/* Sidebar */}
