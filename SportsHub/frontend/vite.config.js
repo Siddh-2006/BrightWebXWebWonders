@@ -34,13 +34,7 @@ export default defineConfig({
     hmr: {
       overlay: true
     },
-    proxy:{
-      "/api":{
-        target:"http://localhost:3000",
-        changeOrigin:true,
-        secure:false,
-      }
-    }
+    
   },
   // Modern JavaScript features
   esbuild: {

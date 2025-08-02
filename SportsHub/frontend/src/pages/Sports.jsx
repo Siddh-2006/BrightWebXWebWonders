@@ -172,7 +172,7 @@ const Sports = ({ isDarkMode }) => {
                     } focus:outline-none`}
                   />
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap space-x-2">
                   {categories.map((category) => (
                     <button
                       key={category.id}
@@ -185,7 +185,7 @@ const Sports = ({ isDarkMode }) => {
                           : isDarkMode
                             ? 'bg-white/10 text-gray-300 hover:bg-white/20'
                             : 'bg-black/10 text-gray-700 hover:bg-black/20'
-                      }`}
+                      } mb-3`}
                     >
                       {category.label}
                     </button>

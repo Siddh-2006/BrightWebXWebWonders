@@ -200,8 +200,8 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col sm:items-end gap-3 sm:gap-0 items-center space-y-4 md:space-y-0 md:space-x-6">
+          <div className="max-w-7xl flex lg:ml-5 items-center justify-center sm:justify-start">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-0 items-center space-y-4 md:space-y-0 md:space-x-6">
               {/* Profile Picture */}
               <div className="relative">
                 <img
@@ -441,7 +441,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
             {activeTab === "training_data" &&(
                   <div className="space-y-6">
                     {/* Header Section */}
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex  items-center justify-between mb-6">
                       <div>
                         <h2 className="text-2xl font-bold">Training Plans</h2>
                         <p
@@ -462,16 +462,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                         >
                           {trainingData?.length || 0} Plans
                         </span>
-                        <button
-                          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                            isDarkMode
-                              ? "bg-orange-500/20 text-orange-400 hover:bg-orange-500/30"
-                              : "bg-blue-500/20 text-blue-600 hover:bg-blue-500/30"
-                          }`}
-                        >
-                          <Plus className="w-4 h-4" />
-                          <span>New Plan</span>
-                        </button>
+                        
                       </div>
                     </div>
 
@@ -483,16 +474,16 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.1 }}
-                          className={`group relative p-6 rounded-2xl ${
+                          className={`group relative p-2 sm:p-6 rounded-2xl ${
                             isDarkMode
                               ? "bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10"
                               : "bg-black/5 backdrop-blur-md border-black/10 hover:bg-black/10"
                           } border transition-all duration-300 hover:shadow-lg hover:scale-[1.02]`}
                         >
                           {/* Plan Header */}
-                          <div className="flex items-start justify-between mb-6">
+                          <div className="flex flex-col sm:flex-row flex-wrap items-start justify-between mb-6">
                             <div className="flex-1">
-                              <div className="flex items-center space-x-3 mb-2">
+                              <div className="flex  items-center space-x-3 mb-2">
                                 <div
                                   className={`p-2 rounded-lg ${
                                     isDarkMode
@@ -509,7 +500,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                                   />
                                 </div>
                                 <div>
-                                  <h3 className="text-xl font-bold group-hover:text-orange-400 transition-colors">
+                                  <h3 className="break-words sm:text-xl font-bold group-hover:text-orange-400 transition-colors mb-2">
                                     {data.planName}
                                   </h3>
                                   <div className="flex items-center space-x-2 text-sm">
@@ -537,8 +528,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                                 </div>
                               </div>
                             </div>
-
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center ml-12 sm:ml-0 space-x-2">
                               <span
                                 className={`text-xs px-2 py-1 rounded-full ${
                                   isDarkMode
@@ -561,7 +551,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                           </div>
 
                           {/* Key Metrics */}
-                          <div className="grid grid-cols-3 gap-4 mb-6">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                             <div
                               className={`p-3 rounded-xl ${
                                 isDarkMode ? "bg-white/5" : "bg-black/5"
@@ -777,49 +767,17 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                                     ? "text-orange-400 hover:bg-orange-500/20"
                                     : "text-blue-600 hover:bg-blue-500/20"
                                 }`}
+                                onClick={()=>{navigate("/ai-guru")}}
                               >
                                 <Play className="w-4 h-4" />
                                 <span>Start Training</span>
                               </button>
-                              <button
-                                className={`flex items-center space-x-2 px-3 py-1 rounded-lg text-sm transition-colors ${
-                                  isDarkMode
-                                    ? "text-gray-400 hover:bg-white/10"
-                                    : "text-gray-600 hover:bg-black/10"
-                                }`}
-                              >
-                                <Edit3 className="w-4 h-4" />
-                                <span>Edit</span>
-                              </button>
                             </div>
-                            <button
-                              className={`flex items-center space-x-2 px-3 py-1 rounded-lg text-sm transition-colors ${
-                                isDarkMode
-                                  ? "text-gray-400 hover:bg-white/10"
-                                  : "text-gray-600 hover:bg-black/10"
-                              }`}
-                            >
-                              <Share2 className="w-4 h-4" />
-                              <span>Share</span>
-                            </button>
+
                           </div>
 
                           {/* Progress Indicator (if applicable) */}
-                          <div
-                            className={`absolute top-4 right-4 w-12 h-12 rounded-full flex items-center justify-center ${
-                              isDarkMode
-                                ? "bg-gradient-to-r from-orange-500/20 to-red-500/20"
-                                : "bg-gradient-to-r from-blue-500/20 to-cyan-400/20"
-                            }`}
-                          >
-                            <span
-                              className={`text-xs font-bold ${
-                                isDarkMode ? "text-orange-400" : "text-blue-600"
-                              }`}
-                            >
-                              {Math.floor(Math.random() * 100)}%
-                            </span>
-                          </div>
+                          
                         </motion.div>
                       ))}
                     </div>
