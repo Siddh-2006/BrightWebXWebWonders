@@ -34,14 +34,14 @@ const initQuizCronJobs = require('./cron/quizCronJobs');
 const app = express();
 const server = http.createServer(app);
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: "https://sportshub1.vercel.app/",
   credentials: true,
 }));
 
 
 const io = socketIO(server, {
   cors: {
-    origin: "http://localhost:5173", // frontend URL
+    origin: "https://sportshub1.vercel.app/", // frontend URL
     methods: ["GET", "POST"],
     credentials: true ,
   }
