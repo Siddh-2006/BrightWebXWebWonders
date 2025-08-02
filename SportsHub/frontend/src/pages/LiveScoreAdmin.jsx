@@ -38,7 +38,7 @@ const LiveScoreAdmin = () => {
   useEffect(() => {
     if (isAdmin !== true) return;
 
-    const socket = io(`${import.meta.env.BACKEND_URL}`, {
+    const socket = io(`${import.meta.env.VITE_BACKEND_URL}`, {
       withCredentials: true,
       transports: ["websocket"],
     });

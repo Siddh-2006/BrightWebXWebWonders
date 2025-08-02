@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router";
 import { io } from "socket.io-client";
 
-const socket = io(`${import.meta.env.BACKEND_URL}`, {
+const socket = io(`${import.meta.env.VITE_BACKEND_URL}`, {
   withCredentials: true,
   transports: ["websocket"],
 });

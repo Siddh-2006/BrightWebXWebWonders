@@ -23,7 +23,7 @@ const PredictionModal = ({ isOpen, onClose, matchId, clubAName, clubBName, isDar
 
   useEffect(() => {
     if (isOpen) {
-      const socketInstance = io(`${import.meta.env.BACKEND_URL}`, {
+      const socketInstance = io(`${import.meta.env.VITE_BACKEND_URL}`, {
         withCredentials: true,
         transports: ["websocket"],
       });

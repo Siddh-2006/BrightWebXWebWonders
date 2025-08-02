@@ -37,7 +37,7 @@ const ClubEditPage = ({ clubId }) => {
     // Fetch club data
     const fetchClub = async () => {
       try {
-        const { data } = await axios.get(`${import.meta.env}/clubs/${clubId}`);
+        const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/clubs/${clubId}`);
         setFormData(prev => ({
           ...prev,
           ...data,
@@ -114,7 +114,7 @@ const ClubEditPage = ({ clubId }) => {
     });
 
     try {
-      await axios.put(`${import.meta.env}/club-profile/edit/${clubId}`, form, {
+      await axios.put(`${import.meta.env.VITE_BACKEND_URL}/club-profile/edit/${clubId}`, form, {
         headers: {
           "Content-Type": "multipart/form-data"
         }

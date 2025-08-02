@@ -63,7 +63,7 @@ const Login = ({ isDarkMode}) => {
     // check for login
     if (isLogin) {
       try {
-        const res = await axios.post(`${import.meta.env.BACKEND_URL}/users/login`, data, {
+        const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/users/login`, data, {
           withCredentials: true,
           headers: {
             "Content-Type": "multipart/form-data",
@@ -83,7 +83,7 @@ const Login = ({ isDarkMode}) => {
     // it means we are signing up !!
     else {
       try {
-        const res = await axios.post(`${import.meta.env.BACKEND_URL}/users/register`, data, {
+        const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/users/register`, data, {
           withCredentials: true,
           headers: {
             "Content-Type": "multipart/form-data",

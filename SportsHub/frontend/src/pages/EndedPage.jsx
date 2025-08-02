@@ -30,7 +30,7 @@ const EndedPage = ({ isDarkMode }) => {
   };
 
   useEffect(() => {
-    const socketInstance = io(`${import.meta.env.BACKEND_URL}`, {
+    const socketInstance = io(`${import.meta.env.VITE_BACKEND_URL}`, {
       withCredentials: true,
       transports: ["websocket"],
     });

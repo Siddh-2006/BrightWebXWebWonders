@@ -44,7 +44,7 @@ const Admin = ({ isDarkMode }) => {
 
   const fetchPendingClubs = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.BACKEND_URL}/clubs/pending-clubs`, {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/clubs/pending-clubs`, {
         withCredentials: true,
       });
       setPendingClubs(res.data);
@@ -61,7 +61,7 @@ const Admin = ({ isDarkMode }) => {
 
   const fetchAllClubs = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.BACKEND_URL}:3000/clubs`, {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}:3000/clubs`, {
         withCredentials: true,
       });
       setAllClubs(res.data);
@@ -76,7 +76,7 @@ const Admin = ({ isDarkMode }) => {
 
   const approveClub = async (clubId) => {
     try {
-      await axios.patch(`${process.env.BACKEND_URL}/clubs/${clubId}/approve`, {}, {
+      await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/clubs/${clubId}/approve`, {}, {
         withCredentials: true,
       });
       setPendingClubs(pendingClubs.filter(club => club._id !== clubId));
@@ -90,7 +90,7 @@ const Admin = ({ isDarkMode }) => {
 
   const rejectClub = async (clubId) => {
     try {
-      await axios.delete(`${process.env.BACKEND_URL}/clubs/${clubId}`, {
+      await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/clubs/${clubId}`, {
         withCredentials: true,
       });
       setPendingClubs(pendingClubs.filter(club => club._id !== clubId));
