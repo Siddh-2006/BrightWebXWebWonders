@@ -1,8 +1,8 @@
-# ![SportsHub Logo](https://drive.google.com/uc?export=view&id=1GihxrFYU_YUiEMCBQ1cloA70fQSrYGje) SportsHub - AI-Powered Sports Community Platform
+# SportsHub - AI-Powered Sports Community Platform
 
 <div align="center">
 
-![SportsHub Logo](https://drive.google.com/uc?export=view&id=1GihxrFYU_YUiEMCBQ1cloA70fQSrYGje)
+<img src="https://drive.google.com/uc?export=view&id=1GihxrFYU_YUiEMCBQ1cloA70fQSrYGje" alt="SportsHub Logo" width="100" height="100">
 
 **Empowering Athletes with Digital Identity and AI Coaching**
 
@@ -407,7 +407,7 @@ We welcome contributions from the community! Here's how you can help:
 
 ---
 
-## ![SportsHub Logo](https://drive.google.com/uc?export=view&id=1GihxrFYU_YUiEMCBQ1cloA70fQSrYGje) Achievements & Recognition
+## <img src="https://drive.google.com/uc?export=view&id=1GihxrFYU_YUiEMCBQ1cloA70fQSrYGje" alt="SportsHub Logo" width="100" height="100"> Achievements & Recognition
 
 - **🎯 AI Integration**: Successfully integrated multiple AI technologies
 - **📱 User Experience**: Responsive design across all devices
