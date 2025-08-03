@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router";
 import { useNavigate } from "react-router";
@@ -23,17 +23,9 @@ import { ToastContainer, toast } from "react-toastify";
 import { showCustomToast } from "../helper/CustomToast";
 import LoginContext from "../context/loginContext";
 
-const Login = ({ isDarkMode}) => {
-  const navigate=useNavigate();
-  const {isLoggedIn, setIsLoggedIn} = useContext(LoginContext);
-
-  // quick check is user is already logged in
-  useEffect(()=>{
-    console.log(isLoggedIn)
-    if(isLoggedIn){
-      navigate("/profile")
-    }
-  },[isLoggedIn])
+const Login = ({ isDarkMode }) => {
+  const navigate = useNavigate();
+  const { setIsLoggedIn, setUserType } = useContext(LoginContext);
 
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -59,7 +51,6 @@ const Login = ({ isDarkMode}) => {
     for (const key in formData) {
         data.append(key, formData[key]);
     }
-    console.log([...data.entries()])
     // check for login
     if (isLogin) {
       try {
@@ -70,14 +61,19 @@ const Login = ({ isDarkMode}) => {
           },
         });
         if (res.status == 200) {
-          showCustomToast("success","redirecting...")
-          setIsLoggedIn(true);
-          setTimeout(()=>{navigate("/")},1000)
+          showCustomToast("success", res.data.msg + " redirecting...")
           
+          // Simple login state update
+          setIsLoggedIn(true);
+          setUserType(res.data.userType);
+          localStorage.setItem('login', 'true');
+          localStorage.setItem('userType', res.data.userType);
+          localStorage.setItem('username', res.data.username || res.data.fullname);
+          
+          setTimeout(() => { navigate("/") }, 1000)
         }
       } catch (err) {
         showCustomToast("error","Error: " + err.response?.data || err.message);
-        console.log(err)
       }
     }
     // it means we are signing up !!
@@ -94,9 +90,7 @@ const Login = ({ isDarkMode}) => {
           setIsLogin(true);
         }
       } catch (err) {
-        console.log(err)
         showCustomToast("error", err.response.data);
-        console.log(data)
       }
     }
   };

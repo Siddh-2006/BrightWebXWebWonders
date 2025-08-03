@@ -1,26 +1,28 @@
-import React from 'react'
-import { useEffect } from 'react'
+import React, { useEffect, useContext } from 'react'
 import { useNavigate } from 'react-router'
-import { showCustomToast } from '../helper/CustomToast';
-import axios from 'axios';
-function Logout({setIsLoggedIn}) {
-  const navigate=useNavigate();
-  useEffect(()=>{
-    const log_out= async ()=>{
-      const res=await axios.get(`${import.meta.env.VITE_BACKEND_URL}/users/logout`,{withCredentials:true})
-      if(res.status==200){
-        setIsLoggedIn(false);
-        localStorage.clear();
-        navigate("/login");
-      }
-      else{
-        showCustomToast("error","check you network connection")
-      }
-    }
-    log_out()
-  })
+import loginContext from '../context/loginContext'
+import { showCustomToast } from '../helper/CustomToast'
+
+function Logout() {
+  const navigate = useNavigate();
+  const { setIsLoggedIn, setUserType } = useContext(loginContext);
+
+  useEffect(() => {
+    // Simple logout - clear local storage and context
+    localStorage.clear();
+    setIsLoggedIn(false);
+    setUserType('');
+    
+    showCustomToast("success", "Logged out successfully");
+    navigate("/login", { replace: true });
+  }, [navigate, setIsLoggedIn, setUserType]);
+
   return (
-    <div>
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+        <p className="text-gray-600">Logging out...</p>
+      </div>
     </div>
   )
 }

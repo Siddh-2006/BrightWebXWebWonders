@@ -68,7 +68,13 @@ module.exports.loginUser=async (req,res)=>{
                 sameSite: "None",
                 secure:true,
             });
-            res.status(200).json({ msg: "You can login..", userType: user.userType, token: token });
+            res.status(200).json({
+                msg: "You can login..",
+                userType: user.userType,
+                token: token,
+                username: user.fullname,
+                fullname: user.fullname
+            });
         }else{
             res.status(401).send("Email or password incorrect..");
         }
@@ -76,13 +82,28 @@ module.exports.loginUser=async (req,res)=>{
 }
 
 module.exports.logoutUser = async (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    sameSite: "None",  // Must match how it was set
-    secure: true       // Must match how it was set
-  });
-  res.status(200).send("Logged out successfully");
-};
+    try {
+        // Clear the authentication cookie
+        res.cookie("token", "", {
+            httpOnly: true,
+            sameSite: "Lax",
+            secure: process.env.NODE_ENV === "production",
+            expires: new Date(0) // Set expiry to past date to delete cookie
+        });
+        
+        // Send success response
+        res.status(200).json({
+            success: true,
+            message: "Logged out successfully"
+        });
+    } catch (error) {
+        console.error("Logout error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Logout failed"
+        });
+    }
+}
 
 module.exports.getUserProfile = async (req, res) => {
     try {
