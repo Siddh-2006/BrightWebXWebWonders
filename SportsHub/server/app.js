@@ -10,6 +10,7 @@ const commonMiddleware = require('./middlewares/commonMiddleware');
 const analysisRoutes = require('./routes/analysisRoutes');
 const customErrorHandler = require('./utils/customErrorHandler');
 const aiGuruChatRouter = require("./routes/aiGuruChatRouter");
+const aiSystemRouter = require("./routes/aiSystemRouter");
 const quizRoutes = require('./routes/quizRoutes');
 const challengeRouter = require('./routes/challengeRouter');
 const postRouter=require("./routes/postRouter")
@@ -79,6 +80,7 @@ const startServer = async () => {
     const matchRouter = require("./routes/matchRouter");
 
     app.use("/api/ai-guru-chat", aiGuruChatRouter);
+    app.use("/api/ai-system", aiSystemRouter);
     app.use('/api/quiz', quizRoutes);
     app.use("/match", matchRouter);
     app.use("/api/training-plans", trainingPlanRouter);

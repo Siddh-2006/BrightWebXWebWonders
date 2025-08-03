@@ -1,13 +1,6 @@
 const express = require('express');
-const router = express.Router(); 
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const geminiApiKey = process.env.GEMINI_API_KEY_AI_GURU; // Your specific key name
-if (!geminiApiKey) {
-  console.error("Error: GEMINI_API_KEY_AI_GURU is not set in the .env file or not accessible in aiGuruChatRouter.js!");
-  process.exit(1);
-}
-const genAI = new GoogleGenerativeAI(geminiApiKey);
+const router = express.Router();
+const aiChatRouter = require('../services/aiChatRouter');
 const AIGURU_PERSONA_AND_GUIDELINES = `
 You are AI Guru, an expert and professional sports coach with a modern, engaging communication style.
 
@@ -63,69 +56,30 @@ router.post('/', async (req, res) => {
   try {
     const { chatMessages, userQuestion, userDetails, userLanguage } = req.body;
     
-    console.log('📥 Received chat messages:', JSON.stringify(chatMessages, null, 2));
+    console.log('📥 [AI Guru Router] Received chat request');
     console.log('📥 User question:', userQuestion);
     
-    // For the first message or empty history, start with empty history
-    let historyForGemini = [];
-    
-    // Only add to history if there are previous user messages (not including the current question)
-    if (chatMessages && chatMessages.length > 0) {
-      console.log('🔍 Processing chat messages for Gemini history...');
-      
-      // Filter to only include user messages and exclude the current question
-      // Handle both 'user' role and any other variations
-      historyForGemini = chatMessages
-        .filter(msg => {
-          // Only include user messages (exclude AI/assistant/model messages)
-          const isUserMessage = msg.role === 'user' || msg.type === 'user';
-          // Exclude the current question
-          const isNotCurrentQuestion = (msg.text || msg.message) !== userQuestion;
-          
-          console.log(`🔍 Message: "${(msg.text || msg.message)?.substring(0, 50)}..." | Role: ${msg.role} | Type: ${msg.type} | IsUser: ${isUserMessage} | NotCurrent: ${isNotCurrentQuestion}`);
-          
-          return isUserMessage && isNotCurrentQuestion;
-        })
-        .map(msg => ({
-          role: 'user',
-          parts: [{ text: msg.text || msg.message }]
-        }));
-    }
-    
-    console.log('📤 History for Gemini:', JSON.stringify(historyForGemini, null, 2));
-    
-    const conversationHistoryFormatted = chatMessages && chatMessages.length > 0
-      ? chatMessages.map(msg => `${msg.role === 'user' ? 'User' : 'AI Guru'}: ${msg.text || msg.message}`).join('\n')
-      : 'No prior conversation.';
-    const fullConstructedPrompt = AIGURU_PERSONA_AND_GUIDELINES
-      .replace(/<<userName>>/g, userDetails.userName)
-      .replace(/<<userAge>>/g, userDetails.userAge)
-      .replace(/<<userSex>>/g, userDetails.userSex)
-      .replace(/<<userHeight>>/g, userDetails.userHeight)
-      .replace(/<<userWeight>>/g, userDetails.userWeight)
-      .replace(/<<preferredSport>>/g, userDetails.preferredSport)
-      .replace(/<<otherBioDetails>>/g, userDetails.otherBioDetails || 'N/A')
-      .replace(/<<conversationHistoryFormatted>>/g, conversationHistoryFormatted)
-      .replace(/<<userQuestion>>/g, userQuestion)
-      .replace(/<<userLanguage>>/g, userLanguage);
+    // Use the AI Chat Router to handle the conversation
+    const response = await aiChatRouter.handleAIGuruChat(
+      chatMessages,
+      userQuestion,
+      userDetails,
+      userLanguage || 'en'
+    );
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const chat = model.startChat({
-        history: historyForGemini
-    });
-    const result = await chat.sendMessage(fullConstructedPrompt);
-
-    const response = await result.response;
-    const text = response.text();
-
-    res.json({ guruResponse: text });
+    console.log('✅ [AI Guru Router] Response generated successfully');
+    res.json({ guruResponse: response });
 
   } catch (error) {
-    console.error('Error in /api/ai-guru-chat:', error);
-    if (error.response && error.response.data) {
-        console.error('Gemini API detailed error:', error.response.data);
-    }
-    res.status(500).json({ error: 'Failed to get response from AI Guru. Please try again.' });
+    console.error('❌ [AI Guru Router] Error in /api/ai-guru-chat:', error);
+    
+    // Provide a fallback response
+    const fallbackResponse = `Hi ${userDetails?.userName || 'there'}! 👋 I'm experiencing some technical difficulties right now, but I'm here to help! Please try asking your question again in a moment. In the meantime, remember to stay hydrated and keep up with your training! 💪`;
+    
+    res.status(500).json({
+      error: 'Failed to get response from AI Guru. Please try again.',
+      guruResponse: fallbackResponse
+    });
   }
 });
 module.exports = router;
