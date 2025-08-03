@@ -1,4 +1,4 @@
-const CUSTOM_TRAINING_PLAN_API_ENDPOINT = 'http://localhost:3000/api/custom-training-plans';
+const CUSTOM_TRAINING_PLAN_API_ENDPOINT = `${import.meta.env.VITE_BACKEND_URL}/api/custom-training-plans`;
 
 // Create a new custom training plan
 export const createCustomTrainingPlan = async (planData) => {

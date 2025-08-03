@@ -1,4 +1,4 @@
-const TRAINING_PLAN_API_ENDPOINT = 'http://localhost:3000/api/training-plans';
+const TRAINING_PLAN_API_ENDPOINT = `${import.meta.env.VITE_BACKEND_URL}/api/training-plans`;
 
 export const generateTrainingPlan = async ({ userInfo, sport, difficulty, duration, sessions }) => {
   try {
