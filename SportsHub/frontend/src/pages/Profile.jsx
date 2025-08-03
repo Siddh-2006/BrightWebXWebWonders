@@ -92,6 +92,20 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
     }
   }, [isLoggedIn, userId]);
 
+  async function handel_profile_submit(e){
+    const file=e.target.files[0]
+    if(!file) return;
+    const formData=new FormData();
+    formData.append("file",file);
+    try{
+      const res=await axios.put(`${import.meta.env.VITE_BACKEND_URL}/users/profile/photo`,formData,{headers:{"Content-Type":"multipart/form-data"},withCredentials:true});
+      if(res.status==200){
+        showCustomToast("success",res.data.message);
+      }
+    }catch(err){
+      console.log(err);
+    }
+  }
   const playerData = {
     name: "Alex Rodriguez",
     username: "@alexrod_sports",
@@ -222,6 +236,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                   <input
                     type="file"
                     id="profile_input"
+                    onChange={(e)=>handel_profile_submit(e)}
                     className={`absolute bottom-2 right-2 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                       isDarkMode
                         ? "bg-orange-500 hover:bg-orange-400"
