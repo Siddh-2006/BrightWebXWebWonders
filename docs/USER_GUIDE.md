@@ -22,7 +22,7 @@ SportsHub is your ultimate AI-powered sports companion, designed to help athlete
 
 ### **Creating Your Account**
 
-1. **Visit SportsHub**: Go to [sportshub3.vercel.app](https://sportshub3.vercel.app)
+1. **Visit SportsHub**: Go to [sportshub-murex.vercel.app](https://sportshub-murex.vercel.app)
 2. **Sign Up**: Click the "Sign Up" button in the top navigation
 3. **Fill Details**: Enter your name, email, and create a secure password
 4. **Choose Role**: Select "Player" for individual athletes or "Admin" for club management
@@ -354,7 +354,7 @@ Install SportsHub as a Progressive Web App:
 
 #### **On Mobile (Android/iOS)**
 1. **Open Browser**: Use Chrome, Safari, or Edge
-2. **Visit Site**: Go to sportshub3.vercel.app
+2. **Visit Site**: Go to sportshub-murex.vercel.app
 3. **Add to Home**: Look for "Add to Home Screen" option
 4. **Install**: Follow browser prompts
 5. **Launch**: Use like a regular app
@@ -474,7 +474,7 @@ Install SportsHub as a Progressive Web App:
 
 Welcome to the SportsHub community! We're excited to be part of your sports journey. Whether you're just starting out or you're a seasoned athlete, SportsHub has something for everyone. 
 
-**Ready to get started?** Visit [sportshub3.vercel.app](https://sportshub3.vercel.app) and begin your AI-powered sports adventure today!
+**Ready to get started?** Visit [sportshub-murex.vercel.app](https://sportshub-murex.vercel.app) and begin your AI-powered sports adventure today!
 
 ---
 

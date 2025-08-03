@@ -2,12 +2,12 @@
 
 <div align="center">
 
-![SportsHub Logo](https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=200&h=200&q=80)
+🏆
 
 **Empowering Athletes with Digital Identity and AI Coaching**
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-sportshub3.vercel.app-orange?style=for-the-badge)](https://sportshub3.vercel.app)
-[![License](https://img.shields.io/badge/📄_License-MIT-blue?style=for-the-badge)](#license)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-sportshub--murex.vercel.app-orange?style=for-the-badge)](https://sportshub-murex.vercel.app)
+[![License](https://img.shields.io/badge/📄_License-MIT-blue?style=for-the-badge)](https://github.com/Siddh-2006/BrightWebXWebWonders.git/LICENSE)
 [![Version](https://img.shields.io/badge/📦_Version-1.0.0-green?style=for-the-badge)](#)
 
 </div>
@@ -75,7 +75,7 @@ To democratize sports coaching and create a global community where every athlete
 - **AI Services**: Google Gemini API
 
 ### **Deployment & DevOps**
-- **Frontend**: Vercel ([Live Demo](https://sportshub3.vercel.app))
+- **Frontend**: Vercel ([Live Demo](https://sportshub-murex.vercel.app))
 - **Backend**: Render
 - **Database**: MongoDB Atlas
 - **Media Storage**: Cloudinary
@@ -200,7 +200,7 @@ GEMINI_API_KEY=your_gemini_api_key
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/your-username/sportshub.git
+   git clone https://github.com/Siddh-2006/BrightWebXWebWonders.git.git
    cd sportshub
    ```
 
@@ -475,9 +475,9 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 **Made with ❤️ by the Bright Web Team**
 
-[![GitHub Stars](https://img.shields.io/github/stars/your-username/sportshub?style=social)](https://github.com/your-username/sportshub)
+[![GitHub Stars](https://img.shields.io/github/stars/your-username/sportshub?style=social)](https://github.com/Siddh-2006/BrightWebXWebWonders.git)
 [![Follow on Twitter](https://img.shields.io/twitter/follow/sportshub?style=social)](https://twitter.com/sportshub)
 
-**[🌐 Visit SportsHub](https://sportshub3.vercel.app) | [📖 Documentation](./docs/) | [🚀 Get Started](#installation--setup)**
+**[🌐 Visit SportsHub](https://sportshub-murex.vercel.app) | [📖 Documentation](./docs/) | [🚀 Get Started](#installation--setup)**
 
 </div>

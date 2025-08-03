@@ -9,7 +9,7 @@ Welcome to the comprehensive documentation for **SportsHub** - the AI-powered sp
 New to SportsHub? Start here:
 
 1. **[User Guide](USER_GUIDE.md)** - Complete guide for using all features
-2. **[Live Demo](https://sportshub3.vercel.app)** - Try SportsHub now
+2. **[Live Demo](https://sportshub-murex.vercel.app)** - Try SportsHub now
 3. **[API Documentation](API_DOCUMENTATION.md)** - For developers integrating with our platform
 
 ---
@@ -120,7 +120,7 @@ New to SportsHub? Start here:
 ## 🎮 Getting Started
 
 ### **For End Users**
-1. Visit [sportshub3.vercel.app](https://sportshub3.vercel.app)
+1. Visit [sportshub-murex.vercel.app](https://sportshub-murex.vercel.app)
 2. Create your account and complete your profile
 3. Explore AI Guru for personalized coaching
 4. Discover clubs and join the community
@@ -210,10 +210,10 @@ We welcome contributions from the community! Here's how you can help:
 - **📖 Documentation**: Start with this comprehensive guide
 - **💬 GitHub Issues**: Report bugs and request features
 - **📧 Email Support**: support@sportshub.com
-- **🌐 Live Demo**: Try features at [sportshub3.vercel.app](https://sportshub3.vercel.app)
+- **🌐 Live Demo**: Try features at [sportshub-murex.vercel.app](https://sportshub-murex.vercel.app)
 
 ### **Community**
-- **🐙 GitHub**: [github.com/your-username/sportshub](https://github.com/your-username/sportshub)
+- **🐙 GitHub**: [github.com/your-username/sportshub](https://github.com/Siddh-2006/BrightWebXWebWonders.git)
 - **🐦 Twitter**: Follow [@sportshub](https://twitter.com/sportshub) for updates
 - **💬 Discord**: Join our developer community
 - **📺 YouTube**: Video tutorials and demos
@@ -289,7 +289,7 @@ SportsHub is released under the **MIT License**, making it free for both persona
 
 ## 🌟 Ready to Get Started?
 
-**[🚀 Try SportsHub Now](https://sportshub3.vercel.app)** | **[📖 Read User Guide](USER_GUIDE.md)** | **[🔧 Developer Docs](API_DOCUMENTATION.md)**
+**[🚀 Try SportsHub Now](https://sportshub-murex.vercel.app)** | **[📖 Read User Guide](USER_GUIDE.md)** | **[🔧 Developer Docs](API_DOCUMENTATION.md)**
 
 ---
 
@@ -297,7 +297,7 @@ SportsHub is released under the **MIT License**, making it free for both persona
 
 *Empowering athletes worldwide through AI-powered sports technology*
 
-[![GitHub Stars](https://img.shields.io/github/stars/your-username/sportshub?style=social)](https://github.com/your-username/sportshub)
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-sportshub3.vercel.app-orange?style=for-the-badge)](https://sportshub3.vercel.app)
+[![GitHub Stars](https://img.shields.io/github/stars/your-username/sportshub?style=social)](https://github.com/Siddh-2006/BrightWebXWebWonders.git)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-sportshub-murex.vercel.app-orange?style=for-the-badge)](https://sportshub-murex.vercel.app)
 
 </div>

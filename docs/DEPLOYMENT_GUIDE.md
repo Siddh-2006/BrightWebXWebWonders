@@ -50,7 +50,7 @@ SportsHub is deployed using a modern cloud-native architecture:
 #### **Frontend (.env)**
 ```env
 # API Configuration
-VITE_BACKEND_URL=https://your-backend-url.render.com
+VITE_BACKEND_URL=https://sportshub-backend.render.com
 
 # AI Services
 VITE_GEMINI_API_KEY=your_gemini_api_key_here
@@ -86,7 +86,7 @@ EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_app_password
 
 # CORS Origins
-ALLOWED_ORIGINS=https://your-frontend-url.vercel.app,http://localhost:5173
+ALLOWED_ORIGINS=https://sportshub-murex.vercel.app,http://localhost:5173
 
 # Session Configuration
 SESSION_SECRET=your_session_secret_here
