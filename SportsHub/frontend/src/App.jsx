@@ -18,12 +18,13 @@ import NotificationToast from './components/NotificationToast';
 import { useContext } from 'react';
 import loginContext from './context/loginContext';
 import Logout from './pages/Logout';
+import axios from 'axios';
 import LivePage from './pages/LivePage';
 import LiveScoreAdmin from './pages/LiveScoreAdmin';
 import Club from './pages/Club';
 import ClubDetails from './pages/ClubDetails';
 import EndedPage from './pages/EndedPage';
-import ScrollToTop from './components/ScrollToTop';
+import ScrollToTop from './components/ScrollToTop'; 
 import ChallengeDetails from './pages/ChallengeDetails';
 import EndedScoreAdmin from './pages/EndedScoreAdmin';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -36,9 +37,32 @@ function App() {
   const [userType, setUserType] = useState('player');
   const [isDarkMode, setIsDarkMode] = useState(true);
   const login_info = useContext(loginContext);
+  console.log(login_info)
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
   };
+  // check to see if the user is logged in
+
+  useEffect(() => {
+    console.log(`${import.meta.env.VITE_BACKEND_URL}`)
+    const fetch_user = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/users/profile`, { withCredentials: true });
+        if (res.status == 200) {
+          login_info.setIsLoggedIn(true);
+          localStorage.setItem("username",res.data.fullname)
+          console.log("set login true at app.jsx",res.data)
+        }
+        else {
+          login_info.setIsLoggedIn(false);
+        }
+      } catch (err) {
+        console.log(err)
+        login_info.setIsLoggedIn(false);
+      }
+    }
+    if(login_info.isLoggedIn==false){fetch_user()}
+  }, [login_info])
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode
@@ -65,9 +89,9 @@ function App() {
             <Route path="/notifications" element={<Notifications isDarkMode={isDarkMode} userType={userType} />} />
             <Route path="/ai-guru" element={<AIGuru isDarkMode={isDarkMode} />} />
             <Route path="/about" element={<About isDarkMode={isDarkMode} />} />
-            <Route path="/profile" element={<Profile isDarkMode={isDarkMode} />} />
-            <Route path="/login" element={<Login isDarkMode={isDarkMode} />} />
-            <Route path="/logout" element={<Logout />} />
+            <Route path="/profile" element={<Profile isDarkMode={isDarkMode} isLoggedIn={login_info.isLoggedIn} />} />
+            <Route path="/login" element={<Login isDarkMode={isDarkMode} setIsLoggedIn={login_info.setIsLoggedIn} isLoggedIn={login_info.isLoggedIn} />} />
+            <Route path="/logout" element={<Logout setIsLoggedIn={login_info.setIsLoggedIn} />} />
             <Route path="/club" element={<Club isDarkMode={isDarkMode} />} />
             <Route path="/match_ended/:sport/:matchId" element={<EndedPage isDarkMode={isDarkMode}/>}></Route>
             <Route path="/match_ended_admin/:sport/:matchId" element={<EndedScoreAdmin isDarkMode={isDarkMode}/>}></Route>

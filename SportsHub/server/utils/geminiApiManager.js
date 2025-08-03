@@ -161,15 +161,5 @@ module.exports = {
     resetDailyKeyUsage,
     getLastGenerationTimestamp, // Export this for the cron job logic
     // Export constants for visibility if needed elsewhere
-    RPM_WINDOW_MS,
-    // Export additional utilities for monitoring
-    getApiKeyState: () => apiKeyState,
-    getApiKeys: () => API_KEYS,
-    getQuotaLimits: () => ({
-        RPM_LIMIT_PER_KEY,
-        RPD_LIMIT_PER_KEY,
-        MAX_RPM_CALLS,
-        MAX_RPD_CALLS,
-        SAFETY_THRESHOLD_PERCENT
-    })
+    RPM_WINDOW_MS
 };

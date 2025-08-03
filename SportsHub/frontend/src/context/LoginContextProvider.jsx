@@ -1,16 +1,14 @@
-import React, { useState } from 'react'
+import React,{useState,useEffect} from 'react'
 import loginContext from './loginContext'
-
-function LoginContextProvider({ children }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userType, setUserType] = useState('');
-
+function LoginContextProvider({children}) {
+  const [isLoggedIn,setIsLoggedIn] = useState(false);
+  useEffect(()=>{
+    localStorage.setItem("login",isLoggedIn)
+  },[isLoggedIn])
   return (
     <loginContext.Provider value={{
       isLoggedIn,
       setIsLoggedIn,
-      userType,
-      setUserType
     }}>
       {children}
     </loginContext.Provider>

@@ -1,5 +1,12 @@
 const CustomTrainingPlan = require('../models/CustomTrainingPlan');
-const aiChatRouter = require('../services/aiChatRouter');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+const geminiApiKey = process.env.GEMINI_API_KEY_TrainingPlan || process.env.GEMINI_API_KEY_AI_GURU || process.env.GEMINI_API_KEY_PostureCorrector;
+if (!geminiApiKey) {
+  console.error("Error: No Gemini API Key found for custom training plans!");
+}
+
+const genAI = new GoogleGenerativeAI(geminiApiKey);
 
 const CUSTOM_TRAINING_PLAN_PROMPT = `
 You are an elite sports coach and training specialist. Create a comprehensive, personalized training plan based on the provided custom requirements.
@@ -132,29 +139,91 @@ const createCustomTrainingPlan = async (req, res) => {
       tags: tags || []
     });
 
-    // Generate AI training plan using AI Chat Router
+    // Generate AI training plan
     try {
-      console.log('[Custom Training Plan Controller] Generating plan using AI Chat Router');
-      
-      const planData = {
-        planName,
-        sport,
-        difficulty,
-        weeks,
-        sessionsPerWeek,
-        sessionDuration,
-        goals,
-        focusAreas,
-        equipment,
-        customNotes
-      };
+      const fullPrompt = CUSTOM_TRAINING_PLAN_PROMPT
+        .replace(/<<planName>>/g, planName)
+        .replace(/<<sport>>/g, sport)
+        .replace(/<<difficulty>>/g, difficulty)
+        .replace(/<<weeks>>/g, weeks)
+        .replace(/<<totalDays>>/g, totalDays)
+        .replace(/<<sessionsPerWeek>>/g, sessionsPerWeek)
+        .replace(/<<sessionDuration>>/g, sessionDuration)
+        .replace(/<<totalSessions>>/g, totalSessions)
+        .replace(/<<goals>>/g, goals?.join(', ') || 'General fitness improvement')
+        .replace(/<<focusAreas>>/g, focusAreas?.join(', ') || 'Overall development')
+        .replace(/<<equipment>>/g, equipment?.map(eq => eq.name).join(', ') || 'Basic equipment')
+        .replace(/<<customNotes>>/g, customNotes || 'No specific notes')
+        .replace(/<<restDays>>/g, restDays);
 
-      const generatedPlan = await aiChatRouter.generateCustomTrainingPlan(planData);
-      customTrainingPlan.generatedPlan = generatedPlan;
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const result = await model.generateContent(fullPrompt);
       
-      console.log('[Custom Training Plan Controller] AI plan generated successfully');
+      let responseText = await result.response.text();
+      console.log('Raw Gemini Response for Custom Plan:', responseText);
+
+      // Extract JSON from markdown code block if present
+      const jsonMatch = responseText.match(/```json\n([\s\S]*)\n```/);
+      if (jsonMatch && jsonMatch[1]) {
+        responseText = jsonMatch[1].trim();
+      } else {
+        responseText = responseText.trim();
+      }
+
+      let generatedPlan = {};
+      try {
+        generatedPlan = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("Failed to parse Gemini response as JSON:", responseText, parseError);
+        
+        // Fallback plan
+        generatedPlan = {
+          planTitle: `${planName} - ${sport} Training Plan`,
+          overview: `A comprehensive ${difficulty.toLowerCase()} level training plan for ${sport} designed to achieve your specific goals over ${weeks} weeks.`,
+          weeklyStructure: {
+            sessionsPerWeek,
+            totalWeeks: weeks,
+            restDays
+          },
+          sessionDetails: [
+            {
+              sessionNumber: 1,
+              title: `${sport} Training Session`,
+              duration: `${sessionDuration} minutes`,
+              focus: focusAreas?.[0] || "General fitness",
+              warmUp: ["5-minute light cardio", "Dynamic stretching", "Sport-specific movements"],
+              mainWorkout: ["Skill practice", "Conditioning exercises", "Sport-specific drills"],
+              coolDown: ["Static stretching", "Breathing exercises"]
+            }
+          ],
+          progression: {
+            "week1-2": "Foundation building and technique focus",
+            "week3-4": "Intensity increase and skill development",
+            "week5+": "Performance optimization and goal achievement"
+          },
+          equipment: equipment?.map(eq => eq.name) || ["Basic sports equipment"],
+          safetyGuidelines: [
+            "Always warm up before training",
+            "Stay hydrated throughout sessions",
+            "Listen to your body and rest when needed"
+          ],
+          nutritionTips: [
+            "Eat a balanced meal 2-3 hours before training",
+            "Stay hydrated before, during, and after exercise",
+            "Include protein in post-workout meals for recovery"
+          ],
+          recoveryGuidelines: [
+            "Get 7-9 hours of sleep per night",
+            "Include rest days in your training schedule",
+            "Use active recovery like light walking or stretching"
+          ],
+          additionalNotes: "Stay consistent with your training and track your progress. Remember, improvement takes time and dedication!"
+        };
+      }
+
+      customTrainingPlan.generatedPlan = generatedPlan;
     } catch (aiError) {
-      console.error('[Custom Training Plan Controller] AI generation error:', aiError);
+      console.error('AI generation error:', aiError);
       // Continue without AI-generated plan - user can still save their custom parameters
     }
 
