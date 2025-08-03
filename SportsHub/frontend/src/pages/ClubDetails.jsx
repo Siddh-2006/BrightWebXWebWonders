@@ -230,7 +230,7 @@ const ClubDetails = ({ isDarkMode }) => {
                     : "bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-5 py-3 rounded-2xl font-semibold shadow hover:from-blue-600 hover:to-cyan-600 transition-all"
                 }
               >
-                Update details
+                Create Post
               </button>
               <button
                 onClick={() => setEditProfileModalOpen(true)}

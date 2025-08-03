@@ -11,7 +11,7 @@ const About = ({ isDarkMode }) => {
     {
       name: 'Siddh Shah',
       role: 'Lead Developer',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+      image: '#',
       bio: 'Athlete. Developer. Entrepreneur. On a mission to reshape global sports access through technology.',
       social: {
         linkedin: 'https://in.linkedin.com/in/siddh-shah-71491832a?original_referer=https%3A%2F%2Fwww.bing.com%2F',
@@ -31,25 +31,25 @@ const About = ({ isDarkMode }) => {
       }
     },
     {
-      name: 'Marcus Thompson',
-      role: 'Sports Director',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80',
-      bio: 'Olympic coach and sports scientist, bringing world-class training methodologies to digital platforms.',
+      name: 'Bhaskar Sahu',
+      role: 'Front End developer',
+      image: '#',
+      bio: 'chess enthusiast and developer',
       social: {
-        linkedin: '#',
+        linkedin: 'https://www.linkedin.com/in/bhaskar-sahu-4489a229b/',
         twitter: '#',
-        email: 'marcus@sportshub.com'
+        email: 'bhscodz7@gmail.com'
       }
     },
     {
-      name: 'Emma Wilson',
-      role: 'Community Manager',
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=400&q=80',
-      bio: 'Sports journalist and community builder, connecting athletes worldwide through shared passion.',
+      name: 'Sharad Jhawar',
+      role: 'Front End developer and UI UX designer',
+      image: '#',
+      bio: 'Cricket enthusiast and Web Developer',
       social: {
         linkedin: '#',
         twitter: '#',
-        email: 'emma@sportshub.com'
+        email: '#'
       }
     }
   ];
@@ -477,7 +477,7 @@ const About = ({ isDarkMode }) => {
               }`} />
               <h3 className="text-xl font-bold mb-2">Email Us</h3>
               <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                support@sportshub.com
+                sportshub2025@gmail.com
               </p>
             </div>
             <div className={`text-center p-8 rounded-2xl ${
