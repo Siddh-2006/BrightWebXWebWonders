@@ -39,8 +39,8 @@ module.exports.registerUser=async (req,res)=>{
                     let token=generateToken(user);
                     res.cookie("token", token, {
                         httpOnly: true,
-                        sameSite: "Lax",
-                        secure: process.env.NODE_ENV === "production",
+                        sameSite: "None",
+                        secure: true,
                      });
                     res.send("User created successfully");
                 }
