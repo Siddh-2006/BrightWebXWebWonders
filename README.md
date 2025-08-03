@@ -21,3 +21,4 @@
 - **Backend:** Node.js, Express.js  
 - **Database:** MongoDB  
 - **API:** Gemini API (for AI coach, assistant, and quizzes)
+- **image cascade model** media pipe pose
