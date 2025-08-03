@@ -61,7 +61,7 @@ const Admin = ({ isDarkMode }) => {
 
   const fetchAllClubs = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}:3000/clubs`, {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/clubs`, {
         withCredentials: true,
       });
       setAllClubs(res.data);

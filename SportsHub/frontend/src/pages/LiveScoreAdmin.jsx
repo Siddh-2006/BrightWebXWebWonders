@@ -20,7 +20,7 @@ const LiveScoreAdmin = () => {
     const checkAdminAccess = async () => {
       try {
         const res = await axios.get(
-          `${process.env.BACKEND_URL}/match/live/${matchId}/check-club-admin`,
+          `${import.meta.env.VITE_BACKEND_URL}/match/live/${matchId}/check-club-admin`,
           {
             withCredentials: true,
           }
