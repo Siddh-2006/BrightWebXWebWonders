@@ -12,12 +12,27 @@ const {
 } = require('../controllers/customTrainingPlanController');
 
 const isloggedin = require("../middlewares/isLoggedIn");
-// Middleware for user authentication (optional - can be added later)
+
+// Enhanced authentication middleware
 const authenticateUser = (req, res, next) => {
-  // For now, we'll skip authentication and use a default user
-  // In production, this would verify JWT tokens
-  req.user = { id: '507f1f77bcf86cd799439011' }; // Default user ID
-  next();
+  // Try to use the existing isLoggedIn middleware first
+  isloggedin(req, res, (err) => {
+    if (err) {
+      // If authentication fails, use a default user for development
+      console.warn('[Custom Training Plan Router] Authentication failed, using default user');
+      req.user = { id: '507f1f77bcf86cd799439011' }; // Default user ID
+      return next();
+    }
+    
+    // If user is authenticated, proceed
+    if (req.user && req.user.id) {
+      return next();
+    }
+    
+    // Fallback to default user
+    req.user = { id: '507f1f77bcf86cd799439011' };
+    next();
+  });
 };
 
 // Create a new custom training plan

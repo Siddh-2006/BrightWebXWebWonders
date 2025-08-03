@@ -141,21 +141,45 @@ const createCustomTrainingPlan = async (req, res) => {
         sport,
         difficulty,
         weeks,
+        totalDays,
         sessionsPerWeek,
         sessionDuration,
-        goals,
-        focusAreas,
-        equipment,
-        customNotes
+        totalSessions,
+        restDays,
+        goals: goals || [],
+        focusAreas: focusAreas || [],
+        equipment: equipment || [],
+        customNotes: customNotes || ''
       };
 
       const generatedPlan = await aiChatRouter.generateCustomTrainingPlan(planData);
-      customTrainingPlan.generatedPlan = generatedPlan;
       
-      console.log('[Custom Training Plan Controller] AI plan generated successfully');
+      if (generatedPlan && typeof generatedPlan === 'object') {
+        customTrainingPlan.generatedPlan = generatedPlan;
+        console.log('[Custom Training Plan Controller] AI plan generated successfully');
+      } else {
+        console.warn('[Custom Training Plan Controller] AI generated invalid plan, using fallback');
+        customTrainingPlan.generatedPlan = createFallbackPlan(planData);
+      }
+      
     } catch (aiError) {
       console.error('[Custom Training Plan Controller] AI generation error:', aiError);
-      // Continue without AI-generated plan - user can still save their custom parameters
+      console.log('[Custom Training Plan Controller] Using fallback plan');
+      customTrainingPlan.generatedPlan = createFallbackPlan({
+        planName,
+        sport,
+        difficulty,
+        weeks,
+        totalDays,
+        sessionsPerWeek,
+        sessionDuration,
+        totalSessions,
+        restDays,
+        goals: goals || [],
+        focusAreas: focusAreas || [],
+        equipment: equipment || [],
+        customNotes: customNotes || ''
+      });
     }
 
     // Save to database

@@ -1,14 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const geminiApiKey = process.env.GEMINI_API_KEY_AI_GURU || process.env.GEMINI_API_KEY_PostureCorrector;
-if (!geminiApiKey) {
-  console.error("Error: No Gemini API Key found for training plans!");
-  process.exit(1);
-}
-
-const genAI = new GoogleGenerativeAI(geminiApiKey);
+const aiChatRouter = require('../services/aiChatRouter');
 
 const TRAINING_PLAN_PROMPT = `
 You are an elite sports coach and training specialist. Your task is to create a comprehensive, personalized training plan based on the provided information.
@@ -107,85 +99,99 @@ router.post('/generate', async (req, res) => {
       .replace(/<<sessions>>/g, sessions)
       .replace(/<<userDetails>>/g, userInfo.details || 'Looking to improve performance');
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const result = await model.generateContent(fullPrompt);
-    
-    let responseText = await result.response.text();
-    console.log('Raw Gemini Response:', responseText);
+    // Use the enhanced AI Chat Router for better reliability
+    const responseText = await aiChatRouter.generateContent(fullPrompt);
+    console.log('AI Chat Router Response received');
 
     // Extract JSON from markdown code block if present
+    let cleanedResponse = responseText;
     const jsonMatch = responseText.match(/```json\n([\s\S]*)\n```/);
     if (jsonMatch && jsonMatch[1]) {
-      responseText = jsonMatch[1].trim();
+      cleanedResponse = jsonMatch[1].trim();
     } else {
-      responseText = responseText.trim();
+      cleanedResponse = responseText.trim();
     }
 
     let trainingPlan = {};
     try {
-      trainingPlan = JSON.parse(responseText);
+      trainingPlan = JSON.parse(cleanedResponse);
       
       // Validate required fields
       if (!trainingPlan.planTitle || !trainingPlan.overview || !trainingPlan.sessionDetails) {
         throw new Error("Missing required fields in training plan response");
       }
     } catch (parseError) {
-      console.error("Failed to parse Gemini response as JSON:", responseText, parseError);
+      console.error("Failed to parse AI response as JSON:", cleanedResponse, parseError);
       
       // Fallback training plan
-      trainingPlan = {
-        planTitle: `${sport} Training Plan - ${difficulty} Level`,
-        overview: `A comprehensive ${difficulty.toLowerCase()} level training plan for ${sport} designed to improve your skills and performance over ${duration}.`,
-        weeklyStructure: {
-          sessionsPerWeek: Math.ceil(sessions / parseInt(duration.split(' ')[0])),
-          totalWeeks: parseInt(duration.split(' ')[0]),
-          restDays: 2
-        },
-        sessionDetails: [
-          {
-            sessionNumber: 1,
-            title: `${sport} Fundamentals`,
-            duration: "45-60 minutes",
-            focus: "Basic technique and conditioning",
-            warmUp: ["5-minute light jogging", "Dynamic stretching", "Sport-specific movements"],
-            mainWorkout: ["Technique drills", "Skill practice", "Conditioning exercises"],
-            coolDown: ["Static stretching", "Breathing exercises"]
-          }
-        ],
-        progression: {
-          "week1-2": "Focus on fundamentals and building base fitness",
-          "week3-4": "Increase intensity and introduce advanced techniques",
-          "week5+": "Performance optimization and competition preparation"
-        },
-        equipment: ["Basic sports equipment", "Training cones", "Water bottle"],
-        safetyGuidelines: [
-          "Always warm up before training",
-          "Stay hydrated throughout sessions",
-          "Listen to your body and rest when needed"
-        ],
-        nutritionTips: [
-          "Eat a balanced meal 2-3 hours before training",
-          "Stay hydrated before, during, and after exercise",
-          "Include protein in post-workout meals for recovery"
-        ],
-        recoveryGuidelines: [
-          "Get 7-9 hours of sleep per night",
-          "Include rest days in your training schedule",
-          "Use active recovery like light walking or stretching"
-        ],
-        additionalNotes: "Remember, consistency is key to improvement. Stay motivated and enjoy your training journey!"
-      };
+      trainingPlan = createFallbackTrainingPlan(sport, difficulty, duration, sessions, userInfo);
     }
 
     res.json({ trainingPlan });
 
   } catch (error) {
     console.error('Error generating training plan:', error);
-    res.status(500).json({ 
-      error: 'Failed to generate training plan. Please try again.',
-      details: error.message 
-    });
+    
+    // Return fallback plan on any error
+    const fallbackPlan = createFallbackTrainingPlan(
+      req.body.sport || 'General',
+      req.body.difficulty || 'Beginner',
+      req.body.duration || '4 weeks',
+      req.body.sessions || 12,
+      req.body.userInfo || {}
+    );
+    
+    res.json({ trainingPlan: fallbackPlan });
   }
 });
+
+// Helper function to create fallback training plan
+const createFallbackTrainingPlan = (sport, difficulty, duration, sessions, userInfo) => {
+  const weeks = parseInt(duration.split(' ')[0]) || 4;
+  const sessionsPerWeek = Math.ceil(sessions / weeks) || 3;
+  
+  return {
+    planTitle: `${sport} Training Plan - ${difficulty} Level`,
+    overview: `A comprehensive ${difficulty.toLowerCase()} level training plan for ${sport} designed to improve your skills and performance over ${duration}.`,
+    weeklyStructure: {
+      sessionsPerWeek: sessionsPerWeek,
+      totalWeeks: weeks,
+      restDays: 7 - sessionsPerWeek
+    },
+    sessionDetails: [
+      {
+        sessionNumber: 1,
+        title: `${sport} Fundamentals`,
+        duration: "45-60 minutes",
+        focus: "Basic technique and conditioning",
+        warmUp: ["5-minute light jogging", "Dynamic stretching", "Sport-specific movements"],
+        mainWorkout: ["Technique drills", "Skill practice", "Conditioning exercises"],
+        coolDown: ["Static stretching", "Breathing exercises"]
+      }
+    ],
+    progression: {
+      "week1-2": "Focus on fundamentals and building base fitness",
+      "week3-4": "Increase intensity and introduce advanced techniques",
+      "week5+": "Performance optimization and competition preparation"
+    },
+    equipment: ["Basic sports equipment", "Training cones", "Water bottle"],
+    safetyGuidelines: [
+      "Always warm up before training",
+      "Stay hydrated throughout sessions",
+      "Listen to your body and rest when needed"
+    ],
+    nutritionTips: [
+      "Eat a balanced meal 2-3 hours before training",
+      "Stay hydrated before, during, and after exercise",
+      "Include protein in post-workout meals for recovery"
+    ],
+    recoveryGuidelines: [
+      "Get 7-9 hours of sleep per night",
+      "Include rest days in your training schedule",
+      "Use active recovery like light walking or stretching"
+    ],
+    additionalNotes: "Remember, consistency is key to improvement. Stay motivated and enjoy your training journey!"
+  };
+};
 
 module.exports = router;

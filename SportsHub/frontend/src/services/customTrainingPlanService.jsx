@@ -1,4 +1,4 @@
-const CUSTOM_TRAINING_PLAN_API_ENDPOINT = `${import.meta.env.VITE_BACKEND_URL}/api/custom-training-plans`;
+const CUSTOM_TRAINING_PLAN_API_ENDPOINT = `${import.meta.env.VITE_BACKEND_URL || 'https://sportshub-murex.vercel.app'}/api/custom-training-plans`;
 
 // Create a new custom training plan
 export const createCustomTrainingPlan = async (planData) => {
@@ -7,7 +7,10 @@ export const createCustomTrainingPlan = async (planData) => {
     
     const response = await fetch(`${CUSTOM_TRAINING_PLAN_API_ENDPOINT}/create`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
       body: JSON.stringify(planData)
     });
 
@@ -35,7 +38,8 @@ export const getUserTrainingPlans = async () => {
     
     const response = await fetch(`${CUSTOM_TRAINING_PLAN_API_ENDPOINT}/my-plans`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
     });
 
     if (!response.ok) {
@@ -60,7 +64,8 @@ export const getTrainingPlan = async (planId) => {
     
     const response = await fetch(`${CUSTOM_TRAINING_PLAN_API_ENDPOINT}/${planId}`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
     });
 
     if (!response.ok) {
@@ -86,6 +91,7 @@ export const updateTrainingPlan = async (planId, updates) => {
     const response = await fetch(`${CUSTOM_TRAINING_PLAN_API_ENDPOINT}/${planId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(updates)
     });
 
@@ -111,7 +117,8 @@ export const deleteTrainingPlan = async (planId) => {
     
     const response = await fetch(`${CUSTOM_TRAINING_PLAN_API_ENDPOINT}/${planId}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
     });
 
     if (!response.ok) {
@@ -142,7 +149,8 @@ export const getPublicTrainingPlans = async (filters = {}) => {
 
     const response = await fetch(`${CUSTOM_TRAINING_PLAN_API_ENDPOINT}/public/browse?${queryParams}`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
     });
 
     if (!response.ok) {
@@ -167,7 +175,8 @@ export const toggleLikeTrainingPlan = async (planId) => {
     
     const response = await fetch(`${CUSTOM_TRAINING_PLAN_API_ENDPOINT}/${planId}/like`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
     });
 
     if (!response.ok) {
@@ -193,6 +202,7 @@ export const updateSessionProgress = async (planId, sessionData) => {
     const response = await fetch(`${CUSTOM_TRAINING_PLAN_API_ENDPOINT}/${planId}/progress`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(sessionData)
     });
 
@@ -218,7 +228,8 @@ export const getTrainingPlanStats = async (planId) => {
     
     const response = await fetch(`${CUSTOM_TRAINING_PLAN_API_ENDPOINT}/${planId}/stats`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
     });
 
     if (!response.ok) {
@@ -243,7 +254,8 @@ export const duplicateTrainingPlan = async (planId) => {
     
     const response = await fetch(`${CUSTOM_TRAINING_PLAN_API_ENDPOINT}/${planId}/duplicate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
     });
 
     if (!response.ok) {

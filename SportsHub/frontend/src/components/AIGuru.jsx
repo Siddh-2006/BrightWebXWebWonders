@@ -596,12 +596,13 @@ const AIGuru = ({ isDarkMode = true }) => {
     setIsGeneratingPlan(true);
     setCurrentTrainingPlan(null);
 
+    // Extract sport from plan title (e.g., "Beginner Football Training" -> "Football")
+    const sportMatch = plan.title.match(/\b(Football|Basketball|Cricket|Tennis|Swimming|Athletic)\b/i);
+    const sport = sportMatch ? sportMatch[1] : plan.title.split(' ')[1] || 'General';
+
     try {
       console.log('🎯 Generating training plan for:', plan);
-      
-      // Extract sport from plan title (e.g., "Beginner Football Training" -> "Football")
-      const sportMatch = plan.title.match(/\b(Football|Basketball|Cricket|Tennis|Swimming|Athletic)\b/i);
-      const sport = sportMatch ? sportMatch[1] : plan.title.split(' ')[1] || 'General';
+      console.log('🎯 Extracted sport:', sport);
       
       const trainingPlan = await generateTrainingPlan({
         userInfo: {
@@ -618,12 +619,55 @@ const AIGuru = ({ isDarkMode = true }) => {
       setCurrentTrainingPlan(trainingPlan);
     } catch (error) {
       console.error('Failed to generate training plan:', error);
-      // Show error in modal or close it
-      setCurrentTrainingPlan({
-        planTitle: `${plan.title} - Error`,
-        overview: 'Failed to generate training plan. Please try again later.',
-        error: true
-      });
+      
+      // Create a fallback training plan
+      const fallbackPlan = {
+        planTitle: `${plan.title}`,
+        overview: `A comprehensive ${plan.difficulty.toLowerCase()} level training plan for ${sport}. This plan is designed to help you achieve your fitness goals through structured training sessions over ${plan.duration}.`,
+        weeklyStructure: {
+          sessionsPerWeek: Math.ceil(plan.sessions / parseInt(plan.duration.split(' ')[0])),
+          totalWeeks: parseInt(plan.duration.split(' ')[0]),
+          restDays: 2
+        },
+        sessionDetails: [
+          {
+            sessionNumber: 1,
+            title: `${sport} Training Session`,
+            duration: "45-60 minutes",
+            focus: "Technique and conditioning",
+            warmUp: ["5-minute light cardio", "Dynamic stretching", "Sport-specific movements"],
+            mainWorkout: ["Skill practice", "Conditioning exercises", "Sport-specific drills"],
+            coolDown: ["Static stretching", "Breathing exercises"]
+          }
+        ],
+        progression: {
+          "week1-2": "Focus on fundamentals and building base fitness",
+          "week3-4": "Increase intensity and introduce advanced techniques",
+          "week5+": "Performance optimization and competition preparation"
+        },
+        equipment: ["Basic sports equipment", "Training cones", "Water bottle"],
+        safetyGuidelines: [
+          "Always warm up before training",
+          "Stay hydrated throughout sessions",
+          "Listen to your body and rest when needed"
+        ],
+        nutritionTips: [
+          "Eat a balanced meal 2-3 hours before training",
+          "Stay hydrated before, during, and after exercise",
+          "Include protein in post-workout meals for recovery"
+        ],
+        recoveryGuidelines: [
+          "Get 7-9 hours of sleep per night",
+          "Include rest days in your training schedule",
+          "Use active recovery like light walking or stretching"
+        ],
+        additionalNotes: "This is a fallback training plan. For personalized AI-generated plans, please ensure your internet connection is stable and try again."
+      };
+      
+      setCurrentTrainingPlan(fallbackPlan);
+      
+      // Show error notification
+      showCustomAlert('Unable to generate AI training plan. Showing a basic plan instead. Please check your internet connection and try again.');
     } finally {
       setIsGeneratingPlan(false);
     }

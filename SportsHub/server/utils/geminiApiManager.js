@@ -4,7 +4,38 @@ const path = require('path');
 require('dotenv').config();
 
 // --- Configuration ---
-const API_KEYS = process.env.GEMINI_API_KEYS ? process.env.GEMINI_API_KEYS.split(',') : [];
+// Load API keys from multiple sources
+const loadApiKeys = () => {
+    const keys = [];
+    
+    // Primary keys
+    if (process.env.GEMINI_API_KEY_AI_GURU) {
+        keys.push(process.env.GEMINI_API_KEY_AI_GURU.trim());
+    }
+    
+    if (process.env.GEMINI_API_KEY_TrainingPlan) {
+        keys.push(process.env.GEMINI_API_KEY_TrainingPlan.trim());
+    }
+    
+    if (process.env.GEMINI_API_KEY_PostureCorrector) {
+        keys.push(process.env.GEMINI_API_KEY_PostureCorrector.trim());
+    }
+
+    // Additional keys from comma-separated list
+    if (process.env.GEMINI_API_KEYS) {
+        const additionalKeys = process.env.GEMINI_API_KEYS.split(',');
+        additionalKeys.forEach(key => {
+            const trimmedKey = key.trim();
+            if (trimmedKey && !keys.includes(trimmedKey)) {
+                keys.push(trimmedKey);
+            }
+        });
+    }
+
+    return keys.filter(key => key && key.length > 20); // Basic validation
+};
+
+const API_KEYS = loadApiKeys();
 const RPM_LIMIT_PER_KEY = 10; // Requests Per Minute (Google's default free tier is often 60 RPM per project)
 const RPD_LIMIT_PER_KEY = 250; // Requests Per Day (Google's default free tier is often 1500 RPD per project)
 const SAFETY_THRESHOLD_PERCENT = 0.8; // Use only 80% of quota to be safe

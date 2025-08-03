@@ -25,7 +25,7 @@ class AIChatRouter {
         const keys = [];
         
         // Primary keys
-        if (process.env.GEMINI_API_KEY_AI_GURU) {
+        if (process.env.GEMINI_API_KEY_AI_GURU && this.isValidApiKey(process.env.GEMINI_API_KEY_AI_GURU)) {
             keys.push({
                 key: process.env.GEMINI_API_KEY_AI_GURU,
                 name: 'AI_GURU',
@@ -33,7 +33,7 @@ class AIChatRouter {
             });
         }
         
-        if (process.env.GEMINI_API_KEY_TrainingPlan) {
+        if (process.env.GEMINI_API_KEY_TrainingPlan && this.isValidApiKey(process.env.GEMINI_API_KEY_TrainingPlan)) {
             keys.push({
                 key: process.env.GEMINI_API_KEY_TrainingPlan,
                 name: 'TRAINING_PLAN',
@@ -41,7 +41,7 @@ class AIChatRouter {
             });
         }
         
-        if (process.env.GEMINI_API_KEY_PostureCorrector) {
+        if (process.env.GEMINI_API_KEY_PostureCorrector && this.isValidApiKey(process.env.GEMINI_API_KEY_PostureCorrector)) {
             keys.push({
                 key: process.env.GEMINI_API_KEY_PostureCorrector,
                 name: 'POSTURE_CORRECTOR',
@@ -53,9 +53,10 @@ class AIChatRouter {
         if (process.env.GEMINI_API_KEYS) {
             const additionalKeys = process.env.GEMINI_API_KEYS.split(',');
             additionalKeys.forEach((key, index) => {
-                if (key.trim()) {
+                const trimmedKey = key.trim();
+                if (trimmedKey && this.isValidApiKey(trimmedKey)) {
                     keys.push({
-                        key: key.trim(),
+                        key: trimmedKey,
                         name: `BACKUP_${index + 1}`,
                         priority: 10 + index
                     });
@@ -64,28 +65,69 @@ class AIChatRouter {
         }
 
         if (keys.length === 0) {
-            throw new Error('No Gemini API keys found in environment variables');
+            console.warn('[AI Chat Router] No valid Gemini API keys found in environment variables');
+            console.warn('[AI Chat Router] Please check your environment variables:');
+            console.warn('- GEMINI_API_KEY_AI_GURU');
+            console.warn('- GEMINI_API_KEY_TrainingPlan');
+            console.warn('- GEMINI_API_KEY_PostureCorrector');
+            console.warn('- GEMINI_API_KEYS (comma-separated list)');
+            
+            // Return empty array instead of throwing error to allow graceful fallback
+            return [];
         }
 
-        console.log(`[AI Chat Router] Loaded ${keys.length} API keys`);
+        console.log(`[AI Chat Router] Loaded ${keys.length} valid API keys`);
         return keys.sort((a, b) => a.priority - b.priority);
+    }
+
+    /**
+     * Validate API key format
+     */
+    isValidApiKey(key) {
+        if (!key || typeof key !== 'string') {
+            return false;
+        }
+        
+        // Basic validation for Google API key format
+        // Google API keys typically start with 'AIza' and are 39 characters long
+        const trimmedKey = key.trim();
+        if (trimmedKey.length < 20 || !trimmedKey.startsWith('AIza')) {
+            console.warn(`[AI Chat Router] Invalid API key format: ${trimmedKey.substring(0, 8)}...`);
+            return false;
+        }
+        
+        return true;
     }
 
     /**
      * Initialize GoogleGenerativeAI models for all keys
      */
     initializeModels() {
+        if (this.apiKeys.length === 0) {
+            console.warn('[AI Chat Router] No API keys available for model initialization');
+            return;
+        }
+
         this.apiKeys.forEach(({ key, name }) => {
             try {
                 const genAI = new GoogleGenerativeAI(key);
                 this.models.set(key, {
                     genAI,
                     model: genAI.getGenerativeModel({ model: "gemini-2.0-flash" }),
-                    name
+                    name,
+                    isValid: true
                 });
                 console.log(`[AI Chat Router] Initialized model for ${name}`);
             } catch (error) {
                 console.error(`[AI Chat Router] Failed to initialize model for ${name}:`, error.message);
+                // Mark this key as invalid
+                this.models.set(key, {
+                    genAI: null,
+                    model: null,
+                    name,
+                    isValid: false,
+                    error: error.message
+                });
             }
         });
     }
@@ -114,9 +156,7 @@ class AIChatRouter {
         return availableKey;
     }
 
-    /**
-     * Execute AI request with automatic failover and retry logic
-     */
+
     async executeWithFailover(requestFunction, context = {}) {
         let lastError = null;
         let attemptCount = 0;
