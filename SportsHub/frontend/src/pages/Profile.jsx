@@ -96,7 +96,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
     const file=e.target.files[0]
     if(!file) return;
     const formData=new FormData();
-    formData.append("file",file);
+    formData.append("profilePhoto",file);
     try{
       const res=await axios.put(`${import.meta.env.VITE_BACKEND_URL}/users/profile/photo`,formData,{headers:{"Content-Type":"multipart/form-data"},withCredentials:true});
       if(res.status==200){
