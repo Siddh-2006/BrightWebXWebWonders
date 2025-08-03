@@ -65,8 +65,8 @@ module.exports.loginUser=async (req,res)=>{
             let token=generateToken(user);
             res.cookie("token", token, {
                 httpOnly: true,
-                sameSite: None,
-                secure: process.env.NODE_ENV === "production",
+                sameSite: "None",
+                secure:true,
             });
             res.status(200).json({ msg: "You can login..", userType: user.userType, token: token });
         }else{
