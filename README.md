@@ -1,13 +1,13 @@
-# 🏆 SportsHub - AI-Powered Sports Community Platform
+# ![SportsHub Logo](https://drive.google.com/uc?export=view&id=1GihxrFYU_YUiEMCBQ1cloA70fQSrYGje) SportsHub - AI-Powered Sports Community Platform
 
 <div align="center">
 
-🏆
+![SportsHub Logo](https://drive.google.com/uc?export=view&id=1GihxrFYU_YUiEMCBQ1cloA70fQSrYGje)
 
 **Empowering Athletes with Digital Identity and AI Coaching**
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-sportshub--murex.vercel.app-orange?style=for-the-badge)](https://sportshub-murex.vercel.app)
-[![License](https://img.shields.io/badge/📄_License-MIT-blue?style=for-the-badge)](https://github.com/Siddh-2006/BrightWebXWebWonders.git/LICENSE)
+[![License](https://img.shields.io/badge/📄_License-MIT-blue?style=for-the-badge)](https://github.com/Siddh-2006/BrightWebXWebWonders/blob/main/LICENSE)
 [![Version](https://img.shields.io/badge/📦_Version-1.0.0-green?style=for-the-badge)](#)
 
 </div>
@@ -407,7 +407,7 @@ We welcome contributions from the community! Here's how you can help:
 
 ---
 
-## 🏆 Achievements & Recognition
+## ![SportsHub Logo](https://drive.google.com/uc?export=view&id=1GihxrFYU_YUiEMCBQ1cloA70fQSrYGje) Achievements & Recognition
 
 - **🎯 AI Integration**: Successfully integrated multiple AI technologies
 - **📱 User Experience**: Responsive design across all devices
