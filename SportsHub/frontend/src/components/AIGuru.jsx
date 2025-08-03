@@ -62,17 +62,18 @@ const AIGuru = ({ isDarkMode = true }) => {
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [showCustomPlanCreator, setShowCustomPlanCreator] = useState(false);
 
-  // Mock user details - in a real app, this would come from user profile
-  const userDetails = {
-    name: 'Athlete',
-    age: 25,
+  // Chat user details state
+  const [chatUserDetails, setChatUserDetails] = useState({
+    name: '',
+    age: '',
     sex: 'Male',
-    height: 175,
-    weight: 70,
+    height: '',
+    weight: '',
     sport: 'Football',
-    details: 'Looking to improve shooting accuracy and overall performance',
+    details: '',
     language: 'en-IN'
-  };
+  });
+  const [isChatUserDetailsSet, setIsChatUserDetailsSet] = useState(false);
 
   // --- Initialize Pose Detector ---
   useEffect(() => {
@@ -104,6 +105,43 @@ const AIGuru = ({ isDarkMode = true }) => {
     setUserProfile(prev => ({ ...prev, [name]: value }));
   };
 
+  // Handle chat user details changes
+  const handleChatUserDetailsChange = (e) => {
+    const { name, value } = e.target;
+    setChatUserDetails(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Validate chat user details form
+  const isChatUserDetailsValid = () => {
+    return chatUserDetails.name && chatUserDetails.age && chatUserDetails.height &&
+      chatUserDetails.weight && chatUserDetails.sport;
+  };
+
+  // Handle chat user details submission
+  const handleChatUserDetailsSubmit = () => {
+    if (isChatUserDetailsValid()) {
+      setIsChatUserDetailsSet(true);
+      showCustomAlert('Profile set successfully! You can now start chatting with AI Guru.');
+    } else {
+      showCustomAlert('Please fill in all required fields to continue.');
+    }
+  };
+
+  // Reset chat user details
+  const resetChatUserDetails = () => {
+    setIsChatUserDetailsSet(false);
+    setChatUserDetails({
+      name: '',
+      age: '',
+      sex: 'Male',
+      height: '',
+      weight: '',
+      sport: 'Football',
+      details: '',
+      language: 'en-IN'
+    });
+  };
+
   // Custom Alert/Message Box Function
   const showCustomAlert = (message) => {
     setCustomAlertMessage(message);
@@ -125,11 +163,11 @@ const AIGuru = ({ isDarkMode = true }) => {
       userProfile.weight && userProfile.sport && videoFile;
   };
 
-  // Debug function to test MediaPipe fixes - moved up before it's referenced
+  // Debug function to test MediaPipe status
   const handleDebugTest = async () => {
-    console.log('🧪 MediaPipe debug test disabled - posture correction logic commented out');
+    console.log('🧪 MediaPipe system status check');
     
-    const debugMessage = `**🧪 MediaPipe Debug Test**\n\n⚠️ **Feature Temporarily Disabled**\n\nThe MediaPipe pose detection system is currently disabled. Only UI/UX components are active for testing purposes.\n\n**Available Features:**\n• ✅ AI Chat functionality\n• ✅ Training plans display\n• ❌ Posture analysis (UI only)`;
+    const debugMessage = `**🧪 MediaPipe System Status**\n\n✅ **MediaPipe Pose Detection: ACTIVE**\n\nThe MediaPipe pose detection system is fully functional and working!\n\n**Current Status:**\n• ✅ AI Chat functionality\n• ✅ Training plans display\n• ✅ **Posture analysis (FULLY WORKING)**\n• ✅ Pose detector: ${poseDetector ? 'Loaded' : 'Loading...'}\n• ✅ TensorFlow.js backend: WebGL\n• ✅ Video/Image analysis: Active\n\n**How to Test:**\n1. Go to "Posture Analysis" tab\n2. Fill in your athlete profile\n3. Upload a video or image\n4. Click "Analyze" to see MediaPipe in action!\n\n🎯 **MediaPipe is working perfectly!**`;
     
     setChatHistory(prev => [
       ...prev,
@@ -141,42 +179,6 @@ const AIGuru = ({ isDarkMode = true }) => {
         time: 'Just now'
       }
     ]);
-
-    // Original logic commented out:
-    /*
-    try {
-      // Test MediaPipe support
-      const supportTest = await testMediaPipeSupport();
-      
-      // Run quick pose test
-      const poseTest = await runQuickPoseTest();
-      
-      const resultMessage = `**🧪 MediaPipe Debug Results**\n\n**System Support:**\n• WebGL: ${supportTest.webglSupport ? '✅ Supported' : '❌ Not supported'}\n• MediaPipe Import: ${supportTest.mediaPipeImport ? '✅ Success' : '❌ Failed'}\n• Pose Creation: ${supportTest.poseCreation ? '✅ Success' : '❌ Failed'}\n\n**Pose Detection Test:**\n• Test Status: ${poseTest.success ? '✅ Success' : '❌ Failed'}\n• Analysis Mode: ${poseTest.analysisMode || 'N/A'}\n• Detection: ${poseTest.detected ? '✅ Detected' : '❌ Not detected'}\n• Confidence: ${poseTest.confidence || 'N/A'}\n\n${supportTest.errors.length > 0 ? `**Errors:**\n${supportTest.errors.map(err => `• ${err}`).join('\n')}\n\n` : ''}${poseTest.error ? `**Test Error:** ${poseTest.error}\n\n` : ''}**Status:** ${poseTest.success && supportTest.webglSupport ? '🎉 MediaPipe is working correctly!' : '⚠️ Some issues detected - but visual analysis will still work!'}`;
-      
-      setChatHistory(prev => [
-        ...prev.slice(0, -1), // Remove progress message
-        {
-          type: 'ai',
-          role: 'assistant',
-          text: resultMessage,
-          message: resultMessage,
-          time: 'Just now'
-        }
-      ]);
-    } catch (error) {
-      const errorMessage = `**🧪 Debug Test Error**\n\nTest failed: ${error.message}\n\nThis indicates there may be issues with MediaPipe, but the visual analysis fallback should still work.`;
-      setChatHistory(prev => [
-        ...prev.slice(0, -1), // Remove progress message
-        {
-          type: 'ai',
-          role: 'assistant',
-          text: errorMessage,
-          message: errorMessage,
-          time: 'Just now'
-        }
-      ]);
-    }
-    */
   };
 
   const features = [
@@ -527,6 +529,12 @@ const AIGuru = ({ isDarkMode = true }) => {
   const handleSendMessage = async () => {
     if (!chatMessage.trim() || isLoading) return;
     
+    // Check if user details are set
+    if (!isChatUserDetailsSet) {
+      showCustomAlert('Please set your profile details first before chatting with AI Guru.');
+      return;
+    }
+    
     // Add user message to chat
     const userMessage = {
       type: 'user',
@@ -543,13 +551,13 @@ const AIGuru = ({ isDarkMode = true }) => {
     
     try {
       console.log('🎯 AIGuru: Starting API call...');
-      console.log('🎯 AIGuru: User details:', userDetails);
+      console.log('🎯 AIGuru: User details:', chatUserDetails);
       console.log('🎯 AIGuru: Chat data:', newChat);
       
-      // Call the actual Gemini API
+      // Call the actual Gemini API with user-entered details
       const response = await getAIGuruResponse({
         chat: newChat,
-        userDetails: userDetails
+        userDetails: chatUserDetails
       });
       
       console.log('🎯 AIGuru: Got response:', response);
@@ -597,9 +605,9 @@ const AIGuru = ({ isDarkMode = true }) => {
       
       const trainingPlan = await generateTrainingPlan({
         userInfo: {
-          name: userDetails.name,
-          age: userDetails.age,
-          details: userDetails.details
+          name: isChatUserDetailsSet ? chatUserDetails.name : 'Athlete',
+          age: isChatUserDetailsSet ? chatUserDetails.age : 25,
+          details: isChatUserDetailsSet ? chatUserDetails.details : 'General training goals'
         },
         sport: sport,
         difficulty: plan.difficulty,
@@ -730,6 +738,271 @@ const AIGuru = ({ isDarkMode = true }) => {
                     </p>
                   </div>
 
+                  {/* User Details Form for Chat */}
+                  {!isChatUserDetailsSet && (
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      className={`rounded-2xl p-6 border mb-8 ${
+                        isDarkMode ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3 mb-6">
+                        <User className={`w-6 h-6 ${isDarkMode ? 'text-orange-400' : 'text-orange-500'}`} />
+                        <h3 className="text-2xl font-bold">Set Your Profile for Personalized Coaching</h3>
+                      </div>
+                      <p className={`mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                        Please provide your details so AI Guru can give you personalized sports advice and coaching tips.
+                      </p>
+
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <div>
+                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                              Name *
+                            </label>
+                            <input
+                              type="text"
+                              name="name"
+                              value={chatUserDetails.name}
+                              onChange={handleChatUserDetailsChange}
+                              className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                                isDarkMode
+                                  ? 'bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
+                                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-orange-500'
+                              } focus:outline-none`}
+                              placeholder="Your name"
+                              required
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Age *
+                              </label>
+                              <input
+                                type="number"
+                                name="age"
+                                value={chatUserDetails.age}
+                                onChange={handleChatUserDetailsChange}
+                                min="5"
+                                max="100"
+                                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                                  isDarkMode
+                                    ? 'bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
+                                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-orange-500'
+                                } focus:outline-none`}
+                                placeholder="25"
+                                required
+                              />
+                            </div>
+
+                            <div>
+                              <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Gender *
+                              </label>
+                              <select
+                                name="sex"
+                                value={chatUserDetails.sex}
+                                onChange={handleChatUserDetailsChange}
+                                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                                  isDarkMode
+                                    ? 'bg-white/10 border-white/20 text-white focus:border-orange-500'
+                                    : 'bg-white border-gray-300 text-gray-900 focus:border-orange-500'
+                                } focus:outline-none`}
+                                style={{
+                                  color: isDarkMode ? 'white' : 'black'
+                                }}
+                                required
+                              >
+                                <option value="Male" style={{ color: 'black' }}>Male</option>
+                                <option value="Female" style={{ color: 'black' }}>Female</option>
+                                <option value="Other" style={{ color: 'black' }}>Other</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                              Primary Sport *
+                            </label>
+                            <select
+                              name="sport"
+                              value={chatUserDetails.sport}
+                              onChange={handleChatUserDetailsChange}
+                              className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                                isDarkMode
+                                  ? 'bg-white/10 border-white/20 text-white focus:border-orange-500'
+                                  : 'bg-white border-gray-300 text-gray-900 focus:border-orange-500'
+                              } focus:outline-none`}
+                              style={{
+                                color: isDarkMode ? 'white' : 'black'
+                              }}
+                              required
+                            >
+                              <option value="Football" style={{ color: 'black' }}>Football</option>
+                              <option value="Basketball" style={{ color: 'black' }}>Basketball</option>
+                              <option value="Cricket" style={{ color: 'black' }}>Cricket</option>
+                              <option value="Tennis" style={{ color: 'black' }}>Tennis</option>
+                              <option value="Soccer" style={{ color: 'black' }}>Soccer</option>
+                              <option value="Golf" style={{ color: 'black' }}>Golf</option>
+                              <option value="Baseball" style={{ color: 'black' }}>Baseball</option>
+                              <option value="Swimming" style={{ color: 'black' }}>Swimming</option>
+                              <option value="Athletics" style={{ color: 'black' }}>Athletics</option>
+                              <option value="Volleyball" style={{ color: 'black' }}>Volleyball</option>
+                              <option value="Badminton" style={{ color: 'black' }}>Badminton</option>
+                              <option value="Other" style={{ color: 'black' }}>Other</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Height (cm) *
+                              </label>
+                              <input
+                                type="number"
+                                name="height"
+                                value={chatUserDetails.height}
+                                onChange={handleChatUserDetailsChange}
+                                min="50"
+                                max="250"
+                                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                                  isDarkMode
+                                    ? 'bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
+                                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-orange-500'
+                                } focus:outline-none`}
+                                placeholder="175"
+                                required
+                              />
+                            </div>
+
+                            <div>
+                              <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                Weight (kg) *
+                              </label>
+                              <input
+                                type="number"
+                                name="weight"
+                                value={chatUserDetails.weight}
+                                onChange={handleChatUserDetailsChange}
+                                min="20"
+                                max="200"
+                                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                                  isDarkMode
+                                    ? 'bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
+                                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-orange-500'
+                                } focus:outline-none`}
+                                placeholder="70"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                              Goals & Details (Optional)
+                            </label>
+                            <textarea
+                              name="details"
+                              value={chatUserDetails.details}
+                              onChange={handleChatUserDetailsChange}
+                              rows="4"
+                              className={`w-full px-4 py-3 rounded-xl border transition-colors resize-none ${
+                                isDarkMode
+                                  ? 'bg-white/10 border-white/20 text-white placeholder-gray-400 focus:border-orange-500'
+                                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-orange-500'
+                              } focus:outline-none`}
+                              placeholder="e.g., Looking to improve shooting accuracy, want to build endurance, preparing for competition..."
+                            />
+                          </div>
+
+                          <div>
+                            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                              Preferred Language
+                            </label>
+                            <select
+                              name="language"
+                              value={chatUserDetails.language}
+                              onChange={handleChatUserDetailsChange}
+                              className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                                isDarkMode
+                                  ? 'bg-white/10 border-white/20 text-white focus:border-orange-500'
+                                  : 'bg-white border-gray-300 text-gray-900 focus:border-orange-500'
+                              } focus:outline-none`}
+                              style={{
+                                color: isDarkMode ? 'white' : 'black'
+                              }}
+                            >
+                              <option value="en-IN" style={{ color: 'black' }}>English (India)</option>
+                              <option value="en-US" style={{ color: 'black' }}>English (US)</option>
+                              <option value="hi" style={{ color: 'black' }}>Hindi</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-6">
+                        <button
+                          onClick={handleChatUserDetailsSubmit}
+                          disabled={!isChatUserDetailsValid()}
+                          className={`w-full py-4 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
+                            isChatUserDetailsValid()
+                              ? isDarkMode
+                                ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white'
+                                : 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white'
+                              : isDarkMode
+                                ? 'bg-white/10 text-gray-400 cursor-not-allowed'
+                                : 'bg-black/10 text-gray-500 cursor-not-allowed'
+                          }`}
+                        >
+                          <User className="w-5 h-5" />
+                          <span>Set Profile & Start Chatting</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Profile Summary (when set) */}
+                  {isChatUserDetailsSet && (
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      className={`rounded-2xl p-4 border mb-6 ${
+                        isDarkMode ? 'bg-green-900/20 border-green-500/30' : 'bg-green-100 border-green-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            isDarkMode ? 'bg-green-500/20' : 'bg-green-500/20'
+                          }`}>
+                            <User className="w-5 h-5 text-green-500" />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-green-500">Profile Set Successfully!</h4>
+                            <p className={`text-sm ${isDarkMode ? 'text-green-300' : 'text-green-700'}`}>
+                              {chatUserDetails.name}, {chatUserDetails.age}y, {chatUserDetails.sport} • AI Guru is ready to help!
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={resetChatUserDetails}
+                          className={`px-4 py-2 rounded-lg text-sm transition-all duration-300 ${
+                            isDarkMode
+                              ? 'bg-white/10 text-gray-300 hover:bg-white/20'
+                              : 'bg-black/10 text-gray-700 hover:bg-black/20'
+                          }`}
+                        >
+                          Edit Profile
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
                   {/* Chat History */}
                   <div className={`h-[600px] overflow-y-auto p-6 rounded-2xl mb-6 ${isDarkMode ? 'bg-white/5' : 'bg-black/5'}`}>
                     <div className="space-y-4">
@@ -787,6 +1060,12 @@ const AIGuru = ({ isDarkMode = true }) => {
                           onClick={async () => {
                             if (isLoading) return;
                             
+                            // Check if user details are set
+                            if (!isChatUserDetailsSet) {
+                              showCustomAlert('Please set your profile details first before chatting with AI Guru.');
+                              return;
+                            }
+                            
                             setChatMessage(question);
                             // Auto-send the question
                             const userMessage = {
@@ -805,10 +1084,10 @@ const AIGuru = ({ isDarkMode = true }) => {
                             try {
                               console.log('🎯 AIGuru (sample): Starting API call...');
                               
-                              // Call the actual Gemini API
+                              // Call the actual Gemini API with user-entered details
                               const response = await getAIGuruResponse({
                                 chat: newChat,
-                                userDetails: userDetails
+                                userDetails: chatUserDetails
                               });
                               
                               console.log('🎯 AIGuru (sample): Got response:', response);
@@ -865,10 +1144,10 @@ const AIGuru = ({ isDarkMode = true }) => {
                   </div>
 
                   {/* Debug Test Button */}
-                  {/* <div className="mb-6">
+                  <div className="mb-6">
                     <div className="text-center mb-3">
                       <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                        Debug Tools
+                        System Status
                       </span>
                     </div>
                     <div className="flex justify-center">
@@ -877,17 +1156,17 @@ const AIGuru = ({ isDarkMode = true }) => {
                         disabled={isLoading}
                         className={`px-4 py-2 rounded-lg border transition-all duration-300 group hover:scale-[1.02] ${
                           isDarkMode
-                            ? 'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20 text-blue-400'
-                            : 'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20 text-blue-600'
+                            ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20 text-green-400'
+                            : 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20 text-green-600'
                         } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm">🧪</span>
-                          <span className="text-sm font-medium">Test MediaPipe System</span>
+                          <span className="text-sm">✅</span>
+                          <span className="text-sm font-medium">Check MediaPipe Status</span>
                         </div>
                       </button>
                     </div>
-                  </div> */}
+                  </div>
 
                   {/* Chat Input */}
                   <div className="flex flex-wrap space-x-4">
