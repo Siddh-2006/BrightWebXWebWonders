@@ -17,7 +17,7 @@
 
 ## 🚀 Tech Stack
 
-- **Frontend:** React.js  (deployed-Vercel <a href="https://sportshub-murex.vercel.app/live">🔴view live</a>)
+- **Frontend:** React.js  (deployed-Vercel <a href="https://sportshub-murex.vercel.app">🔴view live</a>)
 - **Backend:** Node.js, Express.js (deployed - Render)
 - **Database:** MongoDB  (Deployed - Atlas)
 - **API:** Gemini API (for AI coach, assistant, and quizzes)
@@ -35,5 +35,7 @@
 >PS : you can create your own id as well and register clubs <br>
 >-  You can go to /admin route manually to approve clubs and view pending clubs 
 > - live scores can only be updated by the club admins whose clubs are involved in the match
+> - Club admins can create new posts as well as can update the details of their club using the update feature in view details part  of the own club in clubs section.
+> - Club admins can challenge the other clubs for a match and if the other club approves, then match will be scheduled between them and will become live as per the schedule of the match.
 
 <footer>Made with ❤️ by Bright Web team</footer>
