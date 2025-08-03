@@ -50,6 +50,7 @@ function App() {
         const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/users/profile`, { withCredentials: true });
         if (res.status == 200) {
           login_info.setIsLoggedIn(true);
+          localStorage.setItem("username",res.data.fullname)
           console.log("set login true at app.jsx",res.data)
         }
         else {

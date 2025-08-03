@@ -75,11 +75,14 @@ module.exports.loginUser=async (req,res)=>{
     })
 }
 
-module.exports.logoutUser=async(req,res)=>{
-    res.cookie("token","");
-    res.status(200).send("success");
-    // res.redirect("/");
-}
+module.exports.logoutUser = async (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "None",  // Must match how it was set
+    secure: true       // Must match how it was set
+  });
+  res.status(200).send("Logged out successfully");
+};
 
 module.exports.getUserProfile = async (req, res) => {
     try {
