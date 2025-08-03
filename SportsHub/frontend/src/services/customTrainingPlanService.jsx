@@ -1,33 +1,64 @@
-const CUSTOM_TRAINING_PLAN_API_ENDPOINT = `${import.meta.env.VITE_BACKEND_URL || 'https://sportshub-murex.vercel.app'}/api/custom-training-plans`;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+const CUSTOM_TRAINING_PLAN_API_ENDPOINT = `${BACKEND_URL}/api/custom-training-plans`;
 
-// Create a new custom training plan
+console.log('🔧 Custom Training Plan Service Configuration:');
+console.log('📍 Backend URL:', BACKEND_URL);
+console.log('🎯 API Endpoint:', CUSTOM_TRAINING_PLAN_API_ENDPOINT);
+
+// Alternative endpoint for backward compatibility (singular)
+const CUSTOM_TRAINING_PLAN_API_ENDPOINT_SINGULAR = `${BACKEND_URL}/api/custom-training-plan`;
+
+// Create a new custom training plan (with fallback to singular endpoint)
 export const createCustomTrainingPlan = async (planData) => {
-  try {
-    console.log('🚀 Creating custom training plan:', planData);
-    
-    const response = await fetch(`${CUSTOM_TRAINING_PLAN_API_ENDPOINT}/create`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include',
-      body: JSON.stringify(planData)
-    });
+  const endpoints = [
+    `${CUSTOM_TRAINING_PLAN_API_ENDPOINT}/create`,
+    `${CUSTOM_TRAINING_PLAN_API_ENDPOINT_SINGULAR}/create`
+  ];
 
-    console.log('📥 Custom training plan response status:', response.status);
+  for (let i = 0; i < endpoints.length; i++) {
+    const endpoint = endpoints[i];
+    try {
+      console.log(`🚀 Attempting to create custom training plan (attempt ${i + 1}):`, planData);
+      console.log(`📍 Using endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(planData)
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Custom training plan API error response:', errorText);
-      throw new Error(`API error: ${response.status} - ${errorText}`);
+      console.log(`📥 Custom training plan response status (attempt ${i + 1}):`, response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`❌ Custom training plan API error response (attempt ${i + 1}):`, errorText);
+        
+        // If this is not the last endpoint, try the next one
+        if (i < endpoints.length - 1) {
+          console.log(`🔄 Trying next endpoint...`);
+          continue;
+        }
+        
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log(`✅ Custom training plan created successfully (attempt ${i + 1}):`, data);
+      return data;
+    } catch (error) {
+      console.error(`❌ Custom training plan creation failed (attempt ${i + 1}):`, error);
+      
+      // If this is not the last endpoint, try the next one
+      if (i < endpoints.length - 1) {
+        console.log(`🔄 Trying next endpoint...`);
+        continue;
+      }
+      
+      throw error;
     }
-
-    const data = await response.json();
-    console.log('✅ Custom training plan created:', data);
-    return data;
-  } catch (error) {
-    console.error('❌ Custom training plan creation failed:', error);
-    throw error;
   }
 };
 

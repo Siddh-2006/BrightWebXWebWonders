@@ -85,6 +85,7 @@ const startServer = async () => {
     app.use("/match", matchRouter);
     app.use("/api/training-plans", trainingPlanRouter);
     app.use("/api/custom-training-plans", customTrainingPlanRouter);
+    app.use("/api/custom-training-plan", customTrainingPlanRouter);
     app.use("/posts", postRouter);
     app.use("/users", usersRouter);
     app.use("/clubs", clubsRouter);

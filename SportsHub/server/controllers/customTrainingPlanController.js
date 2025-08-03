@@ -88,6 +88,10 @@ Make the plan highly specific to the custom requirements, incorporating all the 
 
 // Create a new custom training plan
 const createCustomTrainingPlan = async (req, res) => {
+  console.log('🎯 Custom Training Plan Controller - Create Plan Request');
+  console.log('📝 Request Body:', JSON.stringify(req.body, null, 2));
+  console.log('👤 User:', req.user);
+  
   try {
     const {
       planName,
@@ -192,11 +196,13 @@ const createCustomTrainingPlan = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error creating custom training plan:', error);
+    console.error('❌ Error creating custom training plan:', error);
+    console.error('❌ Error stack:', error.stack);
     res.status(500).json({
       success: false,
       message: 'Failed to create custom training plan',
-      error: error.message
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
@@ -434,6 +440,64 @@ const updateSessionProgress = async (req, res) => {
       error: error.message
     });
   }
+};
+
+// Create fallback training plan when AI generation fails
+const createFallbackPlan = (planData) => {
+  return {
+    planTitle: `${planData.planName} - ${planData.sport} Training Plan`,
+    overview: `A comprehensive ${planData.difficulty.toLowerCase()} level training plan for ${planData.sport} designed to help you achieve your fitness goals.`,
+    weeklyStructure: {
+      sessionsPerWeek: planData.sessionsPerWeek,
+      totalWeeks: planData.weeks,
+      restDays: 7 - planData.sessionsPerWeek
+    },
+    sessionDetails: [
+      {
+        sessionNumber: 1,
+        title: `${planData.sport} Foundation Session`,
+        duration: `${planData.sessionDuration} minutes`,
+        focus: planData.focusAreas?.[0] || "General fitness",
+        warmUp: ["5-minute light cardio", "Dynamic stretching", "Joint mobility exercises"],
+        mainWorkout: ["Skill practice", "Conditioning exercises", "Sport-specific drills", "Strength training"],
+        coolDown: ["Static stretching", "Breathing exercises"]
+      },
+      {
+        sessionNumber: 2,
+        title: `${planData.sport} Skill Development`,
+        duration: `${planData.sessionDuration} minutes`,
+        focus: planData.focusAreas?.[1] || "Technique improvement",
+        warmUp: ["Light jogging", "Dynamic warm-up", "Sport-specific movements"],
+        mainWorkout: ["Technical drills", "Coordination exercises", "Game simulation", "Endurance training"],
+        coolDown: ["Cool-down stretches", "Relaxation techniques"]
+      }
+    ],
+    progression: {
+      "week1-2": "Foundation building and technique focus",
+      "week3-4": "Intensity increase and skill development",
+      "week5+": "Performance optimization and goal achievement"
+    },
+    equipment: planData.equipment?.map(eq => eq.name || eq) || ["Basic sports equipment"],
+    safetyGuidelines: [
+      "Always warm up before training sessions",
+      "Stay hydrated throughout your workout",
+      "Listen to your body and rest when needed",
+      "Use proper form to prevent injuries"
+    ],
+    nutritionTips: [
+      "Eat a balanced meal 2-3 hours before training",
+      "Stay hydrated before, during, and after exercise",
+      "Include protein in post-workout meals for recovery",
+      "Consume complex carbohydrates for sustained energy"
+    ],
+    recoveryGuidelines: [
+      "Get 7-9 hours of quality sleep per night",
+      "Include rest days in your training schedule",
+      "Use active recovery like light walking or stretching",
+      "Consider massage or foam rolling for muscle recovery"
+    ],
+    additionalNotes: `Stay consistent with your ${planData.sport} training and track your progress! Remember that improvement takes time and dedication. ${planData.customNotes ? 'Personal note: ' + planData.customNotes : ''}`
+  };
 };
 
 module.exports = {

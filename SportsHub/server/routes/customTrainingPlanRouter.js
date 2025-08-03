@@ -36,7 +36,12 @@ const authenticateUser = (req, res, next) => {
 };
 
 // Create a new custom training plan
-router.post('/create', authenticateUser, createCustomTrainingPlan);
+router.post('/create', (req, res, next) => {
+  console.log('🛣️ Custom Training Plan Router - /create route hit');
+  console.log('📍 Request URL:', req.originalUrl);
+  console.log('🔧 Request Method:', req.method);
+  next();
+}, authenticateUser, createCustomTrainingPlan);
 
 // Get all training plans for the authenticated user
 router.get('/my-plans', authenticateUser, getUserTrainingPlans);
