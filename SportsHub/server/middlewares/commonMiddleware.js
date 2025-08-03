@@ -19,7 +19,7 @@ module.exports = (app) => {
     app.use(session({
         resave: false,
         saveUninitialized: false,
-        secret: process.env.SESSION_SECRET || 'your-super-secret-key', // Use env var for secret
+        secret: process.env.EXPRESS_SESSION_SECRET || 'your-super-secret-key', // Use env var for secret
     }));
     app.use(flash()); // For flash messages
     app.use(express.static(path.join(__dirname, '../public'))); // Serve static files from 'public'
