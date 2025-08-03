@@ -1,0 +1,145 @@
+MIT License
+
+Copyright (c) 2024 SportsHub - Bright Web Team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================
+
+THIRD-PARTY LICENSES AND ATTRIBUTIONS
+
+This project uses several open-source libraries and services. Below are the
+licenses and attributions for the major dependencies:
+
+1. React.js - MIT License
+   Copyright (c) Facebook, Inc. and its affiliates.
+
+2. Express.js - MIT License
+   Copyright (c) 2009-2014 TJ Holowaychuk <tj@vision-media.ca>
+   Copyright (c) 2013-2014 Roman Shtylman <shtylman+expressjs@gmail.com>
+   Copyright (c) 2014-2015 Douglas Christopher Wilson <doug@somethingdoug.com>
+
+3. MongoDB/Mongoose - MIT License
+   Copyright (c) 2010 LearnBoost <dev@learnboost.com>
+
+4. Socket.io - MIT License
+   Copyright (c) 2014-2018 Automattic <dev@cloudup.com>
+
+5. TensorFlow.js - Apache License 2.0
+   Copyright 2018 Google LLC. All Rights Reserved.
+
+6. MediaPipe - Apache License 2.0
+   Copyright 2019 The MediaPipe Authors.
+
+7. Google Generative AI - Subject to Google's Terms of Service
+   Copyright (c) Google LLC
+
+8. Tailwind CSS - MIT License
+   Copyright (c) Tailwind Labs, Inc.
+
+9. Framer Motion - MIT License
+   Copyright (c) 2018 Framer B.V.
+
+10. Lucide React - ISC License
+    Copyright (c) 2022, Lucide Contributors
+
+11. Cloudinary - Subject to Cloudinary's Terms of Service
+    Copyright (c) Cloudinary Ltd.
+
+12. Vercel - Subject to Vercel's Terms of Service
+    Copyright (c) Vercel, Inc.
+
+13. Render - Subject to Render's Terms of Service
+    Copyright (c) Render Services, Inc.
+
+================================================================================
+
+ADDITIONAL TERMS AND CONDITIONS
+
+1. AI Services Usage:
+   - This software integrates with Google's Gemini AI service
+   - Users must comply with Google's AI usage policies
+   - AI-generated content should be used responsibly
+
+2. MediaPipe Usage:
+   - Pose detection features use Google's MediaPipe technology
+   - Subject to MediaPipe's license terms and usage guidelines
+
+3. Sports Content:
+   - Sports-related content and terminology are used for educational purposes
+   - No endorsement by sports organizations is implied
+
+4. User Data:
+   - Users retain ownership of their uploaded content
+   - Platform operators must comply with applicable privacy laws
+   - User data should be handled according to the privacy policy
+
+5. Commercial Use:
+   - This software may be used for commercial purposes under the MIT license
+   - Third-party service costs (AI APIs, cloud hosting) are the responsibility of the operator
+
+================================================================================
+
+DISCLAIMER
+
+This software is provided for educational and informational purposes. While we
+strive for accuracy in sports coaching advice and analysis, users should:
+
+- Consult with qualified sports professionals for serious training
+- Use AI-generated advice as supplementary guidance only
+- Exercise caution when following training recommendations
+- Seek medical advice before starting any new fitness program
+
+The developers and contributors are not liable for any injuries, damages, or
+losses resulting from the use of this software or its AI-generated content.
+
+================================================================================
+
+CONTACT INFORMATION
+
+For questions about this license or the software:
+- Project Repository: https://github.com/your-username/sportshub
+- Email: support@sportshub.com
+- Website: https://sportshub3.vercel.app
+
+For reporting security vulnerabilities:
+- Email: security@sportshub.com
+- Please allow 48 hours for initial response
+
+================================================================================
+
+ACKNOWLEDGMENTS
+
+We thank the open-source community and the following organizations for making
+this project possible:
+
+- Google for AI and MediaPipe technologies
+- The React and Node.js communities
+- MongoDB for database solutions
+- Vercel and Render for hosting platforms
+- Cloudinary for media management
+- All contributors and beta testers
+
+Special thanks to sports coaches and athletes who provided feedback and
+validation for the AI coaching features.
+
+================================================================================
+
+Last Updated: August 4, 2025
+Version: 1.0.0
