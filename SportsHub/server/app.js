@@ -61,10 +61,6 @@ io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
   liveMatchRoomHandler(io, socket);
 });
-// start the server on port 5000
-server.listen(3000, () => {
-  console.log(`🚀 websocek running on 3000`);
-});
 
 runMatchStatusCron();
 
@@ -95,18 +91,17 @@ const startServer = async () => {
     app.use('/sports',sportsRouter);
     app.use('/club-profile',updateClubProfile);
 
-    // Initialize cron jobs after successful DB connection
-    initQuizCronJobs();
-    //runMatchStatusCron();
-
     // Error handling middleware (should be last middleware)
     app.use(customErrorHandler);
 
-    // Start the server
+    // Start a single HTTP + WebSocket server (Vercel-compatible behind proxy)
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+    server.listen(PORT, () => {
+      console.log(`🚀 HTTP + WebSocket server running on ${PORT}`);
     });
+
+    // Initialize cron jobs after successful DB connection
+    initQuizCronJobs();
 
   } catch (error) {
     console.error("Failed to start server:", error);
