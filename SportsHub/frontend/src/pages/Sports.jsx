@@ -22,10 +22,11 @@ const Sports = ({ isDarkMode }) => {
       icon: '⚽',
       category: 'team',
       legends: [
-        { name: 'Pelé', image: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Maradona', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Messi', image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=400&q=80' }
+        { name: 'Pelé', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754408034/images_pvczl5.jpg' },
+        { name: 'Ronaldo', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754407871/images_iptp6l.jpg' },
+        { name: 'Messi', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754407781/xbuydizxwdjbz5e8wkyt.jpg' },
       ]
+      
     },
     {
       id: 2,
@@ -38,9 +39,9 @@ const Sports = ({ isDarkMode }) => {
       icon: '🏀',
       category: 'team',
       legends: [
-        { name: 'Michael Jordan', image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=400&q=80' },
-        { name: 'LeBron James', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Kobe Bryant', image: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=400&q=80' }
+        { name: 'Michael Jordan', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754408285/pv8u9h2jtxb4ahiqvsqz.jpg' },
+        { name: 'LeBron James', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754408422/wfap7fp41iynl5aeestn.jpg' },
+        { name: 'Kobe Bryant', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754408497/f6juwz6h7tpfq8dzkc6i.jpg' }
       ]
     },
     {
@@ -54,9 +55,9 @@ const Sports = ({ isDarkMode }) => {
       icon: '🎾',
       category: 'individual',
       legends: [
-        { name: 'Serena Williams', image: 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Roger Federer', image: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Rafael Nadal', image: 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=400&q=80' }
+        { name: 'Serena Williams', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754408607/lkcbwcmodmya4twxdbcf.jpg' },
+        { name: 'Roger Federer', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754408669/fi5lxufdrprvyehsyvbx.jpg' },
+        { name: 'Rafael Nadal', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754408718/ux92zfuqciikk45eqmhx.jpg' }
       ]
     },
     {
@@ -70,9 +71,9 @@ const Sports = ({ isDarkMode }) => {
       icon: '🏊',
       category: 'individual',
       legends: [
-        { name: 'Michael Phelps', image: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Katie Ledecky', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Adam Peaty', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=400&q=80' }
+        { name: 'Michael Phelps', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754408792/tfqxyiohqh2iwu3eklhs.jpg' },
+        { name: 'Katie Ledecky', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754408854/jzjhsk5pcohdqtxa9vwg.jpg' },
+        { name: 'Adam Peaty', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754408901/ekevvl9sfg7uq0wk69ay.jpg' }
       ]
     },
     {
@@ -86,9 +87,9 @@ const Sports = ({ isDarkMode }) => {
       icon: '🏏',
       category: 'team',
       legends: [
-        { name: 'Sachin Tendulkar', image: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Virat Kohli', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=400&q=80' },
-        { name: 'MS Dhoni', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=400&q=80' }
+        { name: 'Sachin Tendulkar', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754408951/hbtuuxizw6ygogtunwzb.jpg' },
+        { name: 'Virat Kohli', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754408991/ccdspnq8x1qj7uop08vz.jpg' },
+        { name: 'MS Dhoni', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754409030/hritbfl6tgltxtyuejzj.jpg' }
       ]
     },
     {
@@ -102,9 +103,9 @@ const Sports = ({ isDarkMode }) => {
       icon: '🏃',
       category: 'individual',
       legends: [
-        { name: 'Usain Bolt', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Carl Lewis', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=400&q=80' },
-        { name: 'Florence Griffith-Joyner', image: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?auto=format&fit=crop&w=400&q=80' }
+        { name: 'Usain Bolt', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754409098/images_z1wdje.jpg' },
+        { name: 'Carl Lewis', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754409146/qbwlufrocfo9iot8gahs.jpg' },
+        { name: 'Florence Griffith-Joyner', image: 'https://res.cloudinary.com/dddwnvp4w/image/upload/v1754409197/ikeuvzjzsoavmsjfadzb.jpg' }
       ]
     }
   ];
