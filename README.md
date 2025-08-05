@@ -64,7 +64,7 @@ To democratize sports coaching and create a global community where every athlete
 - **Animations**: Framer Motion 11.18.2
 - **Icons**: Lucide React 0.525.0
 - **Charts**: Recharts 3.1.0
-- **AI Integration**: TensorFlow.js, MediaPipe Pose Detection
+- **AI Integration**: TensorFlow.js, MediaPipe Pose Detection,gemini
 
 ### **Backend**
 - **Runtime**: Node.js with Express.js 5.1.0
