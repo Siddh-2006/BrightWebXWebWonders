@@ -37,7 +37,7 @@ const server = http.createServer(app);
 allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5175",
-  // "https://sportshub-murex.vercel.app",
+  "https://sportshub-murex.vercel.app",
 ];
 
 app.use(cors({
