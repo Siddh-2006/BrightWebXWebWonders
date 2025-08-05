@@ -12,7 +12,7 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['challenge_request', 'challenge_accepted', 'challenge_declined', 'club_invitation', 'join_request'],
+    enum: ['challenge_request', 'challenge_accepted', 'challenge_declined', 'club_invitation', 'join_request', 'club_registration'],
     required: true
   },
   title: {
@@ -41,7 +41,17 @@ const notificationSchema = new mongoose.Schema({
     location: String,
     date: String,
     time: String,
-    liveStream: Boolean
+    liveStream: Boolean,
+    // Club registration specific data
+    clubId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Club'
+    },
+    clubName: String,
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'user'
+    }
   },
   read: {
     type: Boolean,

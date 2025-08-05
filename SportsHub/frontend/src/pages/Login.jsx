@@ -29,7 +29,6 @@ const Login = ({ isDarkMode}) => {
 
   // quick check is user is already logged in
   useEffect(()=>{
-    console.log(isLoggedIn)
     if(isLoggedIn){
       navigate("/profile")
     }
@@ -59,7 +58,6 @@ const Login = ({ isDarkMode}) => {
     for (const key in formData) {
         data.append(key, formData[key]);
     }
-    console.log([...data.entries()])
     // check for login
     if (isLogin) {
       try {
@@ -77,7 +75,6 @@ const Login = ({ isDarkMode}) => {
         }
       } catch (err) {
         showCustomToast("error","Error: " + err.response?.data || err.message);
-        console.log(err)
       }
     }
     // it means we are signing up !!
@@ -94,9 +91,7 @@ const Login = ({ isDarkMode}) => {
           setIsLogin(true);
         }
       } catch (err) {
-        console.log(err)
         showCustomToast("error", err.response.data);
-        console.log(data)
       }
     }
   };

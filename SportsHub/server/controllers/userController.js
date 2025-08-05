@@ -49,13 +49,13 @@ module.exports.registerUser=async (req,res)=>{
 
         }catch(err){
             res.status(500).send("Server error");
-            console.log(err.message);
+            // console.log(err.message);
         }
     
 }
 
 module.exports.loginUser=async (req,res)=>{
-    console.log("req body",req.body)
+    // console.log("req body",req.body)
     let {email,password}=req.body;
     let user=await userModel.findOne({email:email});
     if(!user) return res.send("Email or password incorrect...");
@@ -114,7 +114,7 @@ exports.updateProfilePhoto = async (req, res) => {
       profilePhoto: updatedUser.profilePhoto,
     });
   } catch (error) {
-    console.error('Error uploading profile photo:', error);
+    // console.error('Error uploading profile photo:', error);
     res.status(500).json({ error: 'Failed to update profile photo' });
   }
 };

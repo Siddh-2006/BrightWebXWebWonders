@@ -39,10 +39,8 @@ const Live = ({ isDarkMode }) => {
         const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/users/profile`, { withCredentials: true });
         if (res.status === 200) {
           setUserData(res.data);
-          console.log(res.data)
         }
       } catch (err) {
-        console.error("user is not logged in");
       }
     }
 
@@ -53,7 +51,6 @@ const Live = ({ isDarkMode }) => {
          axios.get(`${import.meta.env.VITE_BACKEND_URL}/match/upcoming`, { withCredentials: true }),
          axios.get(`${import.meta.env.VITE_BACKEND_URL}/match/past`, { withCredentials: true })
        ]);
-      console.log(liveRes);
        if (liveRes.status === 200) {
          setLiveMatches(liveRes.data.matches);
        }
@@ -64,7 +61,6 @@ const Live = ({ isDarkMode }) => {
          setfinishedMatches(pastRes.data.matches);
        }
      } catch (err) {
-       console.error("Error fetching matches:", err);
      } finally {
        setLoading(false);
      }
@@ -101,7 +97,6 @@ const Live = ({ isDarkMode }) => {
       }
     }
     catch (err) {
-      console.log(err)
     }
   };
 
@@ -115,7 +110,6 @@ const Live = ({ isDarkMode }) => {
       }
     }
     catch (err) {
-      console.log(err)
     }
   };
 
@@ -128,7 +122,6 @@ const Live = ({ isDarkMode }) => {
           setIsModalOpen(true);
         }
       } catch (err) {
-        console.error("Error fetching club data:", err);
       }
     } else {
       // Handle case where user is not a logged-in club
@@ -413,7 +406,6 @@ const Live = ({ isDarkMode }) => {
                         } text-white shadow-lg hover:shadow-xl`}
                         onClick={() => {
                           navigate(`/match_ended/${match.sport}/${match._id}`);
-                          console.log('Hello')
                         }}>
                         <Play className="w-5 h-5" />
                         <span>Watch Highlights</span>

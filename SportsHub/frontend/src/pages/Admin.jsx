@@ -48,9 +48,7 @@ const Admin = ({ isDarkMode }) => {
         withCredentials: true,
       });
       setPendingClubs(res.data);
-      console.log(res.data)
     } catch (err) {
-      console.error('Error fetching pending clubs:', err);
       if(err.status==403 || err.status==401){
         setDenied(true);
       }
@@ -65,9 +63,7 @@ const Admin = ({ isDarkMode }) => {
         withCredentials: true,
       });
       setAllClubs(res.data);
-      console.log(res.data)
     } catch (err) {
-      console.error('Error fetching all clubs:', err);
       showCustomToast('error', 'Failed to fetch clubs');
     } finally {
       setLoading(false);
@@ -83,7 +79,6 @@ const Admin = ({ isDarkMode }) => {
       showCustomToast('success', 'Club approved successfully!');
       fetchAllClubs(); // Refresh all clubs list
     } catch (err) {
-      console.error('Error approving club:', err);
       showCustomToast('error', 'Failed to approve club');
     }
   };
@@ -96,7 +91,6 @@ const Admin = ({ isDarkMode }) => {
       setPendingClubs(pendingClubs.filter(club => club._id !== clubId));
       showCustomToast('success', 'Club rejected successfully!');
     } catch (err) {
-      console.error('Error rejecting club:', err);
       showCustomToast('error', 'Failed to reject club');
     }
   };

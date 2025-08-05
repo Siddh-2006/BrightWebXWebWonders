@@ -56,8 +56,8 @@ router.post('/', async (req, res) => {
   try {
     const { chatMessages, userQuestion, userDetails, userLanguage } = req.body;
     
-    console.log('📥 [AI Guru Router] Received chat request');
-    console.log('📥 User question:', userQuestion);
+    // console.log('📥 [AI Guru Router] Received chat request');
+    // console.log('📥 User question:', userQuestion);
     
     // Use the AI Chat Router to handle the conversation
     const response = await aiChatRouter.handleAIGuruChat(
@@ -67,11 +67,11 @@ router.post('/', async (req, res) => {
       userLanguage || 'en'
     );
 
-    console.log('✅ [AI Guru Router] Response generated successfully');
+    // console.log('✅ [AI Guru Router] Response generated successfully');
     res.json({ guruResponse: response });
 
   } catch (error) {
-    console.error('❌ [AI Guru Router] Error in /api/ai-guru-chat:', error);
+    // console.error('❌ [AI Guru Router] Error in /api/ai-guru-chat:', error);
     
     // Provide a fallback response
     const fallbackResponse = `Hi ${userDetails?.userName || 'there'}! 👋 I'm experiencing some technical difficulties right now, but I'm here to help! Please try asking your question again in a moment. In the meantime, remember to stay hydrated and keep up with your training! 💪`;

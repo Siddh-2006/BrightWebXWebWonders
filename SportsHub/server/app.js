@@ -34,21 +34,21 @@ const initQuizCronJobs = require('./cron/quizCronJobs');
 
 const app = express();
 const server = http.createServer(app);
-console.log("running with origin set to https://sportshub3.vercel.app")
 allowedOrigins = [
   "http://localhost:5173",
-  "https://sportshub-murex.vercel.app",
+  "http://localhost:5175",
+  // "https://sportshub-murex.vercel.app",
 ];
 
 app.use(cors({
-  origin: "https://sportshub-murex.vercel.app",
+  origin: allowedOrigins,
   credentials: true,
 }));
 
 
 const io = socketIO(server, {
   cors: {
-    origin: "https://sportshub-murex.vercel.app",
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST"],
   }
@@ -58,7 +58,7 @@ const io = socketIO(server, {
 // handleSocketConnection(io)
 
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  // console.log("User connected:", socket.id); // Commented out to reduce logs
   liveMatchRoomHandler(io, socket);
 });
 
@@ -75,13 +75,22 @@ const startServer = async () => {
     // Routes
     const matchRouter = require("./routes/matchRouter");
 
+    // Simple request logging (only method and URL)
+    app.use((req, res, next) => {
+      // console.log(`${req.method} ${req.url}`);
+      next();
+    });
+
     app.use("/api/ai-guru-chat", aiGuruChatRouter);
     app.use("/api/ai-system", aiSystemRouter);
     app.use('/api/quiz', quizRoutes);
     app.use("/match", matchRouter);
     app.use("/api/training-plans", trainingPlanRouter);
+    
+    // Custom training plan routes - register both endpoints
     app.use("/api/custom-training-plans", customTrainingPlanRouter);
     app.use("/api/custom-training-plan", customTrainingPlanRouter);
+    
     app.use("/posts", postRouter);
     app.use("/users", usersRouter);
     app.use("/clubs", clubsRouter);
@@ -97,14 +106,13 @@ const startServer = async () => {
     // Start a single HTTP + WebSocket server (Vercel-compatible behind proxy)
     const PORT = process.env.PORT || 3000;
     server.listen(PORT, () => {
-      console.log(`🚀 HTTP + WebSocket server running on ${PORT}`);
+      // Server running
     });
 
     // Initialize cron jobs after successful DB connection
     initQuizCronJobs();
 
   } catch (error) {
-    console.error("Failed to start server:", error);
     process.exit(1);
   }
 };

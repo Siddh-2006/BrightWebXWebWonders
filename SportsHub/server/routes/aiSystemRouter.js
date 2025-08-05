@@ -24,7 +24,7 @@ router.get('/status', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('[AI System Router] Error getting system status:', error);
+    // console.error('[AI System Router] Error getting system status:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to get system status',
@@ -108,7 +108,7 @@ router.post('/test', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(`[AI System Router] ${req.body.testType || 'simple'} test failed:`, error);
+    // console.error(`[AI System Router] ${req.body.testType || 'simple'} test failed:`, error);
     res.status(500).json({
       success: false,
       testType: req.body.testType || 'simple',
@@ -129,7 +129,7 @@ router.post('/reset-daily-usage', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('[AI System Router] Error resetting daily usage:', error);
+    // console.error('[AI System Router] Error resetting daily usage:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to reset daily usage',
@@ -185,7 +185,7 @@ router.get('/api-keys/stats', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('[AI System Router] Error getting API key stats:', error);
+    // console.error('[AI System Router] Error getting API key stats:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to get API key statistics',
@@ -228,7 +228,7 @@ router.get('/health', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('[AI System Router] Health check failed:', error);
+    // console.error('[AI System Router] Health check failed:', error);
     res.status(503).json({
       success: false,
       health: {
@@ -242,7 +242,7 @@ router.get('/health', async (req, res) => {
 
 // Middleware to log all AI system requests
 router.use((req, res, next) => {
-  console.log(`[AI System Router] ${req.method} ${req.path} - ${new Date().toISOString()}`);
+  // console.log(`[AI System Router] ${req.method} ${req.path} - ${new Date().toISOString()}`);
   next();
 });
 

@@ -127,7 +127,6 @@ class ReminderService {
     const reminderMessage = `⚽ Match Reminder: ${match.homeTeam} vs ${match.awayTeam}\nThe match starts in ${minutes} minutes! Don't miss it!`;
     
     // Log to console for debugging
-    console.log('🔔 Reminder:', reminderMessage);
 
     // Dispatch a custom event that components can listen to
     window.dispatchEvent(new CustomEvent('sportsHubReminder', {
@@ -180,7 +179,6 @@ class ReminderService {
       const remindersData = this.getAllReminders();
       localStorage.setItem('sportsHubReminders', JSON.stringify(remindersData));
     } catch (error) {
-      console.error('Failed to save reminders to localStorage:', error);
     }
   }
 
@@ -201,7 +199,6 @@ class ReminderService {
         });
       }
     } catch (error) {
-      console.error('Failed to load reminders from localStorage:', error);
     }
   }
 

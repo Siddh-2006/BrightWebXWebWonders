@@ -46,7 +46,6 @@ const ClubEditPage = ({ clubId }) => {
           performance: data.performance || prev.performance
         }));
       } catch (err) {
-        console.error("Failed to load club details", err);
       }
     };
 
@@ -121,7 +120,6 @@ const ClubEditPage = ({ clubId }) => {
       });
       alert("Club details updated successfully!");
     } catch (err) {
-      console.error("Update failed", err);
       alert("Failed to update club");
     }
   };

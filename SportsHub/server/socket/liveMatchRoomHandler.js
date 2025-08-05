@@ -27,7 +27,7 @@ module.exports = (io, socket) => {
         },
       });
     } catch (err) {
-      console.error("joinMatchRoom error:", err);
+      // Error joining match room
     }
   });
 
@@ -68,9 +68,7 @@ module.exports = (io, socket) => {
         liveScore: updatedMatch.liveScore,
         liveStreamUrl: updatedMatch.streamURL,
       });
-      console.log("Score updated successfully for match:", sport, updatedMatch.liveScore);
     } catch (err) {
-      console.error("adminUpdateScore error:", err);
       socket.emit("error", "Update failed");
     }
   });
@@ -129,13 +127,12 @@ module.exports = (io, socket) => {
       });
 
     } catch (err) {
-      console.error("submitPrediction error:", err);
       socket.emit("error", "Prediction failed");
     }
   });
 
   socket.on("disconnect", () => {
-    console.log("Socket disconnected", socket.id);
+    // Socket disconnected
   });
 };
 
@@ -143,7 +140,6 @@ module.exports = (io, socket) => {
 function buildScoreForSport(sport, data) {
   switch (sport) {
     case "football":
-      console.log(data)
       return {
         teamAScore: data.teamAScore || 0,
         teamBScore: data.teamBScore || 0,

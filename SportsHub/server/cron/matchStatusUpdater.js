@@ -21,9 +21,6 @@ const runMatchStatusCron = () => {
         { $set: { status: 'Ended', isLive: false } }
       );
 
-      console.log(`🟢 CRON RUN at ${now.toLocaleString()}`);
-      console.log(`▶️ Matches made Live: ${liveMatches.modifiedCount}`);
-      console.log(`⏹ Matches Ended: ${endedMatches.modifiedCount}`);
     } catch (err) {
       console.error('❌ CRON ERROR:', err);
     }

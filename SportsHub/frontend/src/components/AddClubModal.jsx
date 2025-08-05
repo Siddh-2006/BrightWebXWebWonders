@@ -37,12 +37,12 @@ const AddClubModal = ({ isOpen, onClose, onAdd, isDarkMode }) => {
         <button onClick={onClose} className="absolute top-4 right-4 text-white text-2xl font-bold">&times;</button>
         <h2 className="text-2xl font-bold mb-6 text-white">Add New Club</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input name="name" value={form.name} onChange={handleChange} required placeholder="Club Name" className="w-full p-3 rounded-lg bg-white/80 text-orange-700 placeholder-orange-400 focus:outline-none" />
-          <input name="foundedYear" value={form.foundedYear} onChange={handleChange} required placeholder="Founded Year" className="w-full p-3 rounded-lg bg-white/80 text-orange-700 placeholder-orange-400 focus:outline-none" />
-          <input name="officialEmail" value={form.officialEmail} onChange={handleChange} required placeholder="Official Email" className="w-full p-3 rounded-lg bg-white/80 text-orange-700 placeholder-orange-400 focus:outline-none" />
-          <input name="contactNumber" value={form.contactNumber} onChange={handleChange} required placeholder="Contact Number" className="w-full p-3 rounded-lg bg-white/80 text-orange-700 placeholder-orange-400 focus:outline-none" />
+          <input name="name" value={form.name} onChange={handleChange} required placeholder="Club Name *" className="w-full p-3 rounded-lg bg-white/80 text-orange-700 placeholder-orange-400 focus:outline-none" />
+          <input name="foundedYear" value={form.foundedYear} onChange={handleChange} placeholder="Founded Year (Optional)" className="w-full p-3 rounded-lg bg-white/80 text-orange-700 placeholder-orange-400 focus:outline-none" />
+          <input name="officialEmail" value={form.officialEmail} onChange={handleChange} placeholder="Official Email (Optional)" className="w-full p-3 rounded-lg bg-white/80 text-orange-700 placeholder-orange-400 focus:outline-none" />
+          <input name="contactNumber" value={form.contactNumber} onChange={handleChange} placeholder="Contact Number (Optional)" className="w-full p-3 rounded-lg bg-white/80 text-orange-700 placeholder-orange-400 focus:outline-none" />
           <input name="logo" type="file" accept="image/*" onChange={handleChange} className="w-full p-3 rounded-lg bg-white/80 text-orange-700 placeholder-orange-400 focus:outline-none" />
-          <textarea name="description" value={form.description} onChange={handleChange} required placeholder="Description" className="w-full p-3 rounded-lg bg-white/80 text-orange-700 placeholder-orange-400 focus:outline-none" />
+          <textarea name="description" value={form.description} onChange={handleChange} placeholder="Description (Optional)" className="w-full p-3 rounded-lg bg-white/80 text-orange-700 placeholder-orange-400 focus:outline-none" />
           <button type="submit" disabled={loading} className="w-full py-3 rounded-lg font-bold text-lg bg-white text-orange-600 hover:bg-orange-100 transition-all">
             {loading ? 'Adding...' : 'Add Club'}
           </button>

@@ -55,6 +55,7 @@ const AIGuru = ({ isDarkMode = true }) => {
   const chatRef = useRef(null);
   const postureRef = useRef(null);
   const trainingRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
   // Training Plan Modal State
   const [showTrainingPlanModal, setShowTrainingPlanModal] = useState(false);
@@ -88,9 +89,7 @@ const AIGuru = ({ isDarkMode = true }) => {
         const detectorConfig = { modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER };
         const detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, detectorConfig);
         setPoseDetector(detector);
-        console.log('MediaPipe Pose Detector loaded successfully.');
       } catch (error) {
-        console.error('Failed to load MediaPipe Pose Detector:', error);
         showCustomAlert('Failed to load posture analysis model. Please try again or check your internet connection.');
       } finally {
         setDetectorLoading(false);
@@ -98,6 +97,19 @@ const AIGuru = ({ isDarkMode = true }) => {
     };
     loadDetector();
   }, []);
+
+  // Auto-scroll to bottom when chat history changes
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      const scrollToBottom = () => {
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      };
+      
+      // Small delay to ensure content is rendered
+      const timeoutId = setTimeout(scrollToBottom, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [chatHistory]);
 
   // Handle profile changes
   const handleProfileChange = (e) => {
@@ -165,8 +177,6 @@ const AIGuru = ({ isDarkMode = true }) => {
 
   // Debug function to test MediaPipe status
   const handleDebugTest = async () => {
-    console.log('🧪 MediaPipe system status check');
-    
     const debugMessage = `**🧪 MediaPipe System Status**\n\n✅ **MediaPipe Pose Detection: ACTIVE**\n\nThe MediaPipe pose detection system is fully functional and working!\n\n**Current Status:**\n• ✅ AI Chat functionality\n• ✅ Training plans display\n• ✅ **Posture analysis (FULLY WORKING)**\n• ✅ Pose detector: ${poseDetector ? 'Loaded' : 'Loading...'}\n• ✅ TensorFlow.js backend: WebGL\n• ✅ Video/Image analysis: Active\n\n**How to Test:**\n1. Go to "Posture Analysis" tab\n2. Fill in your athlete profile\n3. Upload a video or image\n4. Click "Analyze" to see MediaPipe in action!\n\n🎯 **MediaPipe is working perfectly!**`;
     
     setChatHistory(prev => [
@@ -343,13 +353,28 @@ const AIGuru = ({ isDarkMode = true }) => {
         });
 
         const middleTime = videoElement.duration / 2;
-        videoElement.currentTime = middleTime;
-
-        await new Promise(resolve => {
-          videoElement.addEventListener('seeked', resolve, { once: true });
-        });
-
+        
         try {
+          // Pause the video first to prevent play/pause conflicts
+          videoElement.pause();
+          videoElement.currentTime = middleTime;
+
+          await new Promise((resolve, reject) => {
+            const timeoutId = setTimeout(() => {
+              reject(new Error('Video seek timeout'));
+            }, 5000);
+
+            const handleSeeked = () => {
+              clearTimeout(timeoutId);
+              resolve();
+            };
+
+            videoElement.addEventListener('seeked', handleSeeked, { once: true });
+          });
+
+          // Small delay to ensure frame is ready
+          await new Promise(resolve => setTimeout(resolve, 100));
+
           const detectedPoses = await poseDetector.estimatePoses(videoElement);
           if (detectedPoses.length > 0) {
             poses.push(detectedPoses[0]);
@@ -359,13 +384,26 @@ const AIGuru = ({ isDarkMode = true }) => {
             return;
           }
         } catch (error) {
-          if (error.name === 'AbortError') {
-            console.warn('MediaPipe Pose Detection Warning: Video play/seek interrupted, but still attempting to process frame.', error);
-            showCustomAlert('Pose detection faced a minor issue (video playback interrupted). Please ensure video is stable.');
-            setIsAnalyzing(false);
-            return;
+          if (error.name === 'AbortError' || error.message.includes('play() request was interrupted')) {
+            // Silently handle video playback interruption - this is expected behavior
+            try {
+              // Try pose detection anyway
+              const detectedPoses = await poseDetector.estimatePoses(videoElement);
+              if (detectedPoses.length > 0) {
+                poses.push(detectedPoses[0]);
+              } else {
+                showCustomAlert('No human pose detected in the video. Please ensure the person is clearly visible.');
+                setIsAnalyzing(false);
+                return;
+              }
+            } catch (retryError) {
+              showCustomAlert('Unable to analyze video frame. Please try with a different video or image.');
+              setIsAnalyzing(false);
+              return;
+            }
+          } else {
+            throw error;
           }
-          throw error;
         }
 
       } else { // mediaType === 'image'
@@ -398,7 +436,6 @@ const AIGuru = ({ isDarkMode = true }) => {
         score: kp.score
       }));
 
-      console.log('MediaPipe Pose Landmarks (sent to backend):', landmarksToSend);
 
       // Send landmark data and profile to backend
       const analysis = await analyzePostureService({
@@ -422,7 +459,6 @@ const AIGuru = ({ isDarkMode = true }) => {
       ]);
 
     } catch (error) {
-      console.error('Analysis error:', error);
       showCustomAlert(`Analysis failed: ${error.message}`);
     } finally {
       setIsAnalyzing(false);
@@ -486,20 +522,6 @@ const AIGuru = ({ isDarkMode = true }) => {
 
   // Enhanced error handling function
   const handleAIError = (error, context = '') => {
-    console.error(`🎯 AIGuru Error${context ? ` (${context})` : ''}:`, error);
-    
-    // Log additional details for debugging
-    if (error.response) {
-      console.error('🎯 Response Data:', error.response.data);
-      console.error('🎯 Response Status:', error.response.status);
-      console.error('🎯 Response Headers:', error.response.headers);
-    } else if (error.request) {
-      console.error('🎯 Request:', error.request);
-      console.error('🎯 No response received');
-    } else {
-      console.error('🎯 Error Message:', error.message);
-    }
-    console.error('🎯 Config:', error.config);
     
     // Determine error type and return appropriate message
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
@@ -550,17 +572,11 @@ const AIGuru = ({ isDarkMode = true }) => {
     setIsLoading(true);
     
     try {
-      console.log('🎯 AIGuru: Starting API call...');
-      console.log('🎯 AIGuru: User details:', chatUserDetails);
-      console.log('🎯 AIGuru: Chat data:', newChat);
-      
       // Call the actual Gemini API with user-entered details
       const response = await getAIGuruResponse({
         chat: newChat,
         userDetails: chatUserDetails
       });
-      
-      console.log('🎯 AIGuru: Got response:', response);
       
       // Add AI response to chat
       setChatHistory([
@@ -601,9 +617,6 @@ const AIGuru = ({ isDarkMode = true }) => {
     const sport = sportMatch ? sportMatch[1] : plan.title.split(' ')[1] || 'General';
 
     try {
-      console.log('🎯 Generating training plan for:', plan);
-      console.log('🎯 Extracted sport:', sport);
-      
       const trainingPlan = await generateTrainingPlan({
         userInfo: {
           name: isChatUserDetailsSet ? chatUserDetails.name : 'Athlete',
@@ -618,8 +631,6 @@ const AIGuru = ({ isDarkMode = true }) => {
 
       setCurrentTrainingPlan(trainingPlan);
     } catch (error) {
-      console.error('Failed to generate training plan:', error);
-      
       // Create a fallback training plan
       const fallbackPlan = {
         planTitle: `${plan.title}`,
@@ -1048,7 +1059,7 @@ const AIGuru = ({ isDarkMode = true }) => {
                   )}
 
                   {/* Chat History */}
-                  <div className={`h-[600px] overflow-y-auto p-6 rounded-2xl mb-6 ${isDarkMode ? 'bg-white/5' : 'bg-black/5'}`}>
+                  <div ref={chatContainerRef} className={`h-[600px] overflow-y-auto p-6 rounded-2xl mb-6 ${isDarkMode ? 'bg-white/5' : 'bg-black/5'}`}>
                     <div className="space-y-4">
                       {chatHistory.map((chat, index) => (
                         <div key={index} className={`flex ${chat.type === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -1184,31 +1195,6 @@ const AIGuru = ({ isDarkMode = true }) => {
                           </div>
                         </button>
                       ))}
-                    </div>
-                  </div>
-
-                  {/* Debug Test Button */}
-                  <div className="mb-6">
-                    <div className="text-center mb-3">
-                      <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                        System Status
-                      </span>
-                    </div>
-                    <div className="flex justify-center">
-                      <button
-                        onClick={handleDebugTest}
-                        disabled={isLoading}
-                        className={`px-4 py-2 rounded-lg border transition-all duration-300 group hover:scale-[1.02] ${
-                          isDarkMode
-                            ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20 text-green-400'
-                            : 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20 text-green-600'
-                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm">✅</span>
-                          <span className="text-sm font-medium">Check MediaPipe Status</span>
-                        </div>
-                      </button>
                     </div>
                   </div>
 

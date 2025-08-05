@@ -12,9 +12,15 @@ const protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_KEY);
-    req.user = await User.findById(decoded.id).select('-password');
+    // Fix: Use email to find user, consistent with authMiddleware
+    const user = await User.findOne({ email: decoded.email }).select('-password');
+    if (!user) {
+      return res.status(401).json({ msg: 'Invalid token. User not found.' });
+    }
+    req.user = user;
     next();
   } catch (err) {
+    console.error('Club middleware auth error:', err);
     res.status(401).json({ msg: 'Invalid token' });
   }
 };

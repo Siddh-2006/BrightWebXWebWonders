@@ -38,7 +38,7 @@ const EndedPage = ({ isDarkMode }) => {
     setSocket(socketInstance);
     socketInstance.emit("joinMatchRoom", { matchId });
     socketInstance.emit("sendEndedResults",{matchId});
-    socketInstance.on("recieveEndedresults", (data) => {setMatchData(data);console.log(data); setPollResults(data.predictions)});
+    socketInstance.on("recieveEndedresults", (data) => {setMatchData(data); setPollResults(data.predictions)});
     socketInstance.on("pollResults", (data) => setPollResults(data));
     socketInstance.on("receiveMessage", (msg) => {
       setMessages((prev) => [...prev, msg]);

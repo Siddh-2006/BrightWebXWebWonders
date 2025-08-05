@@ -37,14 +37,29 @@ const Club = ({ isDarkMode }) => {
           }
         }
       }
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/clubs/register`, formData, {
+      
+      // Get token from localStorage
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'multipart/form-data'
+      };
+      
+      // Add Authorization header if token exists
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/clubs/register`, formData, {
         withCredentials: true,
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers
       });
+      
+      // Show success message
+      alert('Club registered successfully! Awaiting admin approval.');
       window.location.reload();
     } catch (err) {
-      console.error('Add club error:', err?.response || err);
-      alert('Failed to add club.');
+      const errorMessage = err?.response?.data?.msg || err?.response?.data?.error || 'Failed to add club.';
+      alert(errorMessage);
     }
   };
   
@@ -57,7 +72,6 @@ const Club = ({ isDarkMode }) => {
         // Fetch all clubs
         const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/clubs`, { withCredentials: true });
         if (res.status === 200) {
-          console.log("Fetched clubs:", res.data);
           setClubData(res.data);
           setFilteredClubs(res.data);
         }
@@ -76,7 +90,6 @@ const Club = ({ isDarkMode }) => {
         
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching club data:", err);
         setLoading(false);
       }
     };
@@ -231,12 +244,12 @@ const Club = ({ isDarkMode }) => {
           <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
             {filteredClubs.map((club) => (
               <motion.div
+            key={club._id}
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8 }}
           >
               <div
-                key={club._id}
                 className={`group relative overflow-hidden rounded-3xl transition-all duration-300 hover:scale-105 ${isDarkMode
                   ? 'bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10'
                   : 'bg-black/5 backdrop-blur-md border border-black/10 hover:bg-black/10'

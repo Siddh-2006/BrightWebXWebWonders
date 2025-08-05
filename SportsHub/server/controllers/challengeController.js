@@ -50,7 +50,6 @@ const createChallenge = async (req, res) => {
       challenge
     });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -136,7 +135,6 @@ const acceptChallenge = async (req, res) => {
       match
     });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -206,7 +204,6 @@ const declineChallenge = async (req, res) => {
       }
     });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -224,7 +221,6 @@ const getChallenge = async (req, res) => {
 
     res.json(challenge);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -245,7 +241,6 @@ const getChallenges = async (req, res) => {
 
     res.json(challenges);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -260,7 +255,6 @@ const getNotifications = async (req, res) => {
 
     res.json(notifications);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -289,7 +283,6 @@ const markNotificationAsRead = async (req, res) => {
 
     res.json({ msg: 'Notification marked as read' });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };

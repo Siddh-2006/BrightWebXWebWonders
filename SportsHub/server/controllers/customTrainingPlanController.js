@@ -38,7 +38,7 @@ Create a detailed training plan that includes:
 
 ## RESPONSE FORMAT
 
-Provide your response in JSON format with the following structure:
+IMPORTANT: Provide your response in VALID JSON format. All arrays must contain simple strings only, not objects or nested structures.
 
 {
   "planTitle": "<<planName>> - <<sport>> Training Plan",
@@ -54,9 +54,9 @@ Provide your response in JSON format with the following structure:
       "title": "Session title based on focus areas",
       "duration": "<<sessionDuration>> minutes",
       "focus": "Main focus area from the selected focus areas",
-      "warmUp": ["Warm-up exercise 1", "Warm-up exercise 2", "Warm-up exercise 3"],
-      "mainWorkout": ["Main exercise 1", "Main exercise 2", "Main exercise 3", "Main exercise 4"],
-      "coolDown": ["Cool-down exercise 1", "Cool-down exercise 2"]
+      "warmUp": ["Light jogging for 5 minutes", "Arm circles forward and backward", "Dynamic leg swings"],
+      "mainWorkout": ["Skill practice drills", "Conditioning exercises", "Sport-specific movements", "Strength training"],
+      "coolDown": ["Static stretching for hamstrings", "Shoulder and arm stretches"]
     }
   ],
   "progression": {
@@ -66,31 +66,43 @@ Provide your response in JSON format with the following structure:
   },
   "equipment": ["Equipment from available list"],
   "safetyGuidelines": [
-    "Safety tip 1 specific to sport and difficulty",
-    "Safety tip 2 specific to equipment usage",
-    "Safety tip 3 specific to training intensity"
+    "Always warm up before training sessions",
+    "Stay hydrated throughout your workout",
+    "Listen to your body and rest when needed"
   ],
   "nutritionTips": [
-    "Nutrition tip 1 tailored to sport and goals",
-    "Nutrition tip 2 for training days",
-    "Nutrition tip 3 for recovery"
+    "Eat a balanced meal 2-3 hours before training",
+    "Stay hydrated before, during, and after exercise",
+    "Include protein in post-workout meals for recovery"
   ],
   "recoveryGuidelines": [
-    "Recovery tip 1 based on session frequency",
-    "Recovery tip 2 for the specific sport",
-    "Recovery tip 3 for the difficulty level"
+    "Get 7-9 hours of quality sleep per night",
+    "Include rest days in your training schedule",
+    "Use active recovery like light walking or stretching"
   ],
   "additionalNotes": "Personalized motivational message and any specific advice based on custom notes"
 }
+
+CRITICAL REQUIREMENTS:
+- warmUp, mainWorkout, coolDown must be arrays of simple strings describing exercises
+- safetyGuidelines, nutritionTips, recoveryGuidelines must be arrays of simple strings
+- Do NOT include nested objects or complex structures in any arrays
+- Each string should be a complete, actionable instruction or tip
+- Generate enough sessions to cover the total number of sessions (<<totalSessions>>)
 
 Make the plan highly specific to the custom requirements, incorporating all the selected focus areas, utilizing the available equipment, and addressing the specific goals mentioned.
 `;
 
 // Create a new custom training plan
 const createCustomTrainingPlan = async (req, res) => {
-  console.log('🎯 Custom Training Plan Controller - Create Plan Request');
-  console.log('📝 Request Body:', JSON.stringify(req.body, null, 2));
-  console.log('👤 User:', req.user);
+  // Validate request body
+  if (!req.body || Object.keys(req.body).length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Request body is required',
+      error: 'Empty request body'
+    });
+  }
   
   try {
     const {
@@ -138,8 +150,6 @@ const createCustomTrainingPlan = async (req, res) => {
 
     // Generate AI training plan using AI Chat Router
     try {
-      console.log('[Custom Training Plan Controller] Generating plan using AI Chat Router');
-      
       const planData = {
         planName,
         sport,
@@ -159,16 +169,15 @@ const createCustomTrainingPlan = async (req, res) => {
       const generatedPlan = await aiChatRouter.generateCustomTrainingPlan(planData);
       
       if (generatedPlan && typeof generatedPlan === 'object') {
-        customTrainingPlan.generatedPlan = generatedPlan;
-        console.log('[Custom Training Plan Controller] AI plan generated successfully');
+        // Sanitize the AI response to ensure it matches the schema
+        const sanitizedPlan = sanitizeGeneratedPlan(generatedPlan);
+        customTrainingPlan.generatedPlan = sanitizedPlan;
       } else {
-        console.warn('[Custom Training Plan Controller] AI generated invalid plan, using fallback');
         customTrainingPlan.generatedPlan = createFallbackPlan(planData);
       }
       
     } catch (aiError) {
-      console.error('[Custom Training Plan Controller] AI generation error:', aiError);
-      console.log('[Custom Training Plan Controller] Using fallback plan');
+      console.error('AI generation error:', aiError.message);
       customTrainingPlan.generatedPlan = createFallbackPlan({
         planName,
         sport,
@@ -440,6 +449,98 @@ const updateSessionProgress = async (req, res) => {
       error: error.message
     });
   }
+};
+
+// Sanitize AI generated plan to match schema requirements
+const sanitizeGeneratedPlan = (generatedPlan) => {
+  try {
+    const sanitized = { ...generatedPlan };
+    
+    // Sanitize session details
+    if (sanitized.sessionDetails && Array.isArray(sanitized.sessionDetails)) {
+      sanitized.sessionDetails = sanitized.sessionDetails.map(session => {
+        const sanitizedSession = { ...session };
+        
+        // Convert warmUp to simple string array
+        if (sanitizedSession.warmUp) {
+          sanitizedSession.warmUp = extractStringArray(sanitizedSession.warmUp);
+        }
+        
+        // Convert mainWorkout to simple string array
+        if (sanitizedSession.mainWorkout) {
+          sanitizedSession.mainWorkout = extractStringArray(sanitizedSession.mainWorkout);
+        }
+        
+        // Convert coolDown to simple string array
+        if (sanitizedSession.coolDown) {
+          sanitizedSession.coolDown = extractStringArray(sanitizedSession.coolDown);
+        }
+        
+        return sanitizedSession;
+      });
+    }
+    
+    // Sanitize other arrays
+    if (sanitized.safetyGuidelines) {
+      sanitized.safetyGuidelines = extractStringArray(sanitized.safetyGuidelines);
+    }
+    
+    if (sanitized.nutritionTips) {
+      sanitized.nutritionTips = extractStringArray(sanitized.nutritionTips);
+    }
+    
+    if (sanitized.recoveryGuidelines) {
+      sanitized.recoveryGuidelines = extractStringArray(sanitized.recoveryGuidelines);
+    }
+    
+    if (sanitized.equipment) {
+      sanitized.equipment = extractStringArray(sanitized.equipment);
+    }
+    
+    return sanitized;
+  } catch (error) {
+    console.error('Error sanitizing plan:', error);
+    return generatedPlan; // Return original if sanitization fails
+  }
+};
+
+// Helper function to extract string arrays from complex structures
+const extractStringArray = (data) => {
+  if (Array.isArray(data)) {
+    return data.map(item => {
+      if (typeof item === 'string') {
+        return item;
+      } else if (typeof item === 'object' && item !== null) {
+        // Extract strings from object properties
+        const strings = [];
+        if (item.exercises && Array.isArray(item.exercises)) {
+          strings.push(...item.exercises.filter(ex => typeof ex === 'string'));
+        }
+        // Extract other string properties
+        Object.values(item).forEach(value => {
+          if (typeof value === 'string' && value.length > 10) { // Only meaningful strings
+            strings.push(value);
+          }
+        });
+        return strings.length > 0 ? strings.join(', ') : 'Exercise or tip';
+      }
+      return String(item);
+    }).filter(item => item && item.length > 0);
+  } else if (typeof data === 'string') {
+    return [data];
+  } else if (typeof data === 'object' && data !== null) {
+    // Extract strings from object
+    const strings = [];
+    Object.values(data).forEach(value => {
+      if (typeof value === 'string' && value.length > 10) {
+        strings.push(value);
+      } else if (Array.isArray(value)) {
+        strings.push(...value.filter(v => typeof v === 'string'));
+      }
+    });
+    return strings.length > 0 ? strings : ['Exercise or tip'];
+  }
+  return ['Exercise or tip'];
 };
 
 // Create fallback training plan when AI generation fails

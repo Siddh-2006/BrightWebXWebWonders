@@ -48,36 +48,29 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
   useEffect(() => {
     const fetch_data = async () => {
       try {
-        console.log("fecthing");
         const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/users/profile`, {
           withCredentials: true,
         });
         if (res.status == 200) {
           setUserData(res.data);
           setUserId(res.data._id);
-          console.log(res.data);
         } else {
-          console.log(res);
         }
       } catch (err) {
-        console.log(err);
         showCustomToast("error", err.message + err.response.data);
       }
     };
     const fetch_training_data = async (user_id) => {
       try {
-        console.log(user_id);
         const res = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/api/custom-training-plans/user/${user_id}`,{
             withCredentials:true
           }
         );
         if (res.status == 200) {
-          console.log(res.data);
           setTrainingData(res.data.trainingPlans);
         }
       } catch (err) {
-        console.log("errior in training data", err);
       }
     };
     if (isLoggedIn) {
@@ -103,7 +96,6 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
         showCustomToast("success",res.data.message);
       }
     }catch(err){
-      console.log(err);
     }
   }
   const playerData = {

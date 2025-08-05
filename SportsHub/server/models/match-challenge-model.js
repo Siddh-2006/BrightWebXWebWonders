@@ -15,11 +15,18 @@ const matchChallengeSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  date: {
+  proposedDateTime: {
     type: Date,
+    required: false,
+    default: Date.now
   },
-  time: {
+  timezone: {
     type: String,
+    required: false,
+    default: 'UTC'
+  },
+  localDateTime: {
+    type: String, // For display purposes - original local time input
   },
   liveStream: {
     type: Boolean,

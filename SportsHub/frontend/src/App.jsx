@@ -37,27 +37,23 @@ function App() {
   const [userType, setUserType] = useState('player');
   const [isDarkMode, setIsDarkMode] = useState(true);
   const login_info = useContext(loginContext);
-  console.log(login_info)
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
   };
   // check to see if the user is logged in
 
   useEffect(() => {
-    console.log(`${import.meta.env.VITE_BACKEND_URL}`)
     const fetch_user = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/users/profile`, { withCredentials: true });
         if (res.status == 200) {
           login_info.setIsLoggedIn(true);
           localStorage.setItem("username",res.data.fullname)
-          console.log("set login true at app.jsx",res.data)
         }
         else {
           login_info.setIsLoggedIn(false);
         }
       } catch (err) {
-        console.log(err)
         login_info.setIsLoggedIn(false);
       }
     }

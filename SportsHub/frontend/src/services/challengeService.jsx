@@ -6,8 +6,16 @@ export const challengeService = {
   // Create a new challenge
   createChallenge: async (challengeData) => {
     try {
+      const token = localStorage.getItem('token');
+      const headers = {};
+      
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
       const response = await axios.post(`${API_BASE_URL}/challenges`, challengeData, {
-        withCredentials: true
+        withCredentials: true,
+        headers
       });
       return response.data;
     } catch (error) {
@@ -18,8 +26,16 @@ export const challengeService = {
   // Get all challenges for the current user's club
   getChallenges: async () => {
     try {
+      const token = localStorage.getItem('token');
+      const headers = {};
+      
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
       const response = await axios.get(`${API_BASE_URL}/challenges`, {
-        withCredentials: true
+        withCredentials: true,
+        headers
       });
       return response.data;
     } catch (error) {
@@ -30,8 +46,16 @@ export const challengeService = {
   // Get a single challenge by ID
   getChallenge: async (challengeId) => {
     try {
+      const token = localStorage.getItem('token');
+      const headers = {};
+      
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
       const response = await axios.get(`${API_BASE_URL}/challenges/${challengeId}`, {
-        withCredentials: true
+        withCredentials: true,
+        headers
       });
       return response.data;
     } catch (error) {
@@ -42,8 +66,16 @@ export const challengeService = {
   // Accept a challenge
   acceptChallenge: async (challengeId) => {
     try {
+      const token = localStorage.getItem('token');
+      const headers = {};
+      
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
       const response = await axios.patch(`${API_BASE_URL}/challenges/${challengeId}/accept`, {}, {
-        withCredentials: true
+        withCredentials: true,
+        headers
       });
       return response.data;
     } catch (error) {
@@ -54,8 +86,16 @@ export const challengeService = {
   // Decline a challenge
   declineChallenge: async (challengeId) => {
     try {
+      const token = localStorage.getItem('token');
+      const headers = {};
+      
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
       const response = await axios.patch(`${API_BASE_URL}/challenges/${challengeId}/decline`, {}, {
-        withCredentials: true
+        withCredentials: true,
+        headers
       });
       return response.data;
     } catch (error) {
@@ -66,8 +106,16 @@ export const challengeService = {
   // Get notifications for the current user
   getNotifications: async () => {
     try {
+      const token = localStorage.getItem('token');
+      const headers = {};
+      
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
       const response = await axios.get(`${API_BASE_URL}/challenges/notifications`, {
-        withCredentials: true
+        withCredentials: true,
+        headers
       });
       return response.data;
     } catch (error) {
@@ -78,8 +126,16 @@ export const challengeService = {
   // Mark notification as read
   markNotificationAsRead: async (notificationId) => {
     try {
+      const token = localStorage.getItem('token');
+      const headers = {};
+      
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
       const response = await axios.patch(`${API_BASE_URL}/challenges/notifications/${notificationId}/read`, {}, {
-        withCredentials: true
+        withCredentials: true,
+        headers
       });
       return response.data;
     } catch (error) {
@@ -90,8 +146,16 @@ export const challengeService = {
   // Get user's club information
   getMyClub: async () => {
     try {
+      const token = localStorage.getItem('token');
+      const headers = {};
+      
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
       const response = await axios.get(`${API_BASE_URL}/clubs/my-club`, {
-        withCredentials: true
+        withCredentials: true,
+        headers
       });
       return response.data;
     } catch (error) {

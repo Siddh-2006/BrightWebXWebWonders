@@ -10,21 +10,24 @@ const loadApiKeys = () => {
     
     // Primary keys
     if (process.env.GEMINI_API_KEY_AI_GURU) {
-        keys.push(process.env.GEMINI_API_KEY_AI_GURU.trim());
+        const key = process.env.GEMINI_API_KEY_AI_GURU.trim();
+        keys.push(key);
     }
     
     if (process.env.GEMINI_API_KEY_TrainingPlan) {
-        keys.push(process.env.GEMINI_API_KEY_TrainingPlan.trim());
+        const key = process.env.GEMINI_API_KEY_TrainingPlan.trim();
+        keys.push(key);
     }
     
     if (process.env.GEMINI_API_KEY_PostureCorrector) {
-        keys.push(process.env.GEMINI_API_KEY_PostureCorrector.trim());
+        const key = process.env.GEMINI_API_KEY_PostureCorrector.trim();
+        keys.push(key);
     }
 
     // Additional keys from comma-separated list
     if (process.env.GEMINI_API_KEYS) {
         const additionalKeys = process.env.GEMINI_API_KEYS.split(',');
-        additionalKeys.forEach(key => {
+        additionalKeys.forEach((key, index) => {
             const trimmedKey = key.trim();
             if (trimmedKey && !keys.includes(trimmedKey)) {
                 keys.push(trimmedKey);
@@ -32,7 +35,8 @@ const loadApiKeys = () => {
         });
     }
 
-    return keys.filter(key => key && key.length > 20); // Basic validation
+    const validKeys = keys.filter(key => key && key.length > 20); // Basic validation
+    return validKeys;
 };
 
 const API_KEYS = loadApiKeys();
@@ -82,10 +86,8 @@ function loadApiKeyState() {
             }
         });
 
-        console.log('[API Manager] API key state loaded and synced.');
         saveApiKeyState(); // Save to persist any initializations/resets
     } catch (error) {
-        console.error('[API Manager] Error loading API key state (starting fresh):', error.message);
         // Fallback: if file corrupted or error, initialize all keys from scratch
         API_KEYS.forEach(key => {
             apiKeyState[key] = initializeKeyState(key);
@@ -97,7 +99,7 @@ function saveApiKeyState() {
     try {
         fs.writeFileSync(API_KEY_STATE_FILE, JSON.stringify(apiKeyState, null, 2));
     } catch (error) {
-        console.error('[API Manager] Error saving API key state:', error.message);
+        // Error saving API key state
     }
 }
 
@@ -147,7 +149,6 @@ function recordApiCall(apiKey) {
     apiKeyState[apiKey].lastMinuteCalls.push(now);
     apiKeyState[apiKey].lastGenerationRun = now; // Update the last time this key was used for content generation
 
-    console.log(`[API Manager] Call recorded for key ${apiKey.substring(0, 5)}... RPM: ${apiKeyState[apiKey].lastMinuteCalls.length}/${MAX_RPM_CALLS}, RPD: ${apiKeyState[apiKey].requestsToday}/${MAX_RPD_CALLS}`);
     saveApiKeyState();
 }
 
@@ -156,19 +157,16 @@ function disableKeyTemporarily(apiKey) {
 
     const disabledUntil = Date.now() + TEMP_DISABLE_TIME_MS;
     apiKeyState[apiKey].disabledUntil = disabledUntil;
-    console.warn(`[API Manager] Key ${apiKey.substring(0, 5)}... temporarily disabled until ${new Date(disabledUntil).toLocaleTimeString()} IST.`); // Adjusted for IST
     saveApiKeyState();
 }
 
 function resetDailyKeyUsage() {
-    console.log(`[API Manager] Performing explicit daily API key usage reset at ${new Date().toLocaleTimeString()} IST.`);
     const today = new Date().toISOString().split('T')[0];
     API_KEYS.forEach(key => {
         apiKeyState[key] = initializeKeyState(key); // Re-initialize each key
         apiKeyState[key].lastResetDate = today; // Ensure it's marked for today
     });
     saveApiKeyState();
-    console.log('[API Manager] All key usages have been reset for the new day.');
 }
 
 // Function to get the latest generation timestamp across all keys

@@ -27,7 +27,6 @@ const LiveScoreAdmin = () => {
         );
         setIsAdmin(res.data.success ? true : false);
       } catch (err) {
-        console.error("Admin check failed", err?.response?.data || err.message);
         setIsAdmin(false);
       }
     };

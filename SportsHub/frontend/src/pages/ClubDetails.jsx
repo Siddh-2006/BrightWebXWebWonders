@@ -51,13 +51,11 @@ const ClubDetails = ({ isDarkMode }) => {
         const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/clubs`, {
           withCredentials: true,
         });
-        console.log("Fetched clubs:", res.data);
         const match = res.data.find(
           (c) => c.name.toLowerCase() === decodedClubName.toLowerCase()
         );
 
         setClub(match);
-        console.log(match);
 
         // Check if user owns a club (only if logged in)
         if (login_info.isLoggedIn) {
@@ -73,7 +71,6 @@ const ClubDetails = ({ isDarkMode }) => {
 
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching club:", err);
         setLoading(false);
       }
     };
@@ -90,7 +87,6 @@ const ClubDetails = ({ isDarkMode }) => {
           setPosts(res.data.posts || []); // assuming backend sends { posts: [...] }
         }
       } catch (error) {
-        console.error("Error fetching club posts:", error);
       }
     };
     fetchClubPosts();
@@ -276,7 +272,6 @@ const ClubDetails = ({ isDarkMode }) => {
                     alert(res.data?.message || "Profile updated!");
                     setClub(res.data.club);
                   } catch (err) {
-                    console.error("Edit club error:", err?.response || err);
                     alert("Failed to update club profile.");
                   }
                 }}

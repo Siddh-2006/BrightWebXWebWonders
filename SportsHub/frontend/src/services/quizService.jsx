@@ -29,7 +29,6 @@ export const quizService = {
 
       return await response.json();
     } catch (error) {
-      console.error('Error generating quiz:', error);
       throw error;
     }
   },
@@ -53,7 +52,6 @@ export const quizService = {
 
       return await response.json();
     } catch (error) {
-      console.error('Error submitting quiz result:', error);
       throw error;
     }
   },
@@ -76,7 +74,6 @@ export const quizService = {
 
       return await response.json();
     } catch (error) {
-      console.error('Error fetching quiz results:', error);
       throw error;
     }
   }

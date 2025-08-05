@@ -55,7 +55,11 @@ async function generateAndStoreDailyQuestions() {
     for (const sport of SPORTS_TO_GENERATE_FOR) {
         for (const [level, count] of Object.entries(QUESTION_BREAKDOWN)) {
             // Count questions generated *today* for this sport and difficulty
-            const generatedToday = await Question.countDocuments({ sport, difficulty: level, generatedAt: { $gte: startOfDay } });
+            const generatedToday = await Question.countDocuments({
+                sport: { $regex: new RegExp(`^${sport}$`, 'i') }, // Case-insensitive match
+                difficulty: level,
+                generatedAt: { $gte: startOfDay }
+            });
             const needed = count - generatedToday;
             if (needed > 0) {
                 generationTasks.push({ sport, level, count: needed });
@@ -85,13 +89,16 @@ async function generateAndStoreDailyQuestions() {
         // 2. Prepare and make the API call
         try {
             // Fetch recent questions (last 50) for uniqueness check by AI
-            const recentQuestions = await Question.find({ sport, difficulty: level })
+            const recentQuestions = await Question.find({
+                sport: { $regex: new RegExp(`^${sport}$`, 'i') }, // Case-insensitive match
+                difficulty: level
+            })
                 .sort({ generatedAt: -1 }) // Most recent first
                 .limit(50)
                 .select('question_text');
             const prompt = generateQuizPrompt(sport, level, count, recentQuestions.map(q => q.question_text));
 
-            // Use gemini-1.5-flash model
+            // Use gemini-2.0-flash model
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -183,8 +190,9 @@ const generateQuizForUser = async (req, res) => {
         for (const sport of sports) {
             for (const [level, count] of Object.entries(QUIZ_PATTERN)) {
                 // Find questions that are not due for archiving
+                // Use case-insensitive matching for sport
                 const queryConditions = {
-                    sport: sport,
+                    sport: { $regex: new RegExp(`^${sport}$`, 'i') }, // Case-insensitive match
                     difficulty: level,
                     archiveAfter: { $gt: new Date() } // Question must not be older than 2 days
                 };
@@ -199,11 +207,13 @@ const generateQuizForUser = async (req, res) => {
              for (const sport of sports) {
                  for (const [level, count] of Object.entries(QUIZ_PATTERN)) {
                       // How many more do we need for this sport/level?
-                      const currentCount = selectedQuestions.filter(q => q.sport === sport && q.difficulty === level).length;
+                      const currentCount = selectedQuestions.filter(q =>
+                        q.sport.toLowerCase() === sport.toLowerCase() && q.difficulty === level
+                      ).length;
                       if (currentCount < count) {
                          const fallbackNeeded = count - currentCount;
                          const fallbackQuestions = await Question.find({
-                             sport: sport,
+                             sport: { $regex: new RegExp(`^${sport}$`, 'i') }, // Case-insensitive match
                              difficulty: level,
                              _id: { $nin: selectedQuestions.map(q => q._id) }, // Avoid duplicates with already selected
                              archiveAfter: { $gt: new Date() }

@@ -65,18 +65,9 @@ class AIChatRouter {
         }
 
         if (keys.length === 0) {
-            console.warn('[AI Chat Router] No valid Gemini API keys found in environment variables');
-            console.warn('[AI Chat Router] Please check your environment variables:');
-            console.warn('- GEMINI_API_KEY_AI_GURU');
-            console.warn('- GEMINI_API_KEY_TrainingPlan');
-            console.warn('- GEMINI_API_KEY_PostureCorrector');
-            console.warn('- GEMINI_API_KEYS (comma-separated list)');
-            
             // Return empty array instead of throwing error to allow graceful fallback
             return [];
         }
-
-        console.log(`[AI Chat Router] Loaded ${keys.length} valid API keys`);
         return keys.sort((a, b) => a.priority - b.priority);
     }
 
@@ -92,7 +83,6 @@ class AIChatRouter {
         // Google API keys typically start with 'AIza' and are 39 characters long
         const trimmedKey = key.trim();
         if (trimmedKey.length < 20 || !trimmedKey.startsWith('AIza')) {
-            console.warn(`[AI Chat Router] Invalid API key format: ${trimmedKey.substring(0, 8)}...`);
             return false;
         }
         
@@ -104,7 +94,6 @@ class AIChatRouter {
      */
     initializeModels() {
         if (this.apiKeys.length === 0) {
-            console.warn('[AI Chat Router] No API keys available for model initialization');
             return;
         }
 
@@ -114,19 +103,21 @@ class AIChatRouter {
                 this.models.set(key, {
                     genAI,
                     model: genAI.getGenerativeModel({ model: "gemini-2.0-flash" }),
+                    fallbackModel: genAI.getGenerativeModel({ model: "gemini-1.5-flash" }),
                     name,
-                    isValid: true
+                    isValid: true,
+                    currentModel: "gemini-2.0-flash"
                 });
-                console.log(`[AI Chat Router] Initialized model for ${name}`);
             } catch (error) {
-                console.error(`[AI Chat Router] Failed to initialize model for ${name}:`, error.message);
                 // Mark this key as invalid
                 this.models.set(key, {
                     genAI: null,
                     model: null,
+                    fallbackModel: null,
                     name,
                     isValid: false,
-                    error: error.message
+                    error: error.message,
+                    currentModel: null
                 });
             }
         });
@@ -170,16 +161,30 @@ class AIChatRouter {
                     throw new Error(`Model not initialized for API key: ${apiKey.substring(0, 8)}...`);
                 }
 
-                console.log(`[AI Chat Router] Attempt ${retry + 1} using key: ${modelInfo.name}`);
+                console.log(`[AI Chat Router] Attempt ${retry + 1} using key: ${modelInfo.name} (${modelInfo.currentModel})`);
                 
                 // Record the API call
                 geminiApiManager.recordApiCall(apiKey);
                 
-                // Execute the request
-                const result = await requestFunction(modelInfo.model, modelInfo.genAI);
-                
-                console.log(`[AI Chat Router] Success with key: ${modelInfo.name}`);
-                return result;
+                // Try primary model first
+                try {
+                    const result = await requestFunction(modelInfo.model, modelInfo.genAI);
+                    console.log(`[AI Chat Router] Success with key: ${modelInfo.name} using ${modelInfo.currentModel}`);
+                    return result;
+                } catch (primaryError) {
+                    // Check if it's a service unavailable error (503) and we have a fallback model
+                    if (this.isServiceUnavailableError(primaryError) && modelInfo.fallbackModel) {
+                        console.warn(`[AI Chat Router] ${modelInfo.currentModel} unavailable, trying fallback model...`);
+                        
+                        // Try fallback model
+                        const fallbackResult = await requestFunction(modelInfo.fallbackModel, modelInfo.genAI);
+                        console.log(`[AI Chat Router] Success with key: ${modelInfo.name} using gemini-1.5-flash (fallback)`);
+                        return fallbackResult;
+                    } else {
+                        // Re-throw the error if it's not a service unavailable error or no fallback available
+                        throw primaryError;
+                    }
+                }
 
             } catch (error) {
                 attemptCount++;
@@ -203,6 +208,11 @@ class AIChatRouter {
                         geminiApiManager.disableKeyTemporarily(currentKey);
                         console.warn(`[AI Chat Router] Temporarily disabled key due to quota exceeded`);
                     }
+                }
+
+                // Handle service unavailable errors
+                if (this.isServiceUnavailableError(error)) {
+                    console.warn(`[AI Chat Router] Service unavailable error detected, will retry with different key`);
                 }
 
                 // Wait before retry with exponential backoff
@@ -327,10 +337,19 @@ class AIChatRouter {
 
     isQuotaExceededError(error) {
         const message = error.message?.toLowerCase() || '';
-        return message.includes('quota exceeded') || 
+        return message.includes('quota exceeded') ||
                message.includes('quota exhausted') ||
                message.includes('billing') ||
                error.status === 403;
+    }
+
+    isServiceUnavailableError(error) {
+        const message = error.message?.toLowerCase() || '';
+        return message.includes('service unavailable') ||
+               message.includes('503') ||
+               message.includes('overloaded') ||
+               message.includes('temporarily unavailable') ||
+               error.status === 503;
     }
 
     // Utility methods

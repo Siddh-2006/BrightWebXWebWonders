@@ -124,7 +124,6 @@ const Notifications = ({ isDarkMode, userType, isAdmin }) => {
           }
         }
       } catch (err) {
-        console.error('Error fetching notifications:', err);
       } finally {
         setLoading(false);
       }
@@ -297,7 +296,6 @@ const Notifications = ({ isDarkMode, userType, isAdmin }) => {
         4000
       );
     } catch (err) {
-      console.error('Error marking all notifications as read:', err);
       showNotificationToast(
         'error',
         'Error',
@@ -321,7 +319,6 @@ const Notifications = ({ isDarkMode, userType, isAdmin }) => {
         3000
       );
     } catch (err) {
-      console.error('Error marking notification as read:', err);
       showNotificationToast(
         'error',
         'Error',

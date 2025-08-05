@@ -1,12 +1,57 @@
 const Club = require('../models/club-model');
 const JoinRequest = require('../models/join-request-model');
 const User = require('../models/user-model');
+const Notification = require('../models/notification-model');
 const uploadToCloudinary = require('../utils/uploadToCloudinary'); // Cloudinary uploader
+
+// Helper function to notify admins of new club registration
+const notifyAdminsOfClubRegistration = async (club) => {
+  try {
+    // Find all admin users
+    const admins = await User.find({ isAdmin: true });
+    
+    if (admins.length === 0) {
+      console.log('No admin users found to notify');
+      return;
+    }
+
+    // Create notification for each admin
+    const notifications = admins.map(admin => ({
+      recipient: admin._id,
+      type: 'club_registration',
+      title: 'New Club Registration',
+      message: `Club "${club.name}" has been registered and requires approval.`,
+      data: {
+        clubId: club._id,
+        clubName: club.name,
+        createdBy: club.createdBy
+      },
+      actionUrl: `/admin/clubs/pending`
+    }));
+
+    await Notification.insertMany(notifications);
+    console.log(`✅ Notified ${admins.length} admin(s) about new club registration: ${club.name}`);
+  } catch (err) {
+    console.error('Error notifying admins:', err);
+  }
+};
 
 // @desc Register a club with logo upload
 const registerClub = async (req, res) => {
   try {
-    const { name, description, sports } = req.body;
+    const {
+      name,
+      description,
+      sports,
+      foundedYear,
+      officialEmail,
+      contactNumber
+    } = req.body;
+
+    // Validate required fields - only name is required
+    if (!name) {
+      return res.status(400).json({ msg: 'Club name is required' });
+    }
 
     const existing = await Club.findOne({ name });
     if (existing) return res.status(400).json({ msg: 'Club already exists' });
@@ -22,15 +67,21 @@ const registerClub = async (req, res) => {
       logo: logoUrl,
       createdBy: req.user._id,
       approved: false, // default: admin has to approve
-      sports: sports || []
+      sports: sports || [],
+      foundedYear: foundedYear ? parseInt(foundedYear) : undefined,
+      officialEmail: officialEmail || undefined,
+      contactNumber: contactNumber || undefined
     });
+
+    // ✅ Notify all admins about the new club registration
+    await notifyAdminsOfClubRegistration(club);
 
     res.status(201).json({
       msg: 'Club registered successfully. Awaiting admin approval.',
       club
     });
   } catch (err) {
-    console.error(err);
+    console.error('Club registration error:', err);
     res.status(500).json({ error: err.message });
   }
 };

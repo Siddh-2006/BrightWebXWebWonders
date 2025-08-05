@@ -115,7 +115,11 @@ const QuizSection = ({ isDarkMode, preSelectedSport }) => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(newTimer);
-          handleTimeUp();
+          setTimer(null);
+          // Use setTimeout to ensure state updates are processed
+          setTimeout(() => {
+            handleTimeUp();
+          }, 100);
           return 0;
         }
         return prev - 1;
@@ -125,9 +129,27 @@ const QuizSection = ({ isDarkMode, preSelectedSport }) => {
   };
 
   const handleTimeUp = () => {
-    if (!quizCompleted) {
-      handleAnswerSubmit(''); // Submit empty answer for timeout
+    if (quizCompleted || !questions.length || currentQuestionIndex >= questions.length) {
+      return;
     }
+    
+    // Clear the timer
+    if (timer) {
+      clearInterval(timer);
+      setTimer(null);
+    }
+    
+    // Submit empty answer for timeout (counts as incorrect)
+    handleAnswerSubmit('');
+    
+    // Auto-advance after showing explanation briefly
+    setTimeout(() => {
+      if (!quizCompleted) {
+        // Reset timer to 30 seconds before moving to next question
+        setTimeLeft(30);
+        nextQuestion();
+      }
+    }, 2000); // Show explanation for 2 seconds then auto-advance
   };
 
   const handleAnswerSubmit = (answer) => {
