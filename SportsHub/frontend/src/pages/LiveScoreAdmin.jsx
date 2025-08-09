@@ -130,6 +130,12 @@ const LiveScoreAdmin = () => {
               >
                 +1
               </button>
+              <button
+                className="bg-blue-600 px-3 py-1 rounded"
+                onClick={() => addScore(key, -1)}
+              >
+                -1
+              </button>
               <span className="text-lg">{scoreData[key] || 0}</span>
             </div>
           ))}
@@ -150,6 +156,15 @@ const LiveScoreAdmin = () => {
                     onClick={() => addScore(stat, val, team)}
                   >
                     +{val}
+                  </button>
+                ))}
+                {[-1, -2, -4, -6].map((val) => (
+                  <button      
+                    key={val}
+                    className="bg-blue-600 px-3 py-1 rounded"
+                    onClick={() => addScore(stat, val, team)}
+                  >
+                    -{val}
                   </button>
                 ))}
                 <span className="text-lg">{scoreData[team]?.[stat] || 0}</span>

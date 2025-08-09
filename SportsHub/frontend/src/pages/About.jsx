@@ -5,8 +5,9 @@ import {
   Trophy, Star, TrendingUp, Calendar, Mail, Phone, MapPin,
   Linkedin, Twitter, Github
 } from 'lucide-react';
-
+import { useNavigate } from 'react-router';
 const About = ({ isDarkMode }) => {
+  const navigate=useNavigate();
   const teamMembers = [
     {
       name: 'Siddh Shah',
@@ -268,7 +269,7 @@ const About = ({ isDarkMode }) => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">Meet Our Squad</h2>
+            <h2 id='squard' className="text-4xl md:text-5xl font-bold mb-6">Meet Our Squad</h2>
             <p className={`text-xl max-w-3xl mx-auto ${
               isDarkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
@@ -467,7 +468,7 @@ const About = ({ isDarkMode }) => {
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className={`text-center p-8 rounded-2xl ${
+            <div className={`text-center p-8 px-2 rounded-2xl ${
               isDarkMode 
                 ? 'bg-white/5 backdrop-blur-md border border-white/10' 
                 : 'bg-black/5 backdrop-blur-md border border-black/10'
@@ -490,7 +491,7 @@ const About = ({ isDarkMode }) => {
               }`} />
               <h3 className="text-xl font-bold mb-2">Call Us</h3>
               <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                +1 (800) 123-4567
+                +91 7879424006
               </p>
             </div>
             <div className={`text-center p-8 rounded-2xl ${
@@ -537,16 +538,18 @@ const About = ({ isDarkMode }) => {
                 isDarkMode
                   ? 'bg-white text-orange-600 hover:bg-gray-100'
                   : 'bg-black text-blue-400 hover:bg-gray-900'
-              }`}>
+              }`}
+              onClick={()=>{navigate("/")}}
+              >
                 Start Your Journey
               </button>
-              <button className={`border-2 px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ${
+              <a href='#squard' className={`border-2 px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ${
                 isDarkMode
                   ? 'border-orange-500/50 text-orange-400 hover:bg-orange-500/10'
                   : 'border-blue-500/50 text-blue-600 hover:bg-blue-500/10'
               }`}>
                 Contact Our Team
-              </button>
+              </a>
             </div>
           </motion.div>
         </div>

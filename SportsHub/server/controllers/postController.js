@@ -38,11 +38,16 @@ const createPost = async (req, res) => {
 
     await newPost.save();
 
-    if (finalVlogUrl) {
-      await Club.findByIdAndUpdate(req.club._id, {
-        $addToSet: { vlogs: finalVlogUrl },
-      });
-    }
+    await Club.findByIdAndUpdate(
+      req.club._id,
+      {
+        $addToSet: { 
+          posts: newPost._id,        
+          ...(finalVlogUrl && { vlogs: finalVlogUrl }) 
+        }
+      },
+      { new: true }
+    );
 
     res.status(201).json({ message: "Post created successfully", post: newPost });
   } catch (err) {

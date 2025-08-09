@@ -124,7 +124,7 @@ const SportSpecific = ({ isDarkMode }) => {
       description: 'The gentleman\'s game with strategic depth',
       image: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=1200&q=80'
     },
-    'track-field': {
+    'track--field': {
       name: 'Track & Field',
       icon: '🏃',
       color: 'from-purple-500 to-pink-600',

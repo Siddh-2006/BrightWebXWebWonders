@@ -287,7 +287,7 @@ const Login = ({ isDarkMode}) => {
                 </h2>
                 <p className={isDarkMode ? "text-gray-300" : "text-gray-600"}>
                   {isLogin
-                    ? "Sign in to continue your sports journey"
+                    ? "Connecting Players and Clubs Worldwide"
                     : "Create your account and start your sports journey"}
                 </p>
               </div>
@@ -348,36 +348,6 @@ const Login = ({ isDarkMode}) => {
                     </div>
 
                     <div>
-                      <label
-                        className={`block text-sm font-medium mb-2 ${
-                          isDarkMode ? "text-gray-300" : "text-gray-700"
-                        }`}
-                      >
-                        User Type
-                      </label>
-                      <select
-                        name="userType"
-                        value={formData.userType}
-                        onChange={handleInputChange}
-                        className={`w-full px-4 py-3 rounded-xl font-medium transition-all duration-300 ${
-                          isDarkMode
-                            ? "bg-white/10 border border-white/20 text-white focus:border-orange-500"
-                            : "bg-black/10 border border-black/20 text-gray-900 focus:border-blue-500"
-                        } focus:outline-none`}
-                      >
-                        <option
-                          value="player"
-                          className={isDarkMode ? "bg-gray-800" : "bg-white"}
-                        >
-                          Player
-                        </option>
-                        <option
-                          value="faculty"
-                          className={isDarkMode ? "bg-gray-800" : "bg-white"}
-                        >
-                          Club Faculty
-                        </option>
-                      </select>
                     </div>
                   </>
                 )}

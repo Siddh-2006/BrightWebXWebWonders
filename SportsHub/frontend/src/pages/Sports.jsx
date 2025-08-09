@@ -5,10 +5,11 @@ import {
   ArrowRight, Users, Calendar, Trophy, Target, Search, Filter,
   MapPin, Star, Clock, Play, Eye, Heart
 } from 'lucide-react';
-
+import { showCustomToast } from '../helper/CustomToast';
 const Sports = ({ isDarkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [RequestedField,setRequestedField] = useState(false);
 
   const sports = [
     {
@@ -362,13 +363,23 @@ const Sports = ({ isDarkMode }) => {
             }`}>
               Request new sports, suggest improvements, or join our community to help shape the future of SportsHub
             </p>
+            
             <button className={`px-8 py-4 rounded-2xl font-semibold transition-all duration-300 ${
               isDarkMode
                 ? 'bg-white text-orange-600 hover:bg-gray-100'
                 : 'bg-black text-blue-400 hover:bg-gray-900'
-            }`}>
+            }`}
+            onClick={()=>{setRequestedField(true)}}
+            >
               Request New Sport
             </button>
+            <br></br>
+            <form onSubmit={(e)=>{e.preventDefault();setRequestedField(false);showCustomToast("success","your suggestion was submitted successfullly");}} className={`${(RequestedField)?(`block`):(`hidden`)} mt-2`}>
+            <input required={true} type="text" placeholder='Enter your suggestion' className="w-full sm:w-auto border-2 border-orange-500 p-2 rounded-2xl"></input>
+            <button type="submit" className="p-2 border-2 m-2 border-orange-500 rounded-2xl">
+              Submit
+            </button>
+           </form>
           </motion.div>
         </div>
       </section>

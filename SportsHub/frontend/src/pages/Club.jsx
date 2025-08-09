@@ -11,7 +11,7 @@ import loginContext from '../context/loginContext';
 import { challengeService } from '../services/challengeService';
 import ChallengeModal from '../components/ChallengeModal';
 import AddClubModal from '../components/AddClubModal';
-
+import { useNavigate } from 'react-router-dom';
 const Club = ({ isDarkMode }) => {
   // State hooks for storing data and UI behavior
   const [clubData, setClubData] = useState([]); // all clubs
@@ -24,6 +24,7 @@ const Club = ({ isDarkMode }) => {
   const [challengeModalOpen, setChallengeModalOpen] = useState(false);
   const [selectedClubToChallenge, setSelectedClubToChallenge] = useState(null);
   const [addClubModalOpen, setAddClubModalOpen] = useState(false);
+  const navigate = useNavigate();
   // Add Club handler
   const handleAddClub = async (clubData) => {
     try {
@@ -222,7 +223,7 @@ const Club = ({ isDarkMode }) => {
           </div>
 
           <button
-            onClick={() => setAddClubModalOpen(true)}
+            onClick={() => {if(login_info.isLoggedIn){setAddClubModalOpen(true)} else{navigate("/login")}}}
             className="px-6 py-3 rounded-xl font-bold text-lg shadow-lg transition-all duration-300 bg-gradient-to-r from-orange-500 to-yellow-400 text-white hover:from-orange-600 hover:to-yellow-500"
           >
             + Add Club
