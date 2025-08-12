@@ -182,9 +182,7 @@ const ClubDetails = ({ isDarkMode }) => {
                   {club.location.country}
                 </p>
               )}
-              <p className="text-sm text-gray-400">
-                {club.followersCount} followers
-              </p>
+              
             </div>
           </div>
         </div>
@@ -202,6 +200,19 @@ const ClubDetails = ({ isDarkMode }) => {
             <Zap className="w-5 h-5" />
             <span>Challenge Club</span>
           </button>
+        )}
+        {!isClubOwner && login_info.isLoggedIn  &&(
+          <a href={`mailto:${club.officialEmail}`}
+           
+            className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-[1.02] ${
+              isDarkMode
+                ? "bg-orange-500/20 hover:bg-orange-500/30 backdrop-blur-sm border border-orange-500/30 hover:border-orange-500/50 text-orange-300 hover:text-orange-200"
+                : "bg-blue-500/20 hover:bg-blue-500/30 backdrop-blur-sm border border-blue-500/30 hover:border-blue-500/50 text-blue-600 hover:text-blue-700"
+            } flex items-center space-x-2 focus:outline-none`}
+          >
+            <Zap className="w-5 h-5" />
+            <span>Join Club</span>
+          </a>
         )}
 
         {/* Show "Your Club" indicator */}

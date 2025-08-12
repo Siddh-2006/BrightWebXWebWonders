@@ -90,7 +90,7 @@ const LiveScoreAdmin = () => {
   };
 
   if (isAdmin === null)
-    return <div className="text-white text-center mt-10">Checking access...</div>;
+    return <div className="text-white text-center pt-100">Checking access...</div>;
 
   if (isAdmin === false)
     return (
@@ -105,7 +105,7 @@ const LiveScoreAdmin = () => {
       <div className="mb-4">
         <label className="block mb-2 font-semibold">Stream URL:</label>
         <input
-          className="border border-gray-500 rounded p-2 w-full text-black"
+          className="border border-gray-500 rounded p-2 w-full text-white"
           value={streamUrl}
           onChange={(e) => setStreamUrl(e.target.value)}
         />
@@ -149,7 +149,7 @@ const LiveScoreAdmin = () => {
             {["runs", "wickets"].map((stat) => (
               <div key={stat} className="flex items-center gap-3 mb-2">
                 <span className="w-24 font-semibold">{stat}</span>
-                {[1, 2, 4, 6].map((val) => (
+                {[1, 4, 6].map((val) => (
                   <button      
                     key={val}
                     className="bg-blue-600 px-3 py-1 rounded"
@@ -158,13 +158,13 @@ const LiveScoreAdmin = () => {
                     +{val}
                   </button>
                 ))}
-                {[-1, -2, -4, -6].map((val) => (
+                {[-1,].map((val) => (
                   <button      
                     key={val}
                     className="bg-blue-600 px-3 py-1 rounded"
                     onClick={() => addScore(stat, val, team)}
                   >
-                    -{val}
+                    {val}
                   </button>
                 ))}
                 <span className="text-lg">{scoreData[team]?.[stat] || 0}</span>

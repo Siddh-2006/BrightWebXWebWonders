@@ -101,7 +101,7 @@ const Club = ({ isDarkMode }) => {
   useEffect(() => {
     let filtered = clubData.filter(club =>
       club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      club.description.toLowerCase().includes(searchTerm.toLowerCase())
+      club.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     filtered.sort((a, b) => {

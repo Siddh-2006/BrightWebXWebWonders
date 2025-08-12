@@ -106,7 +106,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
     location: "Los Angeles, CA",
     joinDate: "March 2023",
     profileImage: userData.profilePhoto,
-    coverImage: "/bg-img.jpg",
+    coverImage: (isDarkMode)?("/bg-img.jpg"):("light_themed_bg.jpg"),
     sports: ["Football", "Basketball", "Tennis"],
     primarySport: "Football",
     position: "Midfielder",

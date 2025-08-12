@@ -57,7 +57,7 @@ function App() {
         login_info.setIsLoggedIn(false);
       }
     }
-    if(login_info.isLoggedIn==false){fetch_user()}
+    if(login_info.isLoggedIn==false || !localStorage.getItem("username")){fetch_user()}
   }, [login_info])
 
   return (

@@ -136,7 +136,7 @@ const LivePage = ({ isDarkMode }) => {
                   <div className={`w-15 h-15 sm:w-20 sm:h-20 rounded-full ${theme.bgAccent} flex items-center justify-center ${theme.glow}`}>
                     <span className="text-white text-2xl font-black">VS</span>
                   </div>
-                  <div className="absolute -inset-4 rounded-full border-4 border-dashed border-gray-300 animate-spin opacity-30"></div>
+                  <div className="absolute -inset-4 rounded-full border-4 border-dashed border-gray-300 opacity-30"></div>
                 </div>
               </div>
 
@@ -219,7 +219,7 @@ const LivePage = ({ isDarkMode }) => {
                       {team?.runs}
                       <span className={`${theme.textAccent} text-3xl`}>/{team?.wickets}</span>
                     </div>
-                    <div className="absolute -inset-4 rounded-full border-2 border-dashed border-gray-300 opacity-0 group-hover:opacity-30 animate-spin transition-opacity duration-300"></div>
+                    <div className="absolute -inset-4 rounded-full border-2 border-dashed border-gray-300 opacity-0 group-hover:opacity-30  transition-opacity duration-300"></div>
                   </div>
 
                   <div className={`${theme.textSecondary} text-lg font-semibold`}>
