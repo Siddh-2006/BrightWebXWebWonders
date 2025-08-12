@@ -70,6 +70,7 @@ const Login = ({ isDarkMode}) => {
         if (res.status == 200) {
           showCustomToast("success","redirecting...")
           setIsLoggedIn(true);
+          localStorage.removeItem("username");
           setTimeout(()=>{navigate("/")},1000)
           
         }

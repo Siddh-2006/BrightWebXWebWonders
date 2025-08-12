@@ -924,6 +924,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
               <h3 className="text-lg font-bold mb-4">Quick Actions</h3>
               <div className="space-y-3">
                 <button
+                onClick={()=>{navigate("/ai-guru")}}
                   className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
                     isDarkMode ? "hover:bg-white/10" : "hover:bg-black/10"
                   }`}
@@ -935,6 +936,7 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                   <ChevronRight className="w-5 h-5" />
                 </button>
                 <button
+                onClick={()=>{navigate("/club")}}
                   className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
                     isDarkMode ? "hover:bg-white/10" : "hover:bg-black/10"
                   }`}
@@ -946,13 +948,14 @@ const Profile = ({ isDarkMode, isLoggedIn }) => {
                   <ChevronRight className="w-5 h-5" />
                 </button>
                 <button
+                onClick={()=>{navigate("/sports")}}
                   className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
                     isDarkMode ? "hover:bg-white/10" : "hover:bg-black/10"
                   }`}
                 >
                   <div className="flex items-center space-x-3">
                     <Shield className="w-5 h-5" />
-                    <span>Privacy Settings</span>
+                    <span>Sports</span>
                   </div>
                   <ChevronRight className="w-5 h-5" />
                 </button>
